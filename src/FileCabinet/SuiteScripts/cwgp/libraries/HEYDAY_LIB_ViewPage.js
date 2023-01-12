@@ -265,6 +265,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     }
 
     const render = (options) => {
+        log.debug('test')
         const {
             response,
             stType,
