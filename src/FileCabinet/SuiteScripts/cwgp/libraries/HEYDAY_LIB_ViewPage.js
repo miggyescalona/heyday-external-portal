@@ -17,8 +17,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Intercompany P.O.',
-            itemreceipt: 'Item Receipt'
+            intercompanypo: 'Intercompany PO #',
+            itemreceipt: 'Item Receipt #'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
@@ -120,12 +120,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 },
                 VENDOR: {
                     id: 'custpage_cwgp_vendor',
-                    type: serverWidget.FieldType.SELECT,
+                    type: serverWidget.FieldType.TEXT,
                     label: 'Vendor',
                     container: 'PRIMARY',
-                    mandatory: true,
-                    displayType: 'inline',
-                    source: 'vendor'
+                    displayType: 'inline'
                 },
                 DATE: {
                     id: 'custpage_cwgp_date',
@@ -201,16 +199,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                     },
-                    BUSINESS_LINE_TEXT: {
+                    BUSINESS_LINE: {
                         id: 'custpage_cwgp_businesslinetext',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Business Line'
-                    },
-                    BUSINESS_LINE: {
-                        id: 'custpage_cwgp_businessline',
-                        type: serverWidget.FieldType.TEXT,
                         label: 'Business Line',
-                        displayType: 'hidden'
+                    },
+                    TRANSFER_LOCATION: {
+                        id: 'custpage_cwgp_transferlocationtext',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Transfer Location',
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -222,17 +219,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
                     },
-                    TRANSFER_LOCATION_TEXT: {
-                        id: 'custpage_cwgp_transferlocationtext',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Transfer Location'
-                    },
-                    TRANSFER_LOCATION: {
-                        id: 'custpage_cwgp_transferlocation',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Transfer Location',
-                        displayType: 'hidden'
-                    }
                 }
             }
         },
@@ -265,17 +251,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     }
 
     const render = (options) => {
-        log.debug('test')
+        log.debug('===VIEW===','===View Intercompany PO===');
         const {
             response,
             stType,
             stPageMode,
             stUserId,
             stPoId,
-            stAccessType
+            stAccessType,
+            stTranId
         } = options;
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
 
@@ -294,7 +281,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             });
         });
 
-        log.debug('stPoId interco',stPoId);
         let objPO = utilLib.mapPOValues(stPoId);
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
@@ -318,7 +304,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 mandatory,
                 displayType
             } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
 
             let fld = form.addField({
                 id,
@@ -380,7 +365,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         form.addButton({
             id: 'custpage_edit_btn',
             label: 'Edit',
-            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType}, 'intercompanypo')`
+            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType},${stTranId},'intercompanypo')`
         });
 
         form.addButton({
@@ -399,16 +384,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     };
 
     const renderItemReceipt = (options) => {
+        log.debug('===VIEW===','===View Item Receipt===');
         const {
             response,
             stType,
             stPageMode,
             stUserId,
             stPoId,
-            stAccessType
+            stAccessType,
+            stTranId
         } = options;
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
 
@@ -426,8 +413,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 label
             });
         });
-
-        log.debug('st IR ID',stPoId);
         let objPO = utilLib.mapItemReceiptValues(stPoId);
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
@@ -439,7 +424,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
+        log.debug('arrFlds', arrFlds)
+        
 
         arrFlds.forEach((stCol) => {
             const {
@@ -451,7 +437,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 mandatory,
                 displayType
             } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
 
             let fld = form.addField({
                 id,
@@ -513,7 +498,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         form.addButton({
             id: 'custpage_edit_btn',
             label: 'Edit',
-            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType}, 'itemreceipt')`
+            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType}, ${stTranId}, 'itemreceipt')`
         });
 
         form.addButton({

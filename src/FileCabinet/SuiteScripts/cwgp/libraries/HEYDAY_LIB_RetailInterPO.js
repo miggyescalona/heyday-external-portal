@@ -14,6 +14,8 @@
 define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, util) => {
 
     const createRetailPurchaseOrder = (request) => {
+
+        log.debug('createRetailPurchaseOrder', '===createRetailPurchaseOrder===');
         const recPO = record.create({
             type: record.Type.PURCHASE_ORDER,
             isDynamic: true
@@ -51,6 +53,60 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return idPO;
     };
 
+    const createRetailItemReceipt = (request) =>{
+        log.debug('createRetailItemReceipt', '===createRetailItemReceipt===');
+
+        const arrSkipFields  = ['description','item','quantityremaining','rate','entity'];
+
+        const objItemReceipt = record.transform({
+            fromType: 'purchaseorder',
+            fromId: request.parameters.custpage_cwgp_poid,
+            toType: 'itemreceipt',
+        });
+
+        const objPOBodyFields = mapRetailItemReceiptBodyFields(request);
+
+        util.each(objPOBodyFields, (value, fieldId) => {
+            if(arrSkipFields.includes(fieldId)){return;}
+            objItemReceipt.setValue({
+                fieldId: fieldId,
+                value: value
+            });
+        });
+        
+        const arrPOSblFields = mapItemReceiptSublistFields(request);
+
+        let intCurrentLine = 0;
+        arrPOSblFields.forEach((objPOBodyFields) => {   
+            if(!objPOBodyFields.itemreceive){
+                objItemReceipt.setSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'itemreceive',
+                    line: intCurrentLine,
+                    value: objPOBodyFields.itemreceive
+                });
+            }
+            else{
+                util.each(objPOBodyFields, (value, fieldId) => {
+                    if(arrSkipFields.includes(fieldId) || (fieldId == 'itemreceive' && value == true)){return;}
+                    objItemReceipt.setSublistValue({
+                        sublistId: 'item',
+                        fieldId: fieldId,
+                        line: intCurrentLine,
+                        value: value
+                    });
+                });
+            }
+            intCurrentLine++;
+        });
+
+        const recIR = objItemReceipt.save();
+        log.debug('recIR', recIR);
+
+        return recIR;
+
+    }
+
     const mapRetailPOBodyFields = (request) => {
         const stVendor = request.parameters.custpage_cwgp_vendor;
         const stLocation = request.parameters.custpage_cwgp_location;
@@ -87,7 +143,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         let arrMapSblFields = [];
 
         const intLineCount = request.getLineCount({ group: 'custpage_interpo_items' });
-        log.debug('intLineCount', intLineCount);
 
         for (let i = 0; i < intLineCount; i++) {
             arrMapSblFields.push({
@@ -122,7 +177,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         let arrMapSblFields = [];
 
         const intLineCount = request.getLineCount({ group: 'custpage_itemreceipt_items' });
-        log.debug('intLineCount', intLineCount);
 
         for (let i = 0; i < intLineCount; i++) {
             arrMapSblFields.push({
@@ -262,6 +316,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             id: stItemReceiptId
         });
 
+        const arrSkipFields = ['item','description','transferlocation','rate','entity'];
+
         const objItemReceiptEditBodyFields = objItemReceiptDetails.body;
         log.debug('objItemReceiptEditBodyFields', objItemReceiptEditBodyFields);
 
@@ -271,6 +327,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const objBodyFields = getBodyFieldsToUpdateItemReceipt(objItemReceiptRecordBodyFields, objItemReceiptEditBodyFields);
 
         util.each(objBodyFields, (value, fieldId) => {
+            if(arrSkipFields.includes(fieldId)){return;}
             recItemReceipt.setValue({
                 fieldId: fieldId,
                 value: value
@@ -290,12 +347,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         log.debug('arrUpdateLines',arrUpdateLines);
 
         let intCurrentLine = 0;
-        const arrSkipFields = ['item','description','transferlocation','rate'];
 
-      arrUpdateLines.forEach((objUpdateLines) => {
+        arrUpdateLines.forEach((objUpdateLines) => {
             log.debug('updating lines...', 'updating lines...');
-            log.debug('objUpdateLines.item', objUpdateLines.item);
-            log.debug('objUpdateLines', objUpdateLines);
 
             
             if(!objUpdateLines.itemreceive){
@@ -309,7 +363,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             else{
                 util.each(objUpdateLines, (value, fieldId) => {
                     if(arrSkipFields.includes(fieldId) || (fieldId == 'itemreceive' && value == true)){return;}
-                    log.debug('fieldId | value', fieldId + '|' + value +'|' +typeof value);
                     recItemReceipt.setSublistValue({
                         sublistId: 'item',
                         fieldId: fieldId,
@@ -576,15 +629,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
 
     return {
         createRetailPurchaseOrder,
+        createRetailItemReceipt,
         mapRetailPOBodyFields,
-        mapRetailPOSublistFields,
-        editRetailPurchaseOrder,
-        getPOValues,
         mapRetailItemReceiptBodyFields,
+        mapRetailPOSublistFields,
         mapItemReceiptSublistFields,
+        editRetailPurchaseOrder,
         editRetailItemReceipt,
         getItemReceiptValues,
-        getBodyFieldsToUpdateItemReceipt
+        getPOValues,
+        getBodyFieldsToUpdateItemReceipt,
     }
 });
 

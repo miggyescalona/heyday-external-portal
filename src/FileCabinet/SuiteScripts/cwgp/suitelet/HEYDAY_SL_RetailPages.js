@@ -65,7 +65,8 @@ define([
             pageMode: stPageMode,
             userId: stUserId,
             poid: stPoId,
-            accesstype: stAccessType
+            accesstype: stAccessType,
+            tranid: stTranId
         } = request.parameters;
 
         log.debug('interco params',request.parameters);
@@ -102,7 +103,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stTranId
                 });
 
                 break;
@@ -114,7 +116,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stTranId
                 });
                 break;
             default:
@@ -127,7 +130,8 @@ define([
             pageMode: stPageMode,
             userId: stUserId,
             itemreceiptid: stPoId,
-            accesstype: stAccessType
+            accesstype: stAccessType,
+            tranid: stTranId
         } = request.parameters;
 
         log.debug('ir params',request.parameters);
@@ -165,7 +169,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stTranId
                 });
 
                 break;
@@ -177,7 +182,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stTranId
                 });
                 break;
             default:
@@ -186,27 +192,30 @@ define([
     };
 
     const handleIntercompanyPOTxn = (request) => {
+        log.debug('params handleIntercompanyPOTxn', request.parameters)
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_rectype: stRecType
+            custpage_cwgp_rectype: stRecType,
+            custpage_cwgp_tranid: stTranId
         } = request.parameters;
 
-        log.debug('params handleIntercompanyPOTxn', request.parameters);
-        log.debug('stRecType', stRecType);
-
-        let idPO = null;
+        let idRec = null;
 
         if (stPageMode == 'create') {
-            idPO = txnLib.createRetailPurchaseOrder(request);
+            if(stRecType == 'intercompanypo'){
+                idRec = txnLib.createRetailPurchaseOrder(request);
+            }else if(stRecType == 'itemreceipt'){
+                idRec = txnLib.createRetailItemReceipt(request);;
+            }
         }
 
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
-                idPO = editInterPO(request);
+                idRec = editInterPO(request);
             }else if(stRecType == 'itemreceipt'){
-                idPO = editItemReceipt(request);
+                idRec = editItemReceipt(request);
             }
         }
 
@@ -218,9 +227,10 @@ define([
                 parameters: {
                     pageMode: 'view',
                     userId: stUserId,
-                    poid: idPO,
+                    poid: idRec,
                     accesstype: stAccessType,
-                    rectype: stRecType 
+                    rectype: stRecType,
+                    tranid: stTranId
                 }
             });
         }
@@ -232,9 +242,10 @@ define([
                 parameters: {
                     pageMode: 'view',
                     userId: stUserId,
-                    itemreceiptid: idPO,
+                    itemreceiptid: idRec,
                     accesstype: stAccessType,
-                    rectype: stRecType 
+                    rectype: stRecType,
+                    tranid: stTranId
                 }
             });
         }

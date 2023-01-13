@@ -23,12 +23,13 @@ define([], () => {
         window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=create&userId=${stUserId}&itemreceiptid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}`;
     };
 
-    const toEdiTransaction = (stUserId, stPoId, stAccessType, stType) => {
+    const toEdiTransaction = (stUserId, stPoId, stAccessType,stTranId,stType) => {
+        log.debug('toEdiTransaction',stUserId +'|' +stPoId + '|'+ stAccessType+'|'+stType+'|'+stTranId);
         if(stType == 'intercompanypo'){
-            window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=edit&userId=${stUserId}&poid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}`;
+            window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=edit&userId=${stUserId}&poid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}&tranid=${stTranId}`;
         }
         else if(stType == 'itemreceipt'){
-            window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=edit&userId=${stUserId}&itemreceiptid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}`;
+            window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=edit&userId=${stUserId}&itemreceiptid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}&tranid=${stTranId}`;
         }
     };
 

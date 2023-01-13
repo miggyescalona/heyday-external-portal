@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util'], (serverWidget, search, util) => {
+ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record'], (serverWidget, search, util,record) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -63,7 +63,7 @@
             const stStatus = result.getText({ name: 'statusref' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo`;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
@@ -83,7 +83,7 @@
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt`;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
 
             arrMapItemReceipt.push({
@@ -147,7 +147,6 @@
             return true;
         });
     };
-
 
     const addOptionsItemBySubsidiary = (fld, stSubsidiary) => {
         fld.addSelectOption({
@@ -263,6 +262,142 @@
         return objPO;
     };
 
+    const mapItemReceiptValues = (stPoId) => {
+        let objPO = {
+            body: {},
+            item: []
+        };
+
+        const objItemReceipt = record.load({
+            type: 'itemreceipt',
+            id: stPoId,
+            isDynamic: true
+        });
+
+        objPO.body.custpage_cwgp_vendor = objItemReceipt.getText('entity');
+        objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue('memo');
+        objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
+        objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
+        objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+
+        const intLineCount = objItemReceipt.getLineCount('item');
+
+        for(var x = 0; x < intLineCount; x++){
+            objPO.item.push({
+                custpage_cwgp_item: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_description: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_transferlocation: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'location',
+                    line: x
+                }),
+                custpage_cwgp_businessline: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'class',
+                    line: x
+                }),  
+                custpage_cwgp_transferlocationtext: objItemReceipt.getSublistText({
+                    sublistId: 'item',
+                    fieldId: 'location',
+                    line: x
+                }),
+                custpage_cwgp_businesslinetext: objItemReceipt.getSublistText({
+                    sublistId: 'item',
+                    fieldId: 'class',
+                    line: x
+                }),
+                custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantityremaining',
+                    line: x
+                })),
+                custpage_cwgp_quantity: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantity',
+                    line: x
+                })),
+                custpage_cwgp_rate: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'rate',
+                    line: x
+                })
+            });
+        }
+
+        return objPO;
+    };
+
+    const mapPOtoItemReceiptValues = (stPoId) => {
+        let objPO = {
+            body: {},
+            item: []
+        };
+
+        const objItemReceipt = record.transform({
+            fromType: 'purchaseorder',
+            fromId: stPoId,
+            toType: 'itemreceipt',
+        });
+
+        objPO.body.custpage_cwgp_vendor = objItemReceipt.getText('entity');
+        objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue('memo');
+        objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
+        objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
+        objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+
+        const intLineCount = objItemReceipt.getLineCount('item');
+
+        for(var x = 0; x < intLineCount; x++){
+            objPO.item.push({
+                custpage_cwgp_item: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_description: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_transferlocation: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'location',
+                    line: x
+                }),
+                custpage_cwgp_businessline: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'class',
+                    line: x
+                }),
+                custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantityremaining',
+                    line: x
+                })),
+                custpage_cwgp_quantity: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantity',
+                    line: x
+                })),
+                custpage_cwgp_rate: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'rate',
+                    line: x
+                })
+            });
+        }
+
+        return objPO;
+    };
+
     const setPOSublist = (sbl, objPO) => {
         const arrListValues = objPO.item;
         log.debug('arrListValues', arrListValues);
@@ -277,132 +412,6 @@
             });
         });
     };
-
-    
-    const mapItemReceiptValues = (stPoId) => {
-        let objPO = {
-            body: {},
-            item: []
-        };
-
-        search.create({
-            type: search.Type.ITEM_RECEIPT,
-            filters:
-                [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: stPoId
-                    }),
-                    search.createFilter({
-                        name : 'formulanumeric',
-                        operator : search.Operator.EQUALTO,
-                        values : "1",
-                        formula : "CASE WHEN {entity} IS NULL THEN 0 ELSE 1 END",
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'mainline' }),
-                    search.createColumn({ name: 'entity' }),
-                    search.createColumn({ name: 'memomain' }),
-                    search.createColumn({ name: 'trandate' }),
-                    search.createColumn({ name: 'subsidiary' }),
-                    search.createColumn({ name: 'transferlocation' }),
-                    search.createColumn({ name: 'item' }),
-                    search.createColumn({ name: 'quantity' }),
-                    search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'createdfrom' }),
-                    search.createColumn({ name: 'class' }),
-                    search.createColumn({ name: 'salesdescription' , join: 'item'})
-                ]
-        }).run().each((result) => {
-            const stMainLine = result.getValue({ name: 'mainline' });
-
-            if (stMainLine == '*') {
-                objPO.body.custpage_cwgp_vendor = result.getValue({ name: 'entity' });
-                objPO.body.custpage_cwgp_memomain = result.getValue({ name: 'memomain' });
-                objPO.body.custpage_cwgp_date = result.getValue({ name: 'trandate' });
-                objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
-                objPO.body.custpage_cwgp_createdfrom = result.getText({ name: 'createdfrom' });
-            } else {
-                objPO.item.push({
-                    custpage_cwgp_item: result.getText({ name: 'item' }),
-                    custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
-                    custpage_cwgp_rate: result.getValue({ name: 'rate' }),
-                    custpage_cwgp_transferlocationtext: result.getText({ name: 'transferlocation' }),
-                    custpage_cwgp_transferlocation: result.getValue({ name: 'transferlocation' }),
-                    custpage_cwgp_businesslinetext: result.getText({ name: 'class' }),
-                    custpage_cwgp_businessline: result.getValue({ name: 'class' }),
-                    custpage_cwgp_description: result.getText({ name: 'salesdescription', join: 'item' })
-                });
-            }
-
-            return true;
-        });
-
-        return objPO;
-    };
-
-    const mapPOtoItemReceiptValues = (stPoId) => {
-        let objPO = {
-            body: {},
-            item: []
-        };
-
-        search.create({
-            type: search.Type.PURCHASE_ORDER,
-            filters:
-                [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: stPoId
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'mainline' }),
-                    search.createColumn({ name: 'entity' }),
-                    search.createColumn({ name: 'memomain' }),
-                    search.createColumn({ name: 'trandate' }),
-                    search.createColumn({ name: 'subsidiary' }),
-                    search.createColumn({ name: 'transferlocation' }),
-                    search.createColumn({ name: 'item' }),
-                    search.createColumn({ name: 'quantity' }),
-                    search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'createdfrom' }),
-                    search.createColumn({ name: 'class' }),
-                    search.createColumn({ name: 'salesdescription' , join: 'item'})
-                ]
-        }).run().each((result) => {
-            const stMainLine = result.getValue({ name: 'mainline' });
-
-            if (stMainLine == '*') {
-                objPO.body.custpage_cwgp_vendor = result.getValue({ name: 'entity' });
-                objPO.body.custpage_cwgp_memomain = result.getValue({ name: 'memomain' });
-                objPO.body.custpage_cwgp_date = result.getValue({ name: 'trandate' });
-                objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
-                objPO.body.custpage_cwgp_createdfrom = result.getText({ name: 'createdfrom' });
-            } else {
-                objPO.item.push({
-                    custpage_cwgp_item: result.getText({ name: 'item' }),
-                    custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
-                    custpage_cwgp_rate: result.getValue({ name: 'rate' }),
-                    custpage_cwgp_transferlocationtext: result.getText({ name: 'transferlocation' }),
-                    custpage_cwgp_transferlocation: result.getValue({ name: 'transferlocation' }),
-                    custpage_cwgp_businesslinetext: result.getText({ name: 'class' }),
-                    custpage_cwgp_businessline: result.getValue({ name: 'class' }),
-                    custpage_cwgp_description: result.getText({ name: 'salesdescription', join: 'item' })
-                });
-            }
-
-            return true;
-        });
-
-        return objPO;
-    };
-
     
     const setItemReceiptSublist = (sbl, objPO) => {
         const arrListValues = objPO.item;
@@ -424,12 +433,12 @@
         addOptionsVendorsBySubsidiary,
         addOptionsItemBySubsidiary,
         addOptionsLocationBySubsidiary,
-        mapPOValues,
-        setPOSublist,
-        mapItemReceiptValues,
-        setItemReceiptSublist,
         addOptionsBusinessLine,
-        mapPOtoItemReceiptValues
+        mapPOValues,
+        mapItemReceiptValues,
+        mapPOtoItemReceiptValues,
+        setPOSublist,
+        setItemReceiptSublist,
     }
 });
 

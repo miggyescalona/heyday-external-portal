@@ -125,8 +125,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     label: 'accessType',
                     displayType: 'hidden'
                 },
-                ITEMRECEIPT_ID: {
-                    id: 'custpage_cwgp_itemreceiptid',
+                PO_ID: {
+                    id: 'custpage_cwgp_poid',
                     type: serverWidget.FieldType.TEXT,
                     label: 'poId',
                     displayType: 'hidden'
@@ -167,13 +167,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'CLASS',
                     displayType: 'inline'
                 },
-                CREATEDFROM: {
-                    id: 'custpage_cwgp_createdfrom',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Created From',
-                    container: 'CLASS',
-                    displayType: 'inline'
-                }
             }
         },
         COLUMN: {
@@ -228,9 +221,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         displayType: 'ENTRY'
                     },
                     TRANSFER_LOCATION: {
-                        id: 'custpage_cwgp_transferlocationtext',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Transfer Location'
+                        id: 'custpage_cwgp_transferlocation',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Transfer Location',
+                        displayType: 'ENTRY'
+                    },
+                    QUANTITY_REMAINING: {
+                        id: 'custpage_cwgp_quantityremaining',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Remaining'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -242,7 +241,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
-                    },
+                    }
                 }
             }
         },
@@ -276,6 +275,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
 
     const render = (options) => {
+        log.debug('===CREATE===','===Create Intercompany PO===');
         const {
             response,
             stType,
@@ -308,7 +308,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds create PO', arrFlds);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -320,7 +319,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 mandatory,
                 displayType
             } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
 
             let fld = form.addField({
                 id,
@@ -375,7 +373,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
-        log.debug('arrCols create PO', arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label } = objItemCols[stCol];
@@ -403,6 +400,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     };
 
     const renderItemReceipt = (options) => {
+        log.debug('===Create===','===Create Item Receipt===');
         const {
             response,
             stType,
@@ -413,7 +411,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stAccessType
         } = options;
 
-        log.debug('options',options);
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
@@ -434,12 +431,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             });
         });
 
-        log.debug('objIR int id create', stPoId);
         let objPO = utilLib.mapPOtoItemReceiptValues(stPoId);
         objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
-        objPO.body.custpage_cwgp_itemreceiptid = stPoId;
+        objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
 
@@ -460,7 +456,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 defaultValue,
                 displayType
             } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
 
             let fld = form.addField({
                 id,
@@ -518,6 +513,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (id == 'custpage_cwgp_businessline') {
                 utilLib.addOptionsBusinessLine(col);
             }
+            
+            if (id == 'custpage_cwgp_transferlocation') {
+                utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+            }
 
             if(id == 'custpage_cwgp_receive'){
                 col.defaultValue ='T';
@@ -525,7 +524,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         });
 
-       // utilLib.setPOSublist(sbl, objPO);
+        utilLib.setPOSublist(sbl, objPO);
 
         form.addSubmitButton({ label: 'Save' });
         

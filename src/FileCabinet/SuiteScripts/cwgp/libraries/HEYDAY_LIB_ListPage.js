@@ -64,6 +64,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     }
 
     const render = (options) => {
+        log.debug('===LIST===','===List Intercompany PO===');
         const {
             request,
             response,
@@ -151,6 +152,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     };
 
     const renderItemReceipt = (options) => {
+        log.debug('===LIST===','===List Item Receipt===');
         const {
             request,
             response,
@@ -161,11 +163,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         } = options;
 
 
-
-        log.debug('request.parameters IR', request.parameters)
-
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
-        log.debug('intPage main IR', intPage);
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
