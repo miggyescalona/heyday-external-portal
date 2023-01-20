@@ -23,11 +23,17 @@ define(['N/search'], (search) => {
 
         if (context.request.method === 'GET') {
             const stItem = request.parameters['item'];
+            const stLocation = request.parameters['itemlocation'];
 
-            if(stItem){
+            if(stItem&&!stLocation){
                 const objItem = getItemDetail(stItem);
 
                 response.write(JSON.stringify({ item: objItem }))
+            }
+            if(stItem&&stLocation){
+                const stQtyOnHand = getQtyOnHand(stItem,stLocation);
+
+                response.write(JSON.stringify({ stQtyOnHand: stQtyOnHand }))
             }
         }
     };
@@ -42,6 +48,28 @@ define(['N/search'], (search) => {
         log.debug('objLookup', objLookup);
 
         return objLookup
+    };
+
+    const getQtyOnHand = (stItem,stLocation) => {
+        var stQtyOnHand;
+        var itemSearchObj = search.create({
+            type: "item",
+            filters:
+            [
+               ["internalid","anyof",stItem], 
+               "AND", 
+               ["inventorylocation","anyof",stLocation]
+            ],
+            columns:
+            [
+               search.createColumn({name: "locationquantityonhand", label: "Location On Hand"}),
+            ]
+         });
+         itemSearchObj.run().each(function(result){
+            stQtyOnHand = result.getValue({ name: 'locationquantityonhand' })
+            return true;
+         });
+         return stQtyOnHand;
     };
 
     return { onRequest };

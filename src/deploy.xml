@@ -3,7 +3,19 @@
         <path>~/AccountConfiguration/*</path>
     </configuration>
     <files>
-        <path>~/FileCabinet/*</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_ErrorPage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_CreatePage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_EditPage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_ListPage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_ViewPage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_RetailInterPO.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/libraries/HEYDAY_LIB_Util.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/suitelet/HEYDAY_SL_RetailPages.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/suitelet/HEYDAY_SL_CreateIntPO.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/client/HEYDAY_CS_CreatePageIntPO.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/client/HEYDAY_CS_ListPage.js</path>
+        <path>~/FileCabinet/SuiteScripts/cwgp/client/HEYDAY_CS_ViewPage.js</path>
+        
     </files>
     <objects>
         <path>~/Objects/*</path>

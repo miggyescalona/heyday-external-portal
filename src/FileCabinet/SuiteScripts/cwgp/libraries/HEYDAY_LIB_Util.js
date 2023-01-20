@@ -48,7 +48,8 @@
 
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
-            'itemreceipt': mapItemReceipt
+            'itemreceipt': mapItemReceipt,
+            'inventoryadjustment': mapInventoryAdjustment
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -95,6 +96,108 @@
         return arrMapItemReceipt;
     };
 
+    const mapInventoryAdjustment = (stUserId, stAccessType, arrPagedData) => {
+        let arrMapInventoryAdjustment= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stTranId = result.getValue({ name: 'tranid' });
+            const stID = result.id;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
+            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
+
+            arrMapInventoryAdjustment.push({
+                [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
+                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated
+            })
+        });
+
+        return arrMapInventoryAdjustment;
+    };
+
+
+    
+
+    const addOptionsUnits = (fld) => {
+        fld.addSelectOption({
+            value: '2',
+            text: 'Ea'
+        });
+
+        fld.addSelectOption({
+            value: '2',
+            text: ''
+        });
+
+        fld.addSelectOption({
+            value: '2',
+            text: ''
+        });
+
+        return true;
+    };
+
+    const addOptionsBusinessLine = (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "classification",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'name' })
+            });
+            return true;
+        });
+    };
+
+    const addOptionsPostingPeriod= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "accountingperiod",
+            filters:
+            [
+                search.createFilter({
+                    name: 'isquarter',
+                    operator: search.Operator.IS,
+                    values: false
+                }),
+                search.createFilter({
+                    name: 'isyear',
+                    operator: search.Operator.IS,
+                    values: false
+                }),
+                search.createFilter({
+                    name: 'closed',
+                    operator: search.Operator.IS,
+                    values: false
+                })
+            ],
+            columns:
+                [
+                    search.createColumn({ name: 'periodname' })
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'periodname' })
+            });
+            return true;
+        });
+    };
+
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
         fld.addSelectOption({
             value: '',
@@ -121,29 +224,6 @@
                 text: result.getValue({ name: 'entityid' })
             });
 
-            return true;
-        });
-    };
-
-    const addOptionsBusinessLine = (fld) => {
-        fld.addSelectOption({
-            value: '',
-            text: ''
-        });
-        search.create({
-            type: "classification",
-            filters:
-                [
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'name' })
-                ]
-        }).run().each(function (result) {
-            fld.addSelectOption({
-                value: result.id,
-                text: result.getValue({ name: 'name' })
-            });
             return true;
         });
     };
@@ -200,6 +280,73 @@
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'name' })
+            });
+
+            return true;
+        });
+
+    };
+
+    const addOptionsDepartmentBySubsidiary = (fld, stSubsidiary) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+
+        search.create({
+            type: search.Type.DEPARTMENT,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'subsidiary',
+                        operator: search.Operator.ANYOF,
+                        values: stSubsidiary
+                    }),
+                    search.createFilter({
+                        name: 'isinactive',
+                        operator: search.Operator.IS,
+                        values: false
+                    }),
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each((result) => {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'name' })
+            });
+
+            return true;
+        });
+
+    };
+
+    const addOptionsAccountsBySubsidiary= (fld, stSubsidiary) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+
+        search.create({
+            type: search.Type.ACCOUNT,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'subsidiary',
+                        operator: search.Operator.ANYOF,
+                        values: stSubsidiary
+                    }),
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'displayname' })
+                ]
+        }).run().each((result) => {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'displayname' })
             });
 
             return true;
@@ -284,6 +431,11 @@
 
         for(var x = 0; x < intLineCount; x++){
             objPO.item.push({
+                custpage_cwgp_itemid: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: x
+                }),
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'description',
@@ -398,22 +550,88 @@
         return objPO;
     };
 
-    const setPOSublist = (sbl, objPO) => {
-        const arrListValues = objPO.item;
-        log.debug('arrListValues', arrListValues);
+    const mapInventoryAdjustmentValues = (stPoId) => {
+        let objPO = {
+            body: {},
+            item: []
+        };
 
-        arrListValues.forEach((objItem, i) => {
-            util.each(objItem, function (value, fieldId) {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value || ' '
-                });
-            });
+        const objInventoryAdjustment = record.load({
+            type: 'inventoryadjustment',
+            id: stPoId,
+            isDynamic: true
         });
-    };
-    
-    const setItemReceiptSublist = (sbl, objPO) => {
+
+        objPO.body.custpage_cwgp_adjustmentaccount = objInventoryAdjustment.getText('account');
+        objPO.body.custpage_cwgp_date = objInventoryAdjustment.getText('trandate');
+        objPO.body.custpage_cwgp_postingperiod = objInventoryAdjustment.getText('postingperiod');
+        objPO.body.custpage_cwgp_memomain = objInventoryAdjustment.getValue('memo');
+        objPO.body.custpage_cwgp_subsidiary = objInventoryAdjustment.getText('subsidiary');
+        objPO.body.custpage_cwgp_department = objInventoryAdjustment.getText('department');
+        objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
+        objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
+
+        const intLineCount = objInventoryAdjustment.getLineCount('inventory');
+
+        for(var x = 0; x < intLineCount; x++){
+            log.debug('qty on hand', parseInt(objInventoryAdjustment.getSublistValue({
+                sublistId: 'inventory',
+                fieldId: 'quantityonhand',
+                line: x
+            })));
+            objPO.item.push({
+                custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_description: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'description',
+                    line: x
+                }),
+                custpage_cwgp_location: objInventoryAdjustment.getSublistText({
+                    sublistId: 'inventory',
+                    fieldId: 'location',
+                    line: x
+                }),
+                custpage_cwgp_units: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'units_display',
+                    line: x
+                }),  
+                custpage_cwgp_qtyonhand: parseInt(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'quantityonhand',
+                    line: x
+                })),
+                custpage_cwgp_adjustqtyby: parseInt(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'adjustqtyby',
+                    line: x
+                })),
+                custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'newquantity',
+                    line: x
+                })),
+                custpage_cwgp_department: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'department',
+                    line: x
+                }),
+                custpage_cwgp_businessline: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'class',
+                    line: x
+                })
+            });
+        }
+
+        return objPO;
+    }
+
+    const setSublistValues = (sbl, objPO) => {
         const arrListValues = objPO.item;
         log.debug('arrListValues', arrListValues);
 
@@ -433,12 +651,16 @@
         addOptionsVendorsBySubsidiary,
         addOptionsItemBySubsidiary,
         addOptionsLocationBySubsidiary,
+        addOptionsUnits,
         addOptionsBusinessLine,
+        addOptionsPostingPeriod,
+        addOptionsDepartmentBySubsidiary,
+        addOptionsAccountsBySubsidiary,
         mapPOValues,
         mapItemReceiptValues,
         mapPOtoItemReceiptValues,
-        setPOSublist,
-        setItemReceiptSublist,
+        mapInventoryAdjustmentValues,
+        setSublistValues
     }
 });
 

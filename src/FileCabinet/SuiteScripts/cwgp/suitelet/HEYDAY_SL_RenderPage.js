@@ -250,6 +250,17 @@ define(['N/ui/serverWidget'], (serverWidget) => {
 
                         window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
+
+                    const btnInventoryAdjustment = document.getElementById('cwgp_ia_btn');
+                    btnInventoryAdjustment.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
                 </script>
             </div>`;
 
@@ -276,7 +287,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         <br>
                         <button type="button" id="cwgp_so_btn" class="navbutton">Purchase Order</button>
                         <br>
-                        <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
+                        <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Item Receipt</button>
                     </div>
                 </div>
 
@@ -294,7 +305,16 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=intercompanypo';
+                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=franchisepo';
+                    });
+                    const btnItemReceiptFranchise = document.getElementById('cwgp_ir_franchise_btn');
+                    btnItemReceiptFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
                     
                 </script>

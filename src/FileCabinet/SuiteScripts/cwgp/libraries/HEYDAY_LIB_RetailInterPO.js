@@ -11,7 +11,15 @@
  * @NModuleScope Public
  */
 
-define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, util) => {
+
+define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, record, format, util,redirect) => {
+
+    const _CONFIG = {
+        SCRIPT: {
+            ID: 'customscript_cwgp_sl_portalerrorpage',
+            DEPLOY: 'customdeploy_cwgp_sl_portalerrorpage'
+        }
+    };
 
     const createRetailPurchaseOrder = (request) => {
 
@@ -107,6 +115,42 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
 
     }
 
+    const createRetailInventoryAdjustment = (request) => {
+
+        log.debug('createRetailInventoryAdjustment', '===createRetailInventoryAdjustment===');
+        const recIA = record.create({
+            type: record.Type.INVENTORY_ADJUSTMENT,
+            isDynamic: true
+        });
+
+        const objPOBodyFields = mapRetailInventoryAdjustmentBodyFields(request);
+
+        util.each(objPOBodyFields, (value, fieldId) => {
+            recIA.setValue({
+                fieldId: fieldId,
+                value: value
+            });
+        });
+
+        const arrPOSblFields = mapInventoryAdjustmentSublistFields(request);
+
+        arrPOSblFields.forEach((objPOBodyFields) => {
+            recIA.selectNewLine({ sublistId: 'inventory' });
+            util.each(objPOBodyFields, (value, fieldId) => {
+                recIA.setCurrentSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: fieldId,
+                    value: value
+                });
+
+            });
+            recIA.commitLine({ sublistId: 'inventory' });
+        });
+
+        var idIA = recIA.save();
+        return idIA;
+    };
+
     const mapRetailPOBodyFields = (request) => {
         const stVendor = request.parameters.custpage_cwgp_vendor;
         const stLocation = request.parameters.custpage_cwgp_location;
@@ -133,6 +177,32 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             entity: stVendor,
             trandate: new Date(stDate),
             memo: stMemoMain || ''
+        };
+        log.debug('objMapBodyFields', objMapBodyFields);
+
+        return objMapBodyFields;
+    };
+
+    const mapRetailInventoryAdjustmentBodyFields = (request) => {
+        const stAccount = request.parameters.custpage_cwgp_adjustmentaccount;
+        const stPeriod = request.parameters.custpage_cwgp_postingperiod;
+        const stDate = request.parameters.custpage_cwgp_date;
+        const stMemoMain = request.parameters.custpage_cwgp_memomain;
+        const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
+        const stBusinessLine = request.parameters.custpage_cwgp_businessline;
+        const stLocation = request.parameters.custpage_cwgp_adjustmentlocation;
+        const stDepartment = request.parameters.custpage_cwgp_department;
+
+        const objMapBodyFields = {
+            subsidiary: stSubsidiary,
+            trandate: new Date(stDate),
+            memo: stMemoMain || '',
+            account: stAccount,
+            postingperiod: stPeriod,
+            class: stBusinessLine,
+            adjlocation: stLocation,
+            department: stDepartment
+
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -222,92 +292,132 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return arrMapSblFields;
     };
 
-    const editRetailPurchaseOrder = (stPoId, objPOEditDetails, objPORecordDetails) => {
-        const recPO = record.load({
-            type: record.Type.PURCHASE_ORDER,
-            id: stPoId,
-            isDynamic: true
-        });
+    const mapInventoryAdjustmentSublistFields = (request) => {
+        let arrMapSblFields = [];
 
-        const objPOEditBodyFields = objPOEditDetails.body;
-        log.debug('objPOEditBodyFields', objPOEditBodyFields);
+        const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
-        const objPORecordBodyFields = objPORecordDetails.body;
-        log.debug('objPORecordBodyFields', objPORecordBodyFields);
+        for (let i = 0; i < intLineCount; i++) {
+            arrMapSblFields.push({
+                item: request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_item',
+                    line: i
+                }),
+                location: request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_location',
+                    line: i
+                }),
+                adjustqtyby: parseInt(request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_adjustqtyby',
+                    line: i
+                })),
+                department: request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_department',
+                    line: i
+                }),
+                class: request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_businessline',
+                    line: i
+                }),
+            })
+        }
 
-        const objBodyFields = getBodyFieldsToUpdate(objPORecordBodyFields, objPOEditBodyFields);
+        log.debug('arrMapSblFields', arrMapSblFields)
+        return arrMapSblFields;
+    };
 
-        util.each(objBodyFields, (value, fieldId) => {
-            recPO.setValue({
-                fieldId: fieldId,
-                value: value
+    const editRetailPurchaseOrder = (stPoId, objPOEditDetails, objPORecordDetails, request) => {
+      
+            const recPO = record.load({
+                type: record.Type.PURCHASE_ORDER,
+                id: stPoId,
+                isDynamic: true
             });
-        });
 
-        let arrPOEditSblFields = objPOEditDetails.item;
-        let arrPoRecordSblFields = objPORecordDetails.item;
+            const objPOEditBodyFields = objPOEditDetails.body;
+            log.debug('objPOEditBodyFields', objPOEditBodyFields);
 
-        const objItemLines = getItemFieldsToUpdate(arrPoRecordSblFields, arrPOEditSblFields);
-        log.debug('objItemLines', objItemLines);
+            const objPORecordBodyFields = objPORecordDetails.body;
+            log.debug('objPORecordBodyFields', objPORecordBodyFields);
 
-        const arrRemoveLines = objItemLines.removeLines;
-        const arrUpdateLines = objItemLines.updateLines;
+            const objBodyFields = getBodyFieldsToUpdate(objPORecordBodyFields, objPOEditBodyFields);
 
-                
-        log.debug('arrUpdateLines',arrUpdateLines);
-
-        arrRemoveLines.forEach((objRemoveLines) => {
-            log.debug('removing lines...', 'removing lines...');
-            log.debug('objRemoveLines.item', objRemoveLines.item);
-
-            const intRemoveIdx = recPO.findSublistLineWithValue({
-                sublistId: 'item',
-                fieldId: 'item',
-                value: objRemoveLines.item
-            });
-
-            recPO.removeLine({
-                sublistId: 'item',
-                line: intRemoveIdx,
-            });
-        });
-
-
-        arrUpdateLines.forEach((objUpdateLines) => {
-            log.debug('updating lines...', 'updating lines...');
-            log.debug('objUpdateLines.item', objUpdateLines.item);
-
-            const intUpdateIdx = recPO.findSublistLineWithValue({
-                sublistId: 'item',
-                fieldId: 'item',
-                value: objUpdateLines.item
-            });
-            log.debug('intUpdateIdx', intUpdateIdx);
-
-            if (intUpdateIdx != -1) {
-                recPO.selectLine({
-                    sublistId: 'item',
-                    line: intUpdateIdx
-                });
-            } else {
-                recPO.selectNewLine({ sublistId: 'item' })
-            }
-
-            util.each(objUpdateLines, (value, fieldId) => {
-                recPO.setCurrentSublistValue({
-                    sublistId: 'item',
+            util.each(objBodyFields, (value, fieldId) => {
+                recPO.setValue({
                     fieldId: fieldId,
                     value: value
                 });
             });
 
-            recPO.commitLine({ sublistId: 'item' });
-        });
+            let arrPOEditSblFields = objPOEditDetails.item;
+            let arrPoRecordSblFields = objPORecordDetails.item;
 
-        const idPO = recPO.save();
-        log.debug('PO record is updated', idPO);
+            const objItemLines = getItemFieldsToUpdate(arrPoRecordSblFields, arrPOEditSblFields);
+            log.debug('objItemLines', objItemLines);
 
-        return idPO;
+            const arrRemoveLines = objItemLines.removeLines;
+            const arrUpdateLines = objItemLines.updateLines;
+
+                    
+            log.debug('arrUpdateLines',arrUpdateLines);
+
+            arrRemoveLines.forEach((objRemoveLines) => {
+                log.debug('removing lines...', 'removing lines...');
+                log.debug('objRemoveLines.item', objRemoveLines.item);
+
+                const intRemoveIdx = recPO.findSublistLineWithValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    value: objRemoveLines.item
+                });
+
+                recPO.removeLine({
+                    sublistId: 'item',
+                    line: intRemoveIdx,
+                });
+            });
+
+
+            arrUpdateLines.forEach((objUpdateLines) => {
+                log.debug('updating lines...', 'updating lines...');
+                log.debug('objUpdateLines.item', objUpdateLines.item);
+
+                const intUpdateIdx = recPO.findSublistLineWithValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    value: objUpdateLines.item
+                });
+                log.debug('intUpdateIdx', intUpdateIdx);
+
+                if (intUpdateIdx != -1) {
+                    recPO.selectLine({
+                        sublistId: 'item',
+                        line: intUpdateIdx
+                    });
+                } else {
+                    recPO.selectNewLine({ sublistId: 'item' })
+                }
+
+                util.each(objUpdateLines, (value, fieldId) => {
+                    recPO.setCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });
+
+                recPO.commitLine({ sublistId: 'item' });
+            });
+
+        
+            const idPO = recPO.save();
+            log.debug('PO record is updated', idPO);
+            return idPO;
     };
 
     const editRetailItemReceipt = (stItemReceiptId, objItemReceiptDetails, objItemReceiptRecordDetails) => {
@@ -630,9 +740,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
     return {
         createRetailPurchaseOrder,
         createRetailItemReceipt,
+        createRetailInventoryAdjustment,
         mapRetailPOBodyFields,
         mapRetailItemReceiptBodyFields,
+        mapRetailInventoryAdjustmentBodyFields,
         mapRetailPOSublistFields,
+        mapInventoryAdjustmentSublistFields,
         mapItemReceiptSublistFields,
         editRetailPurchaseOrder,
         editRetailItemReceipt,

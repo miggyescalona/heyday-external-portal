@@ -227,6 +227,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'Items',
                     },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
@@ -284,10 +290,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 }
             }
         },
-        CLIENT_SCRIPT: {
-            intercompanypo: '../client/HEYDAY_CS_CreatePageIntPO.js',
-            itemreceipt: '../client/HEYDAY_CS_CreatePageIntPO.js'
-        }
+        CLIENT_SCRIPT: '../client/HEYDAY_CS_CreatePageIntPO.js',
     }
 
 
@@ -306,7 +309,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId});
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -418,7 +421,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             }
         });
 
-        utilLib.setPOSublist(sbl, objPO);
+        utilLib.setSublistValues(sbl, objPO);
 
         form.addSubmitButton({ label: 'Save' });
         
@@ -446,7 +449,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId});
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -558,7 +561,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         });
 
-        utilLib.setPOSublist(sbl, objPO);
+        utilLib.setSublistValues(sbl, objPO);
 
         form.addSubmitButton({ label: 'Save' });
         

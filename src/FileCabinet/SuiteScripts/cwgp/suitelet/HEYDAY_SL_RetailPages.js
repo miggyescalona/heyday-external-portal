@@ -47,8 +47,11 @@ define([
                 if(rectype == 'intercompanypo'){
                     renderIntercompanyPO(request, response);
                 }
-                else if(rectype== 'itemreceipt'){
+                else if(rectype == 'itemreceipt'){
                     renderItemReceipt(request, response);
+                }
+                else if(rectype == 'inventoryadjustment'){
+                    renderInventoryAdjustment(request, response);
                 }
             } else {
                 handleIntercompanyPOTxn(request);
@@ -191,6 +194,76 @@ define([
         }
     };
 
+    const renderInventoryAdjustment = (request, response) => {
+        const {
+            pageMode: stPageMode,
+            userId: stUserId,
+            inventoryadjustmentid: stPoId,
+            accesstype: stAccessType,
+            tranid: stTranId
+        } = request.parameters;
+
+        log.debug('ia params',request.parameters);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
+        log.debug('stLocation',stLocation);
+        const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
+
+        switch (stPageMode) {
+            case 'list':
+                listPage.renderInventoryAdjustment({
+                    request,
+                    response,
+                    stType: 'inventoryadjustment',
+                    stAccessType,
+                    stUserId,
+                    objSearch: objInventoryAdjustmentSearch
+                });
+
+                break;
+            case 'create':
+                createPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stSubsidiary,
+                    stLocation,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType
+                });
+
+                break;
+            case 'view':
+                viewPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId
+                });
+
+                break;
+            case 'edit':
+                editPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stSubsidiary,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId
+                });
+                break;
+            default:
+                throw 'Page Not Found';
+        }
+    };
+
+
     const handleIntercompanyPOTxn = (request) => {
         log.debug('params handleIntercompanyPOTxn', request.parameters)
         const {
@@ -207,7 +280,9 @@ define([
             if(stRecType == 'intercompanypo'){
                 idRec = txnLib.createRetailPurchaseOrder(request);
             }else if(stRecType == 'itemreceipt'){
-                idRec = txnLib.createRetailItemReceipt(request);;
+                idRec = txnLib.createRetailItemReceipt(request);
+            }else if(stRecType == 'inventoryadjustment'){
+                idRec = txnLib.createRetailInventoryAdjustment(request);
             }
         }
 
@@ -249,6 +324,21 @@ define([
                 }
             });
         }
+        else if(stRecType == 'inventoryadjustment'){
+            redirect.toSuitelet({
+                scriptId: _CONFIG.SCRIPT.ID,
+                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    inventoryadjustmentid: idRec,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    tranid: stTranId
+                }
+            });
+        }
     };
 
     const buildIntercompanyPOSearch = (stSubsidiary) => {
@@ -266,6 +356,18 @@ define([
     
     const buildItemReceiptSearch = (stSubsidiary) => {
         const ssItemReceipt = search.load({ id: "572", type: "itemreceipt" });
+
+        ssItemReceipt.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'is',
+            values: stSubsidiary,
+        }));
+
+        return ssItemReceipt;
+    };
+
+    const buildInventoryAdjustmentSearch = (stSubsidiary) => {
+        const ssItemReceipt = search.load({ id: "577", type: "inventoryadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'subsidiary',
@@ -302,6 +404,32 @@ define([
         }
     };
 
+    const getLocation = (stId) => {
+        const ssCredentials = search.create({
+            type: _CONFIG.RECORD.CREDENTIALS,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_subsidiary' }),
+                    search.createColumn({ name: 'custrecord_cwgp_location' }),
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_location' });
+        }
+    };
+
     const editInterPO = (request) => {
         const stPoId = request.parameters.custpage_cwgp_poid;
         log.debug('stPoId', stPoId);
@@ -323,7 +451,7 @@ define([
         if (bAreDetailsTheSame) {
             idPO = stPoId;
         } else {
-            idPO = txnLib.editRetailPurchaseOrder(stPoId, objPOEditDetails, objPORecordDetails);
+            idPO = txnLib.editRetailPurchaseOrder(stPoId, objPOEditDetails, objPORecordDetails, request);
         }
 
         return idPO;

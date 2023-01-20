@@ -18,15 +18,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         },
         TITLE: {
             intercompanypo: 'Intercompany P.O.',
-            itemreceipt: 'Item Receipts'
+            itemreceipt: 'Item Receipts',
+            inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_listtab_retail',
-            itemreceipt: 'custpage_ir_listtab_retail'
+            itemreceipt: 'custpage_ir_listtab_retail',
+            inventoryadjustment: 'custpage_ia_listtab_retail'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_list_retail',
-            itemreceipt: 'custpage_ir_list_retail'
+            itemreceipt: 'custpage_ir_list_retail',
+            inventoryadjustment: 'custpage_ia_list_retail'
         },
         COLUMN: {
             LIST: {
@@ -48,6 +51,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     }
                 },
                 itemreceipt: {
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Transaction No'
+                    },
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
+                    }
+                },
+                inventoryadjustment: {
                     TRAN_NO: {
                         id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
@@ -232,6 +247,95 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
+    const renderInventoryAdjustment = (options) => {
+        log.debug('===LIST===','===List Inventory Adjustment===');
+        const {
+            request,
+            response,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: ' '
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            container: _CONFIG.TAB[stType]
+        });
+        fldPage.defaultValue = intPage;
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        //add buttons
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+    
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+
+        response.writePage(form);
+    };
+
     const getPageData = (objSearch, fldPage, intPage) => {
         const objPagedData = objSearch.runPaged({ pageSize: 20 });
 
@@ -334,7 +438,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
     return {
         render,
-        renderItemReceipt
+        renderItemReceipt,
+        renderInventoryAdjustment
     }
 });
-

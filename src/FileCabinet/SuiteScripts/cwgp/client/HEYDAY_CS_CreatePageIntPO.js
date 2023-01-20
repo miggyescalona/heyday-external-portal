@@ -71,6 +71,72 @@ define(['N/https', 'N/util'], (https, util) => {
 
             }
         }
+
+        if (sublistId === 'custpage_inventorayadjustment_items') {
+            //default item details
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventorayadjustment_items',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });
+            }
+
+            if (fieldId === 'custpage_cwgp_location') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const stLocation = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_location'
+                });
+                console.log('stItem', stItem);
+
+                const objQtyOnHand = getItemQtyOnHand(stItem,stLocation);
+                console.log('objQtyOnHand', objQtyOnHand);
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_qtyonhand',
+                    value: objQtyOnHand || 0
+                });
+            }
+
+            if (fieldId === 'custpage_cwgp_adjustqtyby') {
+                const stAdjustQtyBy = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                });
+
+                const stQtyOnHand = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_qtyonhand'
+                });
+
+                const stNewQty = stAdjustQtyBy + stQtyOnHand;
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stNewQty || 0
+                });
+            }
+            
+        }
     };
 
     const getItemDetails = (stItem) => {
@@ -86,6 +152,16 @@ define(['N/https', 'N/util'], (https, util) => {
             'custpage_cwgp_quantity': 1,
             'custpage_cwgp_amount': item.cost || 0
         };
+    };
+
+    const getItemQtyOnHand = (stItem,stLocation) =>{
+        const objResponse = https.get({
+            url: `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=689&deploy=1&compid=5530036_SB1&h=2f0abb66a0cbb01e8d05&item=${stItem}&itemlocation=${stLocation}`,
+        });
+
+        const { stQtyOnHand } = JSON.parse(objResponse.body);
+
+        return stQtyOnHand;
     };
 
     const back = (stUserId, stAccessType, stRecType) =>{
