@@ -14,7 +14,8 @@
 define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget, search, util) => {
     const _CONFIG = {
         PARAMETER: {
-            PAGE: 'custparam_cwgp_page'
+            PAGE: 'custparam_cwgp_page',
+            LOCATION: 'custparam_cwgp_location'
         },
         TITLE: {
             intercompanypo: 'Intercompany P.O.',
@@ -55,6 +56,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
+                    },
+                    CREATED_FROM: {
+                        id: 'custpage_cwgp_createdfrom',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Created From'
                     },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
@@ -252,6 +258,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const {
             request,
             response,
+            stSubsidiary,
             stType,
             stAccessType,
             stUserId,
@@ -260,6 +267,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
 
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        const intLocation = request.parameters[_CONFIG.PARAMETER.LOCATION] ? request.parameters[_CONFIG.PARAMETER.LOCATION] : '';
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
@@ -282,9 +290,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             id: 'custpage_cwgp_page',
             type: serverWidget.FieldType.SELECT,
             label: 'Page',
-            container: _CONFIG.TAB[stType]
+            container: _CONFIG.TAB[stType]  
         });
         fldPage.defaultValue = intPage;
+
+        const fldLocation = form.addField({
+            id: 'custpage_cwgp_location',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Location',
+            container: _CONFIG.TAB[stType]
+        });
+        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
+        fldLocation.defaultValue = intLocation;
 
         //add sublist values
         const sbl = form.addSublist({
@@ -293,6 +310,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
+
+        log.debug('renderInventoryAdjustment intLocation',intLocation);
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
@@ -313,6 +332,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
+            intLocation,
             sbl,
             stType,
             stAccessType,
@@ -336,8 +356,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage) => {
+    const getPageData = (objSearch, fldPage, intPage, intLocation, stType) => {
+        log.debug('getPageData loc',intLocation);
+        log.debug('getPageData type',stType);
+        log.debug('getPageData intPage',intPage);
+        if(stType == 'inventoryadjustment' && intLocation){
+            objSearch.filters.push(search.createFilter({
+                name: 'location',
+                operator: 'ANYOF',
+                values: intLocation,
+            }));
+        }
         const objPagedData = objSearch.runPaged({ pageSize: 20 });
+        log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
 
         objPagedData.pageRanges.map((objPageResult) => {
             fldPage.addSelectOption({
@@ -357,13 +388,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
+            intLocation,
             sbl,
             stType,
             stAccessType,
             stUserId
         } = options;
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage);
+        log.debug('setListValues intLocation',intLocation);
+
+        const objPagedData = getPageData(objSearch, fldPage, intPage, intLocation, stType);
         const arrPagedData = objPagedData.data;
         log.debug('arrPagedData', arrPagedData);
 

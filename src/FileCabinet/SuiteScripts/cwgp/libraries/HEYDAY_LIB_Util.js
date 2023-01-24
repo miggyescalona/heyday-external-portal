@@ -29,6 +29,11 @@
                     id: 'custpage_cwgp_trandstatus',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Status'
+                },
+                CREATED_FROM: {
+                    id: 'custpage_cwgp_createdfrom',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Created From'
                 }
             }
         },
@@ -80,15 +85,21 @@
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
         let arrMapItemReceipt= [];
 
+        log.debug('mapItemReceipt')
+
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
+            const stCreatedFrom = result.getText({ name: 'createdfrom' });
             const stID = result.id;
             const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
 
+            log.debug(stCreatedFrom);
+
             arrMapItemReceipt.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
+                [_CONFIG.COLUMN.LIST.CREATED_FROM.id]: stCreatedFrom,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated
             })
         });
