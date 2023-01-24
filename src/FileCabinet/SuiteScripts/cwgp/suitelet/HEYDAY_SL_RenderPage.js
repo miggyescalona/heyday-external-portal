@@ -219,7 +219,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         <br>
                         <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
                         <br>
-                        <button type="button" id="cwgp_ia_btn" class="navbutton">Item Adjustment</button>
+                        <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                     </div>
                 </div>
 

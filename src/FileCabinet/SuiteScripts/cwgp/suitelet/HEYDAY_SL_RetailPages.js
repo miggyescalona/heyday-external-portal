@@ -206,7 +206,6 @@ define([
         log.debug('ia params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
-        log.debug('stLocation',stLocation);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
 
         switch (stPageMode) {
@@ -214,6 +213,7 @@ define([
                 listPage.renderInventoryAdjustment({
                     request,
                     response,
+                    stSubsidiary,
                     stType: 'inventoryadjustment',
                     stAccessType,
                     stUserId,
