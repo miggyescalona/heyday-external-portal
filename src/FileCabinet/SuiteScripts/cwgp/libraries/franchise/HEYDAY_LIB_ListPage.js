@@ -14,27 +14,25 @@
 define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget, search, util) => {
     const _CONFIG = {
         PARAMETER: {
-            PAGE: 'custparam_cwgp_page',
-            LOCATION: 'custparam_cwgp_location'
+            PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Intercompany P.O.',
-            itemreceipt: 'Item Receipts',
-            inventoryadjustment: 'Inventory Adjustment'
+        	franchisepo: 'Purchase Order',
+        	itemreceipt: 'Item Receipts',
         },
         TAB: {
-            intercompanypo: 'custpage_interpo_listtab_retail',
-            itemreceipt: 'custpage_ir_listtab_retail',
-            inventoryadjustment: 'custpage_ia_listtab_retail'
+        	franchisepo: 'custpage_interpo_listtab_retail',
+        	itemreceipt: 'custpage_ir_listtab_franchise',
+        	
+        	
         },
         SUBLIST: {
-            intercompanypo: 'custpage_interpo_list_retail',
-            itemreceipt: 'custpage_ir_list_retail',
-            inventoryadjustment: 'custpage_ia_list_retail'
+        	franchisepo: 'custpage_interpo_list_retail',
+        	itemreceipt: 'custpage_ir_list_retail',
         },
         COLUMN: {
             LIST: {
-                intercompanypo: {
+            	franchisepo: {
                     TRAN_NO: {
                         id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
@@ -57,22 +55,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
                     },
-                    CREATED_FROM: {
-                        id: 'custpage_cwgp_createdfrom',
+                    CUSTOMER: {
+                        id: 'custpage_cwgp_customer',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Created From'
-                    },
-                    DATE: {
-                        id: 'custpage_cwgp_trandate',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Date'
-                    }
-                },
-                inventoryadjustment: {
-                    TRAN_NO: {
-                        id: 'custpage_cwgp_tranid',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Transaction No'
+                        label: 'Customer'
                     },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
@@ -85,7 +71,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     }
 
     const render = (options) => {
-        log.debug('===LIST===','===List Intercompany PO===');
         const {
             request,
             response,
@@ -95,12 +80,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch
         } = options;
 
-
+        log.debug('request.parameters', request.parameters)
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        log.debug('intPage main', intPage);
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
+        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
         
         //add body fields
         const fldHtml = form.addField({
@@ -119,9 +105,28 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             id: 'custpage_cwgp_page',
             type: serverWidget.FieldType.SELECT,
             label: 'Page',
-            container: _CONFIG.TAB[stType]
+            //container: _CONFIG.TAB[stType]
         });
         fldPage.defaultValue = intPage;
+        
+        const fldCategory = form.addField({
+            id: 'custpage_cwgp_category',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Category',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldCategory.addSelectOption({
+            value: 0,
+            text: 'All'
+        });
+        fldCategory.addSelectOption({
+            value: 1,
+            text: 'Pending Approval'
+        });
+        fldCategory.addSelectOption({
+            value: 2,
+            text: 'Created by Franchise'
+        });
 
         //add sublist values
         const sbl = form.addSublist({
@@ -160,215 +165,127 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'intercompanypo')`
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType})`
         });
 
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
-            functionName: `back(${stUserId}, ${stAccessType}, 'intercompanypo')`
+            functionName: `back(${stUserId}, ${stAccessType}, 'franchisepo')`
         });
 
         response.writePage(form);
     };
-
-    const renderItemReceipt = (options) => {
-        log.debug('===LIST===','===List Item Receipt===');
-        const {
-            request,
-            response,
-            stType,
-            stAccessType,
-            stUserId,
-            objSearch
-        } = options;
-
-
-        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
-
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
-
-        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
-        
-        //add body fields
-        const fldHtml = form.addField({
-            id: 'custpage_cwgp_htmlcss',
-            type: serverWidget.FieldType.INLINEHTML,
-            label: 'HTMLCSS'
-        });
-        fldHtml.defaultValue = htmlCss();
-        
-        form.addSubtab({
-            id: _CONFIG.TAB[stType],
-            label: ' '
-        });
-
-        const fldPage = form.addField({
-            id: 'custpage_cwgp_page',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Page',
-            container: _CONFIG.TAB[stType]
-        });
-        fldPage.defaultValue = intPage;
-
-        //add sublist values
-        const sbl = form.addSublist({
-            id: _CONFIG.SUBLIST[stType],
-            label: ' ',
-            type: serverWidget.SublistType.LIST,
-            tab: _CONFIG.TAB[stType]
-        });
-
-        const objListCols = _CONFIG.COLUMN.LIST[stType];
-
-        const arrCols = Object.keys(objListCols);
-        log.debug('arrCols', arrCols);
-
-        arrCols.forEach((stCol) => {
-            const { id, type, label } = objListCols[stCol];
-
-            sbl.addField({
-                id,
-                type,
-                label
-            });
-        });
-
-        setListValues({
-            objSearch,
-            fldPage,
-            intPage,
-            sbl,
-            stType,
-            stAccessType,
-            stUserId
-        });
-
-        form.addButton({
-            id: 'custpage_back_button',
-            label: 'Back',
-            functionName: `back(${stUserId}, ${stAccessType}, 'itemreceipt')`
-        });
-
-        response.writePage(form);
-    };
-
-    const renderInventoryAdjustment = (options) => {
-        log.debug('===LIST===','===List Inventory Adjustment===');
-        const {
-            request,
-            response,
-            stSubsidiary,
-            stType,
-            stAccessType,
-            stUserId,
-            objSearch
-        } = options;
-
-
-        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
-        const intLocation = request.parameters[_CONFIG.PARAMETER.LOCATION] ? request.parameters[_CONFIG.PARAMETER.LOCATION] : '';
-
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
-
-        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
-        
-        //add body fields
-        const fldHtml = form.addField({
-            id: 'custpage_cwgp_htmlcss',
-            type: serverWidget.FieldType.INLINEHTML,
-            label: 'HTMLCSS'
-        });
-        fldHtml.defaultValue = htmlCss();
-        
-        form.addSubtab({
-            id: _CONFIG.TAB[stType],
-            label: ' '
-        });
-
-        const fldPage = form.addField({
-            id: 'custpage_cwgp_page',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Page',
-            container: _CONFIG.TAB[stType]  
-        });
-        fldPage.defaultValue = intPage;
-
-        const fldLocation = form.addField({
-            id: 'custpage_cwgp_location',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Location',
-            container: _CONFIG.TAB[stType]
-        });
-        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;
-
-        //add sublist values
-        const sbl = form.addSublist({
-            id: _CONFIG.SUBLIST[stType],
-            label: ' ',
-            type: serverWidget.SublistType.LIST,
-            tab: _CONFIG.TAB[stType]
-        });
-
-        log.debug('renderInventoryAdjustment intLocation',intLocation);
-
-        const objListCols = _CONFIG.COLUMN.LIST[stType];
-
-        const arrCols = Object.keys(objListCols);
-        log.debug('arrCols', arrCols);
-
-        arrCols.forEach((stCol) => {
-            const { id, type, label } = objListCols[stCol];
-
-            sbl.addField({
-                id,
-                type,
-                label
-            });
-        });
-
-        setListValues({
-            objSearch,
-            fldPage,
-            intPage,
-            intLocation,
-            sbl,
-            stType,
-            stAccessType,
-            stUserId
-        });
-
-        //add buttons
-        form.addButton({
-            id: 'custpage_createtxn_buton',
-            label: 'Create',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
-        });
     
+    const renderItemReceipt = (options) => {
+        const {
+            request,
+            response,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+        log.debug('request.parameters', request.parameters)
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        log.debug('intPage main', intPage);
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: ' '
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldPage.defaultValue = intPage;
+        
+        /*const fldCategory = form.addField({
+            id: 'custpage_cwgp_category',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Category',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldCategory.addSelectOption({
+            value: 0,
+            text: 'All'
+        });
+        fldCategory.addSelectOption({
+            value: 1,
+            text: 'Pending Approval'
+        });
+        fldCategory.addSelectOption({
+            value: 2,
+            text: 'Created by Franchise'
+        });*/
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        //add buttons
+        /*form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType})`
+        });*/
 
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
-            functionName: `back(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+            functionName: `back(${stUserId}, ${stAccessType}, 'franchisepo')`
         });
 
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage, intLocation, stType) => {
-        log.debug('getPageData loc',intLocation);
-        log.debug('getPageData type',stType);
-        log.debug('getPageData intPage',intPage);
-        if(stType == 'inventoryadjustment' && intLocation){
-            objSearch.filters.push(search.createFilter({
-                name: 'location',
-                operator: 'ANYOF',
-                values: intLocation,
-            }));
-        }
+    const getPageData = (objSearch, fldPage, intPage) => {
         const objPagedData = objSearch.runPaged({ pageSize: 20 });
-        log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
 
         objPagedData.pageRanges.map((objPageResult) => {
             fldPage.addSelectOption({
@@ -388,16 +305,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
             stUserId
         } = options;
 
-        log.debug('setListValues intLocation',intLocation);
-
-        const objPagedData = getPageData(objSearch, fldPage, intPage, intLocation, stType);
+        const objPagedData = getPageData(objSearch, fldPage, intPage);
         const arrPagedData = objPagedData.data;
         log.debug('arrPagedData', arrPagedData);
 
@@ -464,6 +378,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         div#custpage_interpo_listtab_retail_pane_hd {
             background-color: #dbc8b6 !important;
         }
+        div#custpage_ir_listtab_franchise_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
 
     </style>`;
 
@@ -472,7 +389,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
     return {
         render,
-        renderItemReceipt,
-        renderInventoryAdjustment
+        renderItemReceipt
     }
 });
+
