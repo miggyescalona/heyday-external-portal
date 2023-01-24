@@ -47,6 +47,25 @@ define([], () => {
             window.onbeforeunload = null;
             location.href = stNewURL;
         }
+
+        if (context.fieldId == 'custpage_cwgp_location') {
+            const intLocation = currentRecord.getValue({ fieldId: 'custpage_cwgp_location' });
+            console.log('location', intLocation);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_location', intLocation);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
     };
 
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
