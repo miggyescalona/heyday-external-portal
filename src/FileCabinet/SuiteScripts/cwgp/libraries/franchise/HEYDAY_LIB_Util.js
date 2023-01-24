@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, search, util, record) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -42,6 +42,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, s
             DEPLOY: 'customdeploy_cwgp_sl_retailpages'
         }
     };
+
+    const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
     
     const mapValues = (options) => {
         const {
@@ -63,12 +65,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, s
 
     const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData) => {
         let arrMapIntercompanyPO = [];
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId: objFranchiseUrl.DEPLOY_ID,
+            scriptId: objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl: true
+        });
+        
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stStatus = result.getText({ name: 'statusref' });
             const stID = result.id;
             const stTranId = result.getValue({ name: 'tranid' });
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=franchisepo`;
+            const stUrl = stBaseUrl += `&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=franchisepo`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order # ${stTranId}</a>`;
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -80,13 +89,20 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, s
     };
     
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
+        
+        let stBaseUrl = url.resolveScript({
+            deploymentId: objFranchiseUrl.DEPLOY_ID,
+            scriptId: objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl: true
+        });
+
         let arrMapIntercompanyPO = [];
         arrPagedData.forEach((result, index) => {
             const stDate = result.getValue({ name: 'custrecord_cwgp_fr_date' });
             const stCustomer = result.getText({ name: 'custrecord_cwgp_fr_customer' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=itemreceipt`;
+            const stUrl = stBaseUrl += `pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=itemreceipt`;
             const stViewLink = `<a href='${stUrl}'>Item Reciept# ${stID}</a>`;
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
