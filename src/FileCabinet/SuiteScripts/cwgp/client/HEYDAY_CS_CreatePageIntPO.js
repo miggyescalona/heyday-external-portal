@@ -29,6 +29,14 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
     const fieldChanged = (context) => {
         const { currentRecord, fieldId, sublistId } = context;
 
+        if(fieldId === 'custpage_cwgp_scanupccodes'){
+            let strScannerInput = currentRecord.getValue({fieldId})
+            currentRecord.setValue({
+                fieldId,
+                value   : ClientEPLib.processScannerInput({strScannerInput})
+            })
+        }
+
         if (sublistId === 'custpage_interpo_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
