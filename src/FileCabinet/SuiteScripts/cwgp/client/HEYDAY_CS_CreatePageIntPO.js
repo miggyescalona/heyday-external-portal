@@ -31,10 +31,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
 
         if(fieldId === 'custpage_cwgp_scanupccodes'){
             let strScannerInput = currentRecord.getValue({fieldId})
-            currentRecord.setValue({
-                fieldId,
-                value   : ClientEPLib.processScannerInput({strScannerInput})
-            })
+            if(strScannerInput){
+                currentRecord.setValue({
+                    fieldId,
+                    value               : ClientEPLib.processScannerInput({strScannerInput}),
+                    ignoreFieldChange   : true
+                })
+            }
         }
 
         if (sublistId === 'custpage_interpo_items') {
