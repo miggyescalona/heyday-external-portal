@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/serverWidget'], (serverWidget) => {
+define(['N/ui/serverWidget'], (serverWidget) => {
     const _CONFIG = {
         ENVIRONMENT: 'DEV',
 
