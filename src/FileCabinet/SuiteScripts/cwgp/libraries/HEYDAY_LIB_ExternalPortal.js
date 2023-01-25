@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget'], (serverWidget) => {
+define([], () => {
     const _CONFIG = {
         ENVIRONMENT: 'DEV',
 
@@ -93,14 +93,13 @@ define(['N/ui/serverWidget'], (serverWidget) => {
         FIELD: {
             SCAN_UPC_CODES: {
                 id: 'custpage_cwgp_scanupccodes',
-                type: serverWidget.FieldType.LONGTEXT,
+                type: 'longtext',
                 label: 'Scan UPC Codes',
                 container: 'SCAN',
-                displayType: 'inline'
             },
             MAP_UPC_CODES: {
                 id: 'custpage_cwgp_upccodemap',
-                type: serverWidget.FieldType.LONGTEXT,
+                type: 'longtext',
                 label: 'UPC Codes Map',
                 container: 'SCAN',
                 displayType: 'hidden'
