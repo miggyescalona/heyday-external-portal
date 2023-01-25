@@ -112,20 +112,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     displayType: 'inline',
                     mandatory: true
                 },
-                SCAN_UPC_CODES: {
-                    id: 'custpage_cwgp_scanupccodes',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'Scan UPC Codes',
-                    container: 'SCAN',
-                    displayType: 'inline'
-                },
-                MAP_UPC_CODES: {
-                    id: 'custpage_cwgp_upccodemap',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'UPC Codes Map',
-                    container: 'SCAN',
-                    displayType: 'hidden'
-                },
             },
             itemreceipt: {
                 HTML_CSS: {
@@ -281,10 +267,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_interpo_class_grp',
                     label: 'Classification'
                 },
-                SCAN: {
-                    id: 'custpage_interpo_scan_grp',
-                    label: 'Scanner'
-                }
             },
             itemreceipt: {
                 PRIMARY: {
