@@ -35,11 +35,6 @@
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From'
                 },
-                CREATED_FROM: {
-                    id: 'custpage_cwgp_createdfrom',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Created From'
-                }
             }
         },
         SCRIPT:{
