@@ -418,8 +418,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         },
         CLIENT_SCRIPT: '../client/HEYDAY_CS_CreatePageIntPO.js'
     }
-
-
     const render = (options) => {
         log.debug('===CREATE===','===Create Intercompany PO===');
         const {
