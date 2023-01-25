@@ -433,6 +433,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
+        //Add Scanner Field Group and Fields
+        appendScannerUiToConfig({
+            objConfig       : _CONFIG,
+            objConfProperty : 'FIELD_GROUP',
+            stType         
+        })
+
+        appendScannerUiToConfig({
+            objConfig       : _CONFIG,
+            objConfProperty : 'FIELD',
+            stType         
+        })
+
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
