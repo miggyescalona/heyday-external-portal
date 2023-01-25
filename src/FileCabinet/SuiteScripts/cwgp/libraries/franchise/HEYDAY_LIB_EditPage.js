@@ -1,9 +1,9 @@
 /**
  * Author: Patricia Naguit
- * Date: 2022-12-13
+ * Date: 2022-10-22
  *
  * Date         Modified By            Notes
- * 2022-12-13   Patricia Naguit        Initial File Creation
+ * 2022-10-22   Patricia Naguit        Initial File Creation
  */
 
 /**
@@ -11,440 +11,163 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
-    let _CONFIG = {
+define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget, search, util) => {
+    const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            franchisepo: 'Franchise - Purchase Order',
-            itemreceipt: 'Item Receipt'
+        	franchisepo: 'Purchase Order',
+        	itemreceipt: 'Item Receipts',
         },
         TAB: {
-            franchisepo: 'custpage_interpo_itemstab',
-            itemreceipt: 'custpage_itemreceipt_itemstab'
+        	franchisepo: 'custpage_interpo_listtab_retail',
+        	itemreceipt: 'custpage_ir_listtab_franchise',
+        	
+        	
         },
         SUBLIST: {
-            franchisepo: 'custpage_interpo_items',
-            itemreceipt: 'custpage_itemreceipt_items'
-        },
-        FIELD: {
-            franchisepo: {
-                HTML_CSS: {
-                    id: 'custpage_cwgp_htmlcss',
-                    type: serverWidget.FieldType.INLINEHTML,
-                    label: 'Html Css',
-                },
-                PAGE_MODE: {
-                    id: 'custpage_cwgp_pagemode',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'pageMode',
-                    displayType: 'hidden'
-                },
-                USER_ID: {
-                    id: 'custpage_cwgp_userid',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'userId',
-                    displayType: 'hidden'
-                },
-                ACCESS_TYPE: {
-                    id: 'custpage_cwgp_accesstype',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'accessType',
-                    displayType: 'hidden'
-                },
-                PO_ID: {
-                    id: 'custpage_cwgp_poid',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'poId',
-                    displayType: 'hidden'
-                },
-                REC_TYPE: {
-                    id: 'custpage_cwgp_rectype',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'recType',
-                    displayType: 'hidden'
-                },
-                ORDERNO: {
-                    id: 'custpage_cwgp_orderno',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Order #',
-                    container: 'PRIMARY',
-                    displayType: 'inline'
-                },
-                CUSTOMER: {
-                    id: 'custpage_cwgp_customer',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Customer',
-                    container: 'PRIMARY',
-                    source: 'customer',
-                    mandatory: true,
-                    displayType: 'inline'
-                },
-                DATE: {
-                    id: 'custpage_cwgp_date',
-                    type: serverWidget.FieldType.DATE,
-                    label: 'Date',
-                    container: 'PRIMARY',
-                    mandatory: true,
-                    defaultValue: new Date()
-                },
-                MEMO: {
-                    id: 'custpage_cwgp_memomain',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Memo',
-                    container: 'PRIMARY',
-                },
-                SUBSIDIARY: {
-                    id: 'custpage_cwgp_subsidiary',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Subsidiary',
-                    source: 'subsidiary',
-                    container: 'CLASS',
-                    displayType: 'inline'
-                },
-                LOCATION: {
-                    id: 'custpage_cwgp_location',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Location',
-                    container: 'CLASS',
-                    source: 'location',
-                    displayType: 'inline',
-                    mandatory: true
-                },
-                SCAN_UPC_CODES: {
-                    id: 'custpage_cwgp_scanupccodes',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'Scan UPC Codes',
-                    container: 'SCAN',
-                    displayType: 'inline'
-                },
-                MAP_UPC_CODES: {
-                    id: 'custpage_cwgp_upccodemap',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'UPC Codes Map',
-                    container: 'SCAN',
-                    displayType: 'hidden'
-                },
-            },
-            itemreceipt: {
-                HTML_CSS: {
-                    id: 'custpage_cwgp_htmlcss',
-                    type: serverWidget.FieldType.INLINEHTML,
-                    label: 'Html Css',
-                },
-                PAGE_MODE: {
-                    id: 'custpage_cwgp_pagemode',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'pageMode',
-                    displayType: 'hidden'
-                },
-                USER_ID: {
-                    id: 'custpage_cwgp_userid',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'pageMode',
-                    displayType: 'hidden'
-                },
-                ACCESS_TYPE: {
-                    id: 'custpage_cwgp_accesstype',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'accessType',
-                    displayType: 'hidden'
-                },
-                REC_ID: {
-                    id: 'custpage_cwgp_recid',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'recId',
-                    //displayType: 'hidden'
-                },
-                PO_ID: {
-                    id: 'custpage_cwgp_poid',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'poId',
-                    //displayType: 'hidden'
-                },
-                REC_TYPE: {
-                    id: 'custpage_cwgp_rectype',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'recType',
-                    displayType: 'hidden'
-                },
-                CUSTOMER: {
-                    id: 'custpage_cwgp_customer',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Customer',
-                    container: 'PRIMARY',
-                    source: 'customer',
-                    mandatory: true,
-                    displayType: 'inline'
-                },
-                DATE: {
-                    id: 'custpage_cwgp_date',
-                    type: serverWidget.FieldType.DATE,
-                    label: 'Date',
-                    container: 'PRIMARY',
-                    mandatory: true
-                },
-                MEMO: {
-                    id: 'custpage_cwgp_memomain',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Memo',
-                    container: 'PRIMARY',
-                    displayType: 'inline'
-                },
-                SUBSIDIARY: {
-                    id: 'custpage_cwgp_subsidiary',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Subsidiary',
-                    source: 'subsidiary',
-                    container: 'CLASS',
-                    displayType: 'inline'
-                },
-            }
+        	franchisepo: 'custpage_interpo_list_retail',
+        	itemreceipt: 'custpage_ir_list_retail',
         },
         COLUMN: {
-            ITEMS: {
-            	franchisepo:{
-                    ITEM: {
-                        id: 'custpage_cwgp_item',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Items',
-                        //displayType: 'inline'
-                    },
-                    DESCRIPTION: {
-                        id: 'custpage_cwgp_description',
+            LIST: {
+            	franchisepo: {
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Description'
+                        label: 'Transaction No'
                     },
-                    QUANTITY: {
-                        id: 'custpage_cwgp_quantity',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity'
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
                     },
-                    RATE: {
-                        id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate',
-                        //displayType: 'inline'
-                    },
-                    AMOUNT: {
-                        id: 'custpage_cwgp_amount',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Amount',
-                        //displayType: 'inline'
+                    STATUS: {
+                        id: 'custpage_cwgp_trandstatus',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Status'
                     }
-                },    
+                },
                 itemreceipt: {
-                    ITEM: {
-                        id: 'custpage_cwgp_item',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Items',
-                        displayType: 'inline',
-                        source: 'item',
-                    },
-                    DESCRIPTION: {
-                        id: 'custpage_cwgp_description',
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Description',
+                        label: 'Transaction No'
                     },
-                    QUANTITY: {
-                        id: 'custpage_cwgp_quantity',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity',
-                        displayType: 'ENTRY'
+                    CUSTOMER: {
+                        id: 'custpage_cwgp_customer',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Customer'
                     },
-                    LINE: {
-                        id: 'custpage_cwgp_line',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Line'
-                    },
-                    RATE: {
-                        id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
-                    },
-                    ID: {
-                        id: 'custpage_cwgp_id',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'id'
-                    },
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
+                    }
                 }
             }
-        },
-        FIELD_GROUP: {
-            franchisepo: {
-                PRIMARY: {
-                    id: 'custpage_interpo_pi_grp',
-                    label: 'Primary Information'
-                },
-                CLASS: {
-                    id: 'custpage_interpo_class_grp',
-                    label: 'Classification'
-                },
-                SCAN: {
-                    id: 'custpage_interpo_scan_grp',
-                    label: 'Scanner'
-                }
-            },
-            itemreceipt: {
-                PRIMARY: {
-                    id: 'custpage_itemreceipt_pi_grp',
-                    label: 'Primary Information'
-                },
-                CLASS: {
-                    id: 'custpage_itemreceipt_class_grp',
-                    label: 'Classification'
-                }
-            }
-        },
-        CLIENT_SCRIPT: {
-            franchisepo: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
-            itemreceipt: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
         }
     }
 
     const render = (options) => {
         const {
+            request,
             response,
             stType,
             stAccessType,
-            stSubsidiary,
-            stPageMode,
             stUserId,
-            stPoId
+            objSearch
         } = options;
+
+        log.debug('request.parameters', request.parameters)
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        log.debug('intPage main', intPage);
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
         
-        let objPO = utilLib.mapPOValues(stPoId);
-        objPO.body.custpage_cwgp_rectype = stType;
-        objPO.body.custpage_cwgp_pagemode = stPageMode;
-        objPO.body.custpage_cwgp_userid = stUserId;
-        objPO.body.custpage_cwgp_accesstype = stAccessType;
-        objPO.body.custpage_cwgp_poid = stPoId;
-        objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: ' '
+        });
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + objPO.body.custpage_cwgp_orderno });
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldPage.defaultValue = intPage;
+        
+        const fldCategory = form.addField({
+            id: 'custpage_cwgp_category',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Category',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldCategory.addSelectOption({
+            value: 0,
+            text: 'All'
+        });
+        fldCategory.addSelectOption({
+            value: 1,
+            text: 'Pending Approval'
+        });
+        fldCategory.addSelectOption({
+            value: 2,
+            text: 'Created by Franchise'
+        });
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
 
-        //add field group
-        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
 
-        const arrFldGrp = Object.keys(objFldGrp);
-        log.debug('arrFldGrp', arrFldGrp);
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
 
-        arrFldGrp.forEach((stCol) => {
-            const { id, label } = objFldGrp[stCol];
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
 
-            form.addFieldGroup({
+            sbl.addField({
                 id,
+                type,
                 label
             });
         });
 
-        //get inventory items and map UPC codes for scanning
-        let objItemResultSet = utilLib.getInvItemsBySubsidiary(stSubsidiary);
-
-        let objUpcMap = {};
-
-        objItemResultSet.each(function (result) {
-            let strUpcCode = result.getValue({ name: 'custitemheyday_upccode' });
-            if(strUpcCode){
-                objUpcMap[strUpcCode] = result.id;
-            }
-            
-            return true;
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
         });
 
-        log.debug('objUpcMap', objUpcMap)
-        
-        //log.debug('objPO', objPO);
-
-        //render body fields
-        const objBodyFields = _CONFIG.FIELD[stType];
-
-        const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
-
-        arrFlds.forEach((stCol) => {
-            const {
-                id,
-                type,
-                label,
-                source,
-                container,
-                mandatory,
-                defaultValue,
-                displayType
-            } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
-
-            let fld = form.addField({
-                id,
-                type,
-                label,
-                source,
-                container: _CONFIG.FIELD_GROUP[stType][container]?.id
-            });
-
-            if (mandatory) {
-                fld.isMandatory = true;
-            }
-
-            if (displayType) {
-                fld.updateDisplayType({ displayType });
-            }
-
-            if (objPO.body[fld.id] != 'undefined') {
-                fld.defaultValue = objPO.body[fld.id]
-            }
+        //add buttons
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType})`
         });
 
-        //render sublist
-        form.addSubtab({
-            id: _CONFIG.TAB[stType],
-            label: 'Items'
-        });
-
-        const sbl = form.addSublist({
-            id: _CONFIG.SUBLIST[stType],
-            label: ' ',
-            type: serverWidget.SublistType.INLINEEDITOR,
-            tab: _CONFIG.TAB[stType]
-        });
-
-        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
-
-        const arrCols = Object.keys(objItemCols);
-        log.debug('arrCols', arrCols);
-
-        arrCols.forEach((stCol) => {
-            const { id, type, label, source, displayType } = objItemCols[stCol];
-
-            let col = sbl.addField({
-                id,
-                type,
-                label,
-                source,
-                displayType
-            });
-
-            if (displayType) {
-                col.updateDisplayType({ displayType });
-            }
-
-            if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary({
-                    fld: col, 
-                    objResultSet: objItemResultSet
-                });
-                //utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
-            }
-        });
-
-        utilLib.setPOSublist(sbl, objPO);
-
-        form.addSubmitButton({ label: 'Save' });
-        
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
@@ -455,94 +178,64 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     };
     
     const renderItemReceipt = (options) => {
-        log.debug('===EDIT===','===Edit Item Receipt===');
         const {
+            request,
             response,
             stType,
-            stPageMode,
-            stUserId,
-            stPoId,
             stAccessType,
-            stTranId
+            stUserId,
+            objSearch
         } = options;
-        
-        let objPO = utilLib.mapIRValuesViewEdit(stPoId);
-        
-        objPO.body.custpage_cwgp_recid = stPoId
-        objPO.body.custpage_cwgp_rectype = stType;
-        objPO.body.custpage_cwgp_pagemode = stPageMode;
-        objPO.body.custpage_cwgp_userid = stUserId;
-        objPO.body.custpage_cwgp_accesstype = stAccessType
-        objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        log.debug('objPO', objPO);
-        
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
-        
 
-        //add field group
-        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+        log.debug('request.parameters', request.parameters)
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        log.debug('intPage main', intPage);
 
-        const arrFldGrp = Object.keys(objFldGrp);
-        log.debug('arrFldGrp', arrFldGrp);
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        arrFldGrp.forEach((stCol) => {
-            const { id, label } = objFldGrp[stCol];
-
-            form.addFieldGroup({
-                id,
-                label
-            });
+        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
         });
+        fldHtml.defaultValue = htmlCss();
         
-        
-        
-
-        //render body fields
-        const objBodyFields = _CONFIG.FIELD[stType];
-
-        const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
-        
-
-        arrFlds.forEach((stCol) => {
-            const {
-                id,
-                type,
-                label,
-                source,
-                container,
-                mandatory,
-                displayType
-            } = objBodyFields[stCol];
-
-            let fld = form.addField({
-                id,
-                type,
-                label,
-                source,
-                container: _CONFIG.FIELD_GROUP[stType][container]?.id
-            });
-
-            if (mandatory) {
-                fld.isMandatory = true;
-            }
-
-            if (displayType) {
-                fld.updateDisplayType({ displayType });
-            }
-
-            if (objPO.body[fld.id] != 'undefined') {
-                fld.defaultValue = objPO.body[fld.id]
-            }
-        });
-
-        //render sublist
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: 'Items'
+            label: ' '
         });
 
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldPage.defaultValue = intPage;
+        
+        /*const fldCategory = form.addField({
+            id: 'custpage_cwgp_category',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Category',
+            //container: _CONFIG.TAB[stType]
+        });
+        fldCategory.addSelectOption({
+            value: 0,
+            text: 'All'
+        });
+        fldCategory.addSelectOption({
+            value: 1,
+            text: 'Pending Approval'
+        });
+        fldCategory.addSelectOption({
+            value: 2,
+            text: 'Created by Franchise'
+        });*/
+
+        //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
             label: ' ',
@@ -550,39 +243,100 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             tab: _CONFIG.TAB[stType]
         });
 
-        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
 
-        const arrCols = Object.keys(objItemCols);
+        const arrCols = Object.keys(objListCols);
         log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
-            const { id, type, label, source, displayType } = objItemCols[stCol];
+            const { id, type, label } = objListCols[stCol];
 
-            let col = sbl.addField({
+            sbl.addField({
                 id,
                 type,
-                label,
-                source,
-                displayType
+                label
             });
-
-            if (displayType) {
-                col.updateDisplayType({ displayType });
-            }
         });
 
-        utilLib.setSublistValues(sbl, objPO);
-        
-        
-        form.addSubmitButton({ label: 'Save' });
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        //add buttons
+        /*form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType})`
+        });*/
+
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
-            functionName: `back(${stUserId}, ${stAccessType}, 'itemreceipt')`
+            functionName: `back(${stUserId}, ${stAccessType}, 'franchisepo')`
         });
 
-        
         response.writePage(form);
+    };
+
+    const getPageData = (objSearch, fldPage, intPage) => {
+        const objPagedData = objSearch.runPaged({ pageSize: 20 });
+
+        objPagedData.pageRanges.map((objPageResult) => {
+            fldPage.addSelectOption({
+                //value: objPageResult.index + 1,
+                value: objPageResult.index,
+                text: `${objPageResult.index + 1} of ${objPagedData.pageRanges.length}`
+            });
+        });
+
+        const objPage = objPagedData.fetch({ index: intPage });
+
+        return objPage;
+    };
+
+    const setListValues = (options) => {
+        const {
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        } = options;
+        
+        if(objSearch.runPaged().count >0){
+        	const objPagedData = getPageData(objSearch, fldPage, intPage);
+            log.debug('objPagedData', objPagedData);
+            const arrPagedData = objPagedData.data;
+            log.debug('arrPagedData', arrPagedData);
+
+            const arrListValues = util.mapValues({
+                stType, 
+                stAccessType, 
+                stUserId,
+                arrPagedData
+            });
+            log.debug('arrListValues', arrListValues);
+
+            arrListValues.forEach((value, i) => {
+                const arrListValue = Object.keys(value);
+
+                arrListValue.forEach((fieldId) => {
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value[fieldId] || ' '
+                    });
+                });
+            });
+        }
 
         
     };
@@ -595,6 +349,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
     
         body {
             font-family: 'Roboto', sans-serif !important;
+            filter: blur(100px);
+            pointer-events: none;
         }
     
         div#div__body {
@@ -612,64 +368,30 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             font-weight: 200 !important;
         }
     
-        input#submitter, input#secondarysubmitter, input#custpage_interpo_items_addedit {
+        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton {
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;
         }
-    
-        input#custpage_back_button, 
-        input#secondarycustpage_back_button, 
-        input#custpage_interpo_items_clear, 
-        input#custpage_interpo_items_remove {
+        
+        input#custpage_back_button, input#secondarycustpage_back_button {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;
         }
 
-        div#custpage_interpo_itemstab_pane_hd {
+        div#custpage_interpo_listtab_retail_pane_hd {
             background-color: #dbc8b6 !important;
         }
-        
-        div#custpage_itemreceipt_itemstab_pane_hd {
+        div#custpage_ir_listtab_franchise_pane_hd {
             background-color: #dbc8b6 !important;
-        }
-
-        td.fgroup_title {
-            padding: 4px;
-            background: #f8f2ed;
-        }
-
-        input#inpt_custpage_cwgp_vendor1, 
-        input#custpage_cwgp_date, 
-        input#custpage_cwgp_memomain, 
-        input#inpt_custpage_cwgp_location2, 
-        input#inpt_custpage_cwgp_item3,
-        input#inpt_custpage_cwgp_page1 {
-            font-family: 'Roboto', sans-serif !important;
-            font-size: 14px !important;
-        }
-
-        a.dottedlink {
-            font-size: 14px !important;
-            pointer-events: none;
-            cursor: default;
-            text-decoration: none;
-        }
-
-        a.smallgraytextnolink {
-            font-size: 14px !important;
-        }
-
-        div.fgroup_title {
-            font-size: 14px !important;
         }
 
     </style>`;
 
         return stHtmlCss;
     };
-    
+
     return {
         render,
         renderItemReceipt
