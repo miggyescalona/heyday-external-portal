@@ -52,11 +52,11 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     //Used in button functionName; using multiple parameters
     const toCreateTransaction = (stUserId, stAccessType) => {
         
-        const objCreateIntPOUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
         
         let stCreateIntPOUrl = url.resolveScript({
-            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
-            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
             returnExternalUrl   : true,
             params: {
                 pageMode    : 'create',

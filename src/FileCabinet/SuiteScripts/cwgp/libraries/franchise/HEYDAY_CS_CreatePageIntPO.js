@@ -71,7 +71,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY
 
     const getItemDetails = (stItem) => {
 
-        const objCreateIntPOUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
         
         let stCreateIntPOBaseUrl = url.resolveScript({
             deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
