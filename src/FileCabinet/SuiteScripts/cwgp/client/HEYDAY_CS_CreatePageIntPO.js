@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', '../libraries/HEYDAY_LIB_ClientExternalPortal'], (https, util, url, EPLib, ClientEPLib) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal'], (https, util, url, ClientEPLib) => {
      /**
      * Function to be executed after page is initialized.
      *
@@ -28,6 +28,17 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
      */
     const fieldChanged = (context) => {
         const { currentRecord, fieldId, sublistId } = context;
+
+        if(fieldId === 'custpage_cwgp_scanupccodes'){
+            let strScannerInput = currentRecord.getValue({fieldId})
+            if(strScannerInput){
+                currentRecord.setValue({
+                    fieldId,
+                    value               : ClientEPLib.processScannerInput({strScannerInput}),
+                    ignoreFieldChange   : true
+                })
+            }
+        }
 
         if (sublistId === 'custpage_interpo_items') {
             //default item details
@@ -141,7 +152,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
 
     const getItemDetails = (stItem) => {
 
-        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         let stCreateIntPOBaseUrl = url.resolveScript({
             deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
@@ -167,7 +178,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
     };
 
     const getItemQtyOnHand = (stItem,stLocation) =>{
-        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         
         let stCreateIntPOBaseUrl = url.resolveScript({
@@ -191,7 +202,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
 
     const back = (stUserId, stAccessType, stRecType) =>{
    
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         let stRetailUrl = url.resolveScript({
             deploymentId        : objRetailUrl.DEPLOY_ID,

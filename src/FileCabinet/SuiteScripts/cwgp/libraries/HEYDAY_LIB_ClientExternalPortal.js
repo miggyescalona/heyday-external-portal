@@ -1,4 +1,5 @@
 /**
+ * HEYDAY_LIB_ClientExternalPortal.js
  * Author: Louis Dumlao
  * Date: 2023-01-19
  *
@@ -13,7 +14,84 @@
 
 define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, EPLib) => {
 
-    //
+    const _CONFIG = {
+        ENVIRONMENT: 'DEV',
+
+        AUTH_PAGE: {
+            DEV: {
+                SCRIPT_ID: 701,
+                DEPLOY_ID: 1
+            },
+            SB: {
+                SCRIPT_ID: 683,
+                DEPLOY_ID: 1
+            },
+            PROD: {
+                SCRIPT_ID: 9999,
+                DEPLOY_ID: 1
+            }
+        },
+        RENDER_PAGE: {
+            DEV: {
+                SCRIPT_ID: 706,
+                DEPLOY_ID: 1
+            },
+            SB: {
+                SCRIPT_ID: 682,
+                DEPLOY_ID: 1
+            },
+            PROD: {
+                SCRIPT_ID: 9999,
+                DEPLOY_ID: 1
+            }
+        },
+        FRANCHISE_PAGE: {
+            SB: {
+                SCRIPT_ID: 690,
+                DEPLOY_ID: 1
+            },
+            DEV: {
+                SCRIPT_ID: 703,
+                DEPLOY_ID: 1
+            },
+            PROD: {
+                SCRIPT_ID: 9999,
+                DEPLOY_ID: 1
+            }
+        },
+        RETAIL_PAGE: {
+            DEV: {
+                SCRIPT_ID: 705,
+                DEPLOY_ID: 1
+            },
+            SB: {
+                SCRIPT_ID: 686,
+                DEPLOY_ID: 1
+            },
+            PROD: {
+                SCRIPT_ID: 9999,
+                DEPLOY_ID: 1
+            }
+        },
+        CREATE_INTPO_PAGE: {
+            DEV: {
+                SCRIPT_ID: 702,
+                DEPLOY_ID: 1
+            },
+            SB: {
+                SCRIPT_ID: 689,
+                DEPLOY_ID: 1
+            },
+            PROD: {
+                SCRIPT_ID: 9999,
+                DEPLOY_ID: 1
+            }
+        }
+
+        
+    };    
+    
+    //Calls the authentication suitelet
     const getAuthenticationScript = () => {
 
         const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
@@ -100,13 +178,14 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
         });
     };
 
+
+    //BEGIN SCANNER FUNCTIONS 
     const processScannerInput = (options) => {
         const {
             strScannerInput
         } = options;
         let arrItemUpcCodes = strScannerInput.split(' ');
         let arrItemLines = [];
-        let intLineCount = 0;
         for(var ii = 0; ii < arrItemUpcCodes.length; ii++){ 
             let intItemUpcCode = arrItemUpcCodes[ii];
             
@@ -134,62 +213,84 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
             //     objItemLines[intItemUpcCode]?.qty++;
             // }
         }
+        console.log(arrItemLines)
 
         return arrItemLines;
     }
 
     const addScannedItemsToLines = (options) => {
-        const {
-            strUpcMap,
-            strScannerInput,
-            strPageType
-        } = options
-        let objUpcToItemIdMap = JSON.parse(strUpcMap);
-        let arrItemLines = processScannerInput({strScannerInput})
+        try{
+            const {
+                strUpcMap,
+                strScannerInput,
+                strPageType
+            } = options;
 
-        let arrFailedIndices = [];
+            let strSublistId = ''
+            let strFailedCodes = ''
 
-        for(var ii = 0; ii < arrItemLines.length; ii++){
-            
-            let objCurrItemLine = arrItemLines[ii]
-            //{upc_code: 12345, qty: 5}
+            switch(strPageType){
+                case 'intercompanypo'   :   strSublistId = 'custpage_interpo_itemstab'
+                                            break;
+                case 'itemreceipt'      :   strSublistId = 'custpage_itemreceipt_itemstab'
+                                            break;
+            }
 
-            try{
-                currentRecord.selectNewLine({
-                    sublistId   : 'custpage_interpo_items',
-                })
-                currentRecord.setCurrentSublistValue({
-                    sublistId   : 'custpage_interpo_items',
-                    fieldId     : 'item',
-                    value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                });
+            let objUpcToItemIdMap = JSON.parse(strUpcMap);
+            let arrItemLines = processScannerInput({strScannerInput})
+
+            let arrFailedIndices = [];
+
+            for(var ii = 0; ii < arrItemLines.length; ii++){
                 
-                currentRecord.setCurrentSublistValue({
-                    sublistId   : 'custpage_interpo_items',
-                    fieldId     : 'quantity',
-                    value       : objCurrItemLine.qty
-                });
-                currentRecord.commitLine({
-                    sublistId   : 'custpage_interpo_items'
+                let objCurrItemLine = arrItemLines[ii]
+                //{upc_code: 12345, qty: 5}
+
+                try{
+
+                    objUpcToItemIdMap[objCurrItemLine.upc_code]
+
+                    currentRecord.selectNewLine({
+                        sublistId   : strSublistId,
+                    })
+                    currentRecord.setCurrentSublistValue({
+                        sublistId   : strSublistId,
+                        fieldId     : 'custpage_cwgp_item',
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    });
+                    
+                    currentRecord.setCurrentSublistValue({
+                        sublistId   : strSublistId,
+                        fieldId     : 'custpage_cwgp_quantity',
+                        value       : objCurrItemLine.qty
+                    });
+                    currentRecord.commitLine({
+                        sublistId   : strSublistId
+                    })
+
+                }
+                catch(e){
+                    arrFailedIndices.push(ii)
+                }
+
+            }
+
+            //Get array of lines that failed
+            let arrRemainingLines = arrItemLines.filter((element, index) => arrFailedIndices.includes(index))
+
+            if(arrRemainingLines.length > 0){
+                strFailedCodes = generateFailedScannerString({arrRemainingLines})
+                
+                currentRecord.setFieldValue({
+                    id      : 'custpage_cwgp_scanupccodes',
+                    value   : strFailedCodes
                 })
-
             }
-            catch(e){
-                arrFailedIndices.push[ii]
-            }
-
+            return strFailedCodes;
         }
-
-        //Get array of lines that failed
-        let arrRemainingLines = arrItemLines.filter((element, index) => arrFailedIndices.includes(index))
-
-        if(arrRemainingLines.length > 0){
-            var strFailedCodes = generateFailedScannerString({arrRemainingLines})
-            
-            currentRecord.setFieldValue({
-                id      : 'custpage_cwgp_scanupccodes',
-                value   : strFailedCodes
-            })
+        catch(e){
+            log.error(addScannedItemsToLines, e)
+            return null;
         }
     }
 
@@ -200,22 +301,31 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
         
         let strFailedCodes = '';
 
-        for(var ii = 0 ; ii < arrRemainingLines.length; ii++){
-            let objCurrLine = arrRemainingLines[ii]
-            for(var jj = 0; jj < objCurrLine.qty; jj++){
-                strFailedCodes += objCurrLine.upc_code
-                if(jj < objCurrLine.qty - 1){
+        try{
+            
+            for(var ii = 0 ; ii < arrRemainingLines.length; ii++){
+                let objCurrLine = arrRemainingLines[ii]
+                for(var jj = 0; jj < objCurrLine.qty; jj++){
+                    strFailedCodes += objCurrLine.upc_code
+                    if(jj < objCurrLine.qty - 1){
+                        strFailedCodes += ' '
+                    }
+                }
+                if(ii < arrRemainingLines.length - 1){
                     strFailedCodes += ' '
                 }
             }
-            if(ii < arrRemainingLines.length - 1){
-                strFailedCodes += ' '
-            }
         }
-        return 
+        catch(e){
+            log.error('generateFailedScannerString - Error', e)
+        }
+        return strFailedCodes;
     }
 
+    //END SCANNER FUNCTIONS
+
     return {
+        _CONFIG,
         getAuthenticationScript,
         processScannerInput,
         addScannedItemsToLines,
