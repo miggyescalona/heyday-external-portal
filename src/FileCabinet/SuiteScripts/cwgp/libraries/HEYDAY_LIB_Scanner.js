@@ -11,95 +11,32 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, EPLib) => {
+define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ClientExternalPortal', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, ClientEPLib, EPLib) => {
 
-    
-    //Calls the authentication suitelet
-    const getAuthenticationScript = () => {
-
-        const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
-        
-        let stAuthBaseUrl = url.resolveScript({
-            deploymentId        : objAuthUrl.DEPLOY_ID,
-            scriptId            : objAuthUrl.SCRIPT_ID,
-            returnExternalUrl   : true
-        });
-
-        const validateToken = async (token) => {
-            const result = await fetch(stAuthBaseUrl, {
-                method: 'POST',
-                body: JSON.stringify({
-                    token: token,
-                    requestType: 'validateToken'
-                })
-            });
-
-            const objData = await result.json();
-
-            if (objData.message != 'success') {
-                return false;
+    let _CONFIG = {
+        FIELD: {
+            SCAN_UPC_CODES: {
+                id: 'custpage_cwgp_scanupccodes',
+                type: serverWidget.FieldType.LONGTEXT,
+                label: 'Scan UPC Codes',
+                container: 'SCAN',
+                displayType: 'inline'
+            },
+            MAP_UPC_CODES: {
+                id: 'custpage_cwgp_upccodemap',
+                type: serverWidget.FieldType.LONGTEXT,
+                label: 'UPC Codes Map',
+                container: 'SCAN',
+                displayType: 'hidden'
+            },
+        },
+        FIELD_GROUP: {
+            SCAN: {
+                id: 'custpage_interpo_scan_grp',
+                label: 'Scanner'
             }
-
-            return true;
-        };
-
-        const isLoggedIn = async () => {
-            const stToken = window.localStorage.getItem('token');
-
-            if (!stToken) { return false; }
-
-            const isValidToken = await validateToken(stToken);
-
-            if (isValidToken) {
-                window.localStorage.setItem('token', stToken);
-            }
-
-            return isValidToken;
-        };
-
-        isLoggedIn().then((result) => {
-            // If no token or not successful in validation, redirect to login page
-            if (!result) {
-                window.localStorage.removeItem('token');
-                window.location = stRenderBaseURL;
-
-                return;
-            }
-
-            const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
-
-            let stRenderBaseURL = url.resolveScript({
-                deploymentId        : objRenderUrl.DEPLOY_ID,
-                scriptId            : objRenderUrl.SCRIPT_ID,
-                returnExternalUrl   : true
-            });
-
-            const stToken = window.localStorage.getItem('token');
-       
-            if (stToken) {
-                const stDecodeToken = atob(stToken.split('.')[1]);
-                const { accessType } = JSON.parse(stDecodeToken);
-
-                const stQuery = window.location.search;
-                const objParams = new URLSearchParams(stQuery);
-                const stAccessTypeURL = objParams.get('accesstype');
-                console.log('stAccessTypeURL', stAccessTypeURL);
-
-                const bIsAccessTypeMismatched = (stAccessTypeURL != accessType);
-
-                if (bIsAccessTypeMismatched) {
-                    window.localStorage.removeItem('token');
-                    window.location = stRenderBaseURL;
-
-                    return;
-                }
-            }
-
-            const stBody = document.querySelector('body');
-            stBody.style.filter = 'none';
-            stBody.style.pointerEvents = 'auto';
-        });
-    };
+        },
+    }
 
     const processScannerInput = (options) => {
         const {
@@ -217,7 +154,6 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
     }
 
     return {
-        getAuthenticationScript,
         processScannerInput,
         addScannedItemsToLines,
         generateFailedScannerString,
