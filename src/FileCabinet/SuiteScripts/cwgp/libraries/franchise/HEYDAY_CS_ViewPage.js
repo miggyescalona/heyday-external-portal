@@ -19,6 +19,8 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
 
     const toEdiTransaction = (stUserId, stPoId, stAccessType, stType) => {
 
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
         let stEditFranchiseUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,
             scriptId            : objFranchiseUrl.SCRIPT_ID,
@@ -37,6 +39,8 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     
     const approveTransaction = (stUserId, stPoId, stAccessType, stType) => {
         if(stType == 'franchisepo'){
+
+            const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
 
             let stApproveFranchisePOUrl = url.resolveScript({
                 deploymentId        : objFranchiseUrl.DEPLOY_ID,
@@ -58,6 +62,8 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     const receiveTransaction = (stUserId, stPoId, stAccessType, stType) => {
         if(stType == 'itemreceipt'){
 
+            const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
             let stReceiveIRUrl = url.resolveScript({
                 deploymentId        : objFranchiseUrl.DEPLOY_ID,
                 scriptId            : objFranchiseUrl.SCRIPT_ID,
@@ -76,6 +82,9 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     };
 
     const back = (stUserId, stAccessType, stType) => {
+
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
         let stFranchiseUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,
             scriptId            : objFranchiseUrl.SCRIPT_ID,

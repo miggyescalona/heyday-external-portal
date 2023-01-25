@@ -42,8 +42,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
             DEPLOY: 'customdeploy_cwgp_sl_retailpages'
         }
     };
-
-    const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
     
     const mapValues = (options) => {
         const {
@@ -66,10 +64,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
     const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData) => {
         let arrMapIntercompanyPO = [];
 
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
         let stBaseUrl = url.resolveScript({
-            deploymentId: objFranchiseUrl.DEPLOY_ID,
-            scriptId: objFranchiseUrl.SCRIPT_ID,
-            returnExternalUrl: true
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true
         });
         
         arrPagedData.forEach((result, index) => {
@@ -77,7 +77,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
             const stStatus = result.getText({ name: 'statusref' });
             const stID = result.id;
             const stTranId = result.getValue({ name: 'tranid' });
-            const stUrl = stBaseUrl += `&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=franchisepo`;
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=franchisepo`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order # ${stTranId}</a>`;
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -90,10 +90,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
     
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
         
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
         let stBaseUrl = url.resolveScript({
-            deploymentId: objFranchiseUrl.DEPLOY_ID,
-            scriptId: objFranchiseUrl.SCRIPT_ID,
-            returnExternalUrl: true
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true
         });
 
         let arrMapIntercompanyPO = [];
@@ -102,8 +104,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
             const stCustomer = result.getText({ name: 'custrecord_cwgp_fr_customer' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = stBaseUrl += `pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=itemreceipt`;
-            const stViewLink = `<a href='${stUrl}'>Item Reciept# ${stID}</a>`;
+            const stUrl =  `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=itemreceipt`;
+            const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stID}</a>`;
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDate,

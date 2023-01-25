@@ -98,7 +98,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY
 
     const back = (stUserId, stAccessType, stRecType) =>{
         
-        const objFranchiseUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
         
         let stFranchiseUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,

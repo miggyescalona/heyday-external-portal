@@ -71,14 +71,17 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     };
 
     const back = (stUserId, stAccessType, stType) => {
+
+        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
         let stRenderUrl = url.resolveScript({
-            deploymentId        : objFranchiseUrl.DEPLOY_ID,
-            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
             returnExternalUrl   : true,
             params: {
                 userId      : stUserId,
                 accesstype  : stAccessType,
-                rectype     : stRecType
+                rectype     : stType
             }
         });
 
