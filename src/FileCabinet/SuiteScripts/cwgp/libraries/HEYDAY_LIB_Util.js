@@ -34,7 +34,7 @@
                     id: 'custpage_cwgp_createdfrom',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From'
-                },
+                }
             }
         },
         SCRIPT:{
@@ -54,8 +54,7 @@
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
-            'inventoryadjustment': mapInventoryAdjustment,
-            'itemperlocation': mapItemPerLocation
+            'inventoryadjustment': mapInventoryAdjustment
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -102,8 +101,6 @@
         });
 
         let arrMapItemReceipt= [];
-
-        log.debug('mapItemReceipt')
 
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
@@ -153,37 +150,6 @@
 
         return arrMapInventoryAdjustment;
     };
-
-    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
-
-        let arrMapItemPerLocation = [];
-
-        arrPagedData.forEach((result, index) => {
-            const stItemName = result.getText({ name: 'itemid' });
-            const stLocation = result.getText({ name: 'inventorylocation' });
-            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
-            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
-            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
-
-
-            /*const stDateCreated = result.getValue({ name: 'datecreated' });
-            const stTranId = result.getValue({ name: 'tranid' });
-            const stID = result.id;
-            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
-            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;*/
-
-            arrMapItemPerLocation.push({
-                [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
-                [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
-                [_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
-                [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
-                [_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted,
-            })
-        });
-
-        return arrMapItemPerLocation;
-    };
-
 
 
     
@@ -733,3 +699,4 @@
         setSublistValues
     }
 });
+
