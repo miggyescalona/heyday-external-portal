@@ -433,17 +433,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        //Add Scanner Field Group and Fields
-        EPLib.appendScannerUiToConfig({
-            objConfig       : _CONFIG,
-            objConfProperty : 'FIELD_GROUP',
-            stType         
-        })
-
-        EPLib.appendScannerUiToConfig({
-            objConfig       : _CONFIG,
-            objConfProperty : 'FIELD',
-            stType         
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stSubsidiary,
+            _CONFIG
         })
 
         //add field group
@@ -541,7 +537,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             });
 
             if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
             }
 
             if (displayType) {
@@ -714,6 +713,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stSubsidiary,
+            _CONFIG
+        })
+
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -821,7 +828,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             });
 
             if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
             }
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
