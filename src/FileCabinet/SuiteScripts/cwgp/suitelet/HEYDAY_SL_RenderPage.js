@@ -287,7 +287,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = ${stRetailBaseUrl}&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
                 </script>
