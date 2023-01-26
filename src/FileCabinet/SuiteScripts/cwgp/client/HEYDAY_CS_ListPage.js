@@ -11,14 +11,14 @@
  * @NScriptType ClientScript
  */
 
-define([], () => {
+define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) => {
     /**
      * Function to be executed after page is initialized.
      *
      * @param {Object} context
      */
     const pageInit = (context) => {
-        getAuthenticationScript();
+        ClientEPLib.getAuthenticationScript();
     };
 
     /**
@@ -47,18 +47,72 @@ define([], () => {
             window.onbeforeunload = null;
             location.href = stNewURL;
         }
+
+        if (context.fieldId == 'custpage_cwgp_location') {
+            const intLocation = currentRecord.getValue({ fieldId: 'custpage_cwgp_location' });
+            console.log('location', intLocation);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_location', intLocation);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
     };
 
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
         //redurect to create transaction page
-        window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=create&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stType}`;
+       // window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=create&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stType}`;
+   
+       const objCreateIntPOUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+       let stCreateIntPOUrl = url.resolveScript({
+           deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+           scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+           returnExternalUrl   : true,
+           params: {
+               pageMode    : 'create',
+               userId      : stUserId,
+               accesstype  : stAccessType,
+               rectype     : stType
+           }
+       });
+
+       //redirect to create transaction page
+       window.location = stCreateIntPOUrl;
+   
+   
     };
 
     const back = (stUserId, stAccessType, stType) => {
-        window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stType}`;
+        //window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stType}`;
+
+        const objRenderUrl = ClientEPLib._CONFIG.RENDER_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+        let stRenderUrl = url.resolveScript({
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                userId      : stUserId,
+                accesstype  : stAccessType,
+                rectype     : stType
+            }
+        });
+
+        window.location = stRenderUrl;
+   
     };
 
-    const getAuthenticationScript = () => {
+    /*const getAuthenticationScript = () => {
         const validateToken = async (token) => {
             const result = await fetch('https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=683&deploy=1&compid=5530036_SB1&h=13bf4568597809ee949b', {
                 method: 'POST',
@@ -125,7 +179,7 @@ define([], () => {
             stBody.style.filter = 'none';
             stBody.style.pointerEvents = 'auto';
         });
-    };
+    };*/
 
     return {
         pageInit,

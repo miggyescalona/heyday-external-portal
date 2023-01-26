@@ -11,7 +11,7 @@
  * @NScriptType Suitelet
  */
 
-define(['N/ui/serverWidget'], (serverWidget) => {
+define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'], (serverWidget, url, EPLib) => {
     const _CONFIG = {
         ROUTES: {
             LOGIN: '0',
@@ -201,6 +201,23 @@ define(['N/ui/serverWidget'], (serverWidget) => {
     };
 
     const renderRetailPage = (response) => {
+
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        
+        let stRetailBaseUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl       : true
+        });
+        
+        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stRenderBaseURL = url.resolveScript({
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
         const stBody = /*html*/`
             <div class="main" style="display: none;">
                 <div class='logodiv'>
@@ -228,7 +245,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
 
                     btnLogout.addEventListener('click', () => {
                         window.localStorage.removeItem('token');
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66';
+                        window.location = '${stRenderBaseURL}';
                     });
 
                     const btnIntPo = document.getElementById('cwgp_intpo_btn');
@@ -238,7 +255,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=intercompanypo';
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=intercompanypo';
                     });
 
                     const btnItemReceipt = document.getElementById('cwgp_ir_btn');
@@ -248,7 +265,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
 
                     const btnInventoryAdjustment = document.getElementById('cwgp_ia_btn');
@@ -258,7 +275,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
                     });
 
                 </script>
@@ -270,6 +287,23 @@ define(['N/ui/serverWidget'], (serverWidget) => {
     };
 
     const renderFranchisePage = (response) => {
+
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        
+        let stFranchiseBaseUrl = url.resolveScript({
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl       : true
+        });
+        
+        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stRenderBaseURL = url.resolveScript({
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
         const stBody = /*html*/`
             <div class="main" style="display: none;">
                 <div class="logodiv">
@@ -295,7 +329,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                     const btnLogout = document.getElementById('cwgp_logout_btn');
                     btnLogout.addEventListener('click', () => {
                         window.localStorage.removeItem('token');
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66';
+                        window.location = '${stRenderBaseURL}';
                     });
                     
                     const btnISalesOrder = document.getElementById('cwgp_so_btn');
@@ -305,7 +339,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=franchisepo';
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=franchisepo';
                     });
                     const btnItemReceiptFranchise = document.getElementById('cwgp_ir_franchise_btn');
                     btnItemReceiptFranchise.addEventListener('click', () => {
@@ -314,7 +348,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
                     
                 </script>
@@ -326,6 +360,23 @@ define(['N/ui/serverWidget'], (serverWidget) => {
     };
 
     const renderLoginPage = (response) => {
+
+        const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        
+        let stAuthBaseUrl = url.resolveScript({
+            deploymentId        : objAuthUrl.DEPLOY_ID,
+            scriptId            : objAuthUrl.SCRIPT_ID,
+            returnExternalUrl    : true
+        });
+        
+        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stRenderBaseURL = url.resolveScript({
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
         const stBody = /*html*/`
             <div class="main">
                 <div class="logodiv">
@@ -364,7 +415,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                             return;
                         }
 
-                        const response = fetch('https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=683&deploy=1&compid=5530036_SB1&h=13bf4568597809ee949b', {
+                        const response = fetch('${stAuthBaseUrl}', {
                             method: 'POST',
                             body: JSON.stringify({
                                 username,
@@ -382,7 +433,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
 
                                 window.localStorage.setItem('token', objData.token);
 
-                                window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66&accesstype=' + objData.accessType +'&userId=' + objData.userId ;
+                                window.location = '${stRenderBaseURL}&accesstype=' + objData.accessType +'&userId=' + objData.userId ;
                             });
                     });
                 </script>
@@ -399,7 +450,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
 					const { id } = JSON.parse(stDecodeToken);
                     console.log('stDecodeToken', stDecodeToken);
 
-                    window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66&accesstype=' + accessType +'&userId=' + id;
+                    window.location = '${stRenderBaseURL}&accesstype=' + accessType +'&userId=' + id;
                 } catch (e) {
                     console.log(e);
                     window.localStorage.removeItem('token');
@@ -410,9 +461,27 @@ define(['N/ui/serverWidget'], (serverWidget) => {
         renderPage(stBody, stScript, response);
     };
 
-    const getAuthenticationScript = () => /*es6*/`
+    const getAuthenticationScript = () => {
+        
+        const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        
+        let stAuthBaseUrl = url.resolveScript({
+            deploymentId        : objAuthUrl.DEPLOY_ID,
+            scriptId            : objAuthUrl.SCRIPT_ID,
+            returnExternalUrl       : true
+        });
+        
+        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stRenderBaseURL = url.resolveScript({
+            deploymentId        : objRenderUrl.DEPLOY_ID,
+            scriptId            : objRenderUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+    
+        const stScript = /*es6*/`
         const validateToken = async (token) => {
-            const result = await fetch('https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=683&deploy=1&compid=5530036_SB1&h=13bf4568597809ee949b', {
+            const result = await fetch('${stAuthBaseUrl}', {
                 method: 'POST',
                 body: JSON.stringify({
                     token: token,
@@ -448,7 +517,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
             // If no token or not successful in validation, redirect to login page
             if (!result) {
                 window.localStorage.removeItem('token');
-                window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66';
+                window.location = '${stRenderBaseURL}';
 
                 return;
             }
@@ -469,7 +538,7 @@ define(['N/ui/serverWidget'], (serverWidget) => {
 
                 if (bIsAccessTypeMismatched) {
                     window.localStorage.removeItem('token');
-                    window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=682&deploy=1&compid=5530036_SB1&h=3eb96116ea1325a68f66';
+                    window.location = '${stRenderBaseURL}';
 
                     return;
                 }
@@ -479,6 +548,8 @@ define(['N/ui/serverWidget'], (serverWidget) => {
             stMainDiv.style.display = 'block';
         });`;
 
+        return stScript;
+    }
 
     const PAGE_ROUTERS = {
         [_CONFIG.ROUTES.LOGIN]: renderLoginPage,

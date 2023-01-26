@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord'], (currentRecord) => {
+define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ClientExternalPortal', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, ClientEPLib, EPLib) => {
 
     const processScannerInput = (options) => {
         const {
@@ -131,7 +131,7 @@ define(['N/currentRecord'], (currentRecord) => {
     return {
         processScannerInput,
         addScannedItemsToLines,
-        generateFailedScannerString
+        generateFailedScannerString,
     }
 });
 
