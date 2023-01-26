@@ -277,15 +277,12 @@ define([
         } = request.parameters;
 
         log.debug('itemp per loc params',request.parameters);
-        const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation);
 
         listPage.renderItemPerLocation({
             request,
             response,
-            stSubsidiary,
-            stLocation,
             stType: 'itemperlocation',
             stAccessType,
             stUserId,
