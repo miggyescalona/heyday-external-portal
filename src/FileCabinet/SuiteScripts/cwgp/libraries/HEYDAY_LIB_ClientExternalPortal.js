@@ -12,7 +12,7 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal'], (currentRecord, url, ConfEPLib) => {
+define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, url, ConfEPLib) => {
 
     const _CONFIG = ConfEPLib._CONFIG;
 

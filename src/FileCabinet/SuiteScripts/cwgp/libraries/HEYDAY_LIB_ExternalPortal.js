@@ -12,20 +12,20 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal'], (serverWidget, ConfEPLib) => {
+define(['./HEYDAY_LIB_ConfExternalPortal.js'], (ConfEPLib) => {
     const _CONFIG = ConfEPLib._CONFIG
 
     const SCANNER_UI = {
         FIELD: {
             SCAN_UPC_CODES: {
                 id: 'custpage_cwgp_scanupccodes',
-                type: serverWidget.FieldType.LONGTEXT,
+                type: 'longtext',
                 label: 'Scan UPC Codes',
                 container: 'SCAN',
             },
             MAP_UPC_CODES: {
                 id: 'custpage_cwgp_upccodemap',
-                type: serverWidget.FieldType.LONGTEXT,
+                type: 'longtext',
                 label: 'UPC Codes Map',
                 container: 'SCAN',
                 displayType: 'hidden'

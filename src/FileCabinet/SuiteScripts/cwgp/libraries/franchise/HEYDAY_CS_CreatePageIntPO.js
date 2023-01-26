@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal'], (https, util, url, ClientEPLib) => {
+define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
     /**
      * Function to be executed when field is changed.
      *

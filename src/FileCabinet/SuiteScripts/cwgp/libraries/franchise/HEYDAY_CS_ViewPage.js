@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', '../HEYDAY_LIB_ClientExternalPortal'], (url, ClientEPLib) => {
+define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) => {
 
     const pageInit = (context) => {
         ClientEPLib.getAuthenticationScript();

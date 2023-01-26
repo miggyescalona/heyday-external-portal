@@ -366,7 +366,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
         let stAuthBaseUrl = url.resolveScript({
             deploymentId        : objAuthUrl.DEPLOY_ID,
             scriptId            : objAuthUrl.SCRIPT_ID,
-            returnExternalUrl       : true
+            returnExternalUrl    : true
         });
         
         const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
