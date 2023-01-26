@@ -158,10 +158,11 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         try{
 
             switch(stPageType){
-                case 'intercompanypo'   :   stSublistId = 'custpage_interpo_itemstab'
-                                            break;
-                case 'itemreceipt'      :   stSublistId = 'custpage_itemreceipt_itemstab'
-                                            break;
+                case 'intercompanypo'       :   stSublistId = 'custpage_interpo_items'
+                                                break;
+                case 'itemreceipt'          :   stSublistId = 'custpage_itemreceipt_items'
+                                                break;
+                case 'inventoryadjustment'  :   stSublistId = 'custpage_inventorayadjustment_items';
             }
 
             let objUpcToItemIdMap = JSON.parse(stUpcMap);
