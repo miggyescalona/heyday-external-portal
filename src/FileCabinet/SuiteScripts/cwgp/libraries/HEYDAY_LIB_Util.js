@@ -34,7 +34,32 @@
                     id: 'custpage_cwgp_createdfrom',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From'
-                }
+                },
+                NAME: {
+                    id: 'custpage_cwgp_name',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Item Name'
+                },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Location'
+                },
+                AVAILABLE: {
+                    id: 'custpage_cwgp_available',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Available'
+                },
+                ON_HAND: {
+                    id: 'custpage_cwgp_onhand',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'On Hand'
+                },
+                COMMITTED: {
+                    id: 'custpage_cwgp_committed',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Committed'
+                },
             }
         },
         SCRIPT:{
@@ -157,13 +182,12 @@
         let arrMapItemperLocation= [];
 
         arrPagedData.forEach((result, index) => {
-            const stItemName = result.getText({ name: 'itemid' });
+            const stItemName = result.getValue({ name: 'itemid' });
             const stLocation = result.getText({ name: 'inventorylocation' });
-            const stAvailable = result.getText({ name: 'locationquantityavailable' });
-            const stOnHand = result.getText({ name: 'locationquantityonhand' });
-            const stCommitted = result.getText({ name: 'locationquantitycommitted' });
+            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
+            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
+            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
           
-
             arrMapItemperLocation.push({
                 [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                 [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
