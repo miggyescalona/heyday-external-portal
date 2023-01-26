@@ -76,7 +76,7 @@ define([
         log.debug('stPoId',stPoId);
         stPageMode = 'view';
         stUserId = 3;*/
-        
+        log.debug('test','');
         log.debug('stPageMode',stPageMode);
         const stSubsidiary = getSubsidiary(stUserId);
         log.debug('stSubsidiary',stSubsidiary);

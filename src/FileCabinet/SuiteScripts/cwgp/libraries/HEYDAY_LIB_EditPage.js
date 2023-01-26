@@ -315,6 +315,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             objItemResultSet,
             objUpcMap,
         }= EPLib.initScanner({
+            stType,
             stSubsidiary,
             _CONFIG
         })
