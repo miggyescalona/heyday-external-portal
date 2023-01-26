@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPortal'], (https, util, url, EPLib, ClientEPLib) => {
+define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal'], (https, util, url, ClientEPLib) => {
     /**
      * Function to be executed when field is changed.
      *
@@ -71,7 +71,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY
 
     const getItemDetails = (stItem) => {
 
-        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
         
         let stCreateIntPOBaseUrl = url.resolveScript({
             deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
@@ -98,7 +98,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY
 
     const back = (stUserId, stAccessType, stRecType) =>{
         
-        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
         
         let stFranchiseUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,
