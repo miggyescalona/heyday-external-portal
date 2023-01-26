@@ -144,15 +144,18 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
     }
 
     const addScannedItemsToLines = (options) => {
-        try{
-            const {
-                stUpcMap,
-                stScannerInput,
-                stPageType
-            } = options;
+        const {
+            stUpcMap,
+            stScannerInput,
+            stPageType
+        } = options;
 
-            let stSublistId = ''
-            let stFailedCodes = ''
+        let stSublistId = ''
+        let stFailedCodes = ''
+
+        var recCurrent = currentRecord.get();
+
+        try{
 
             switch(stPageType){
                 case 'intercompanypo'   :   stSublistId = 'custpage_interpo_itemstab'
@@ -175,21 +178,22 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
                     objUpcToItemIdMap[objCurrItemLine.upc_code]
 
-                    currentRecord.selectNewLine({
+
+                    recCurrent.selectNewLine({ 
                         sublistId   : stSublistId,
                     })
-                    currentRecord.setCurrentSublistValue({
+                    recCurrent.setCurrentSublistValue({
                         sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_item',
                         value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                     });
                     
-                    currentRecord.setCurrentSublistValue({
+                    recCurrent.setCurrentSublistValue({
                         sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_quantity',
                         value       : objCurrItemLine.qty
                     });
-                    currentRecord.commitLine({
+                    recCurrent.commitLine({
                         sublistId   : stSublistId
                     })
 
@@ -206,7 +210,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             if(arrRemainingLines.length > 0){
                 stFailedCodes = generateFailedScannerString({arrRemainingLines})
                 
-                currentRecord.setFieldValue({
+                recCurrent.setFieldValue({
                     id      : 'custpage_cwgp_scanupccodes',
                     value   : stFailedCodes
                 })
