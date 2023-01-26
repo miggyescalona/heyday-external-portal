@@ -179,7 +179,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     objUpcToItemIdMap[objCurrItemLine.upc_code]
 
 
-                    recCurrent.selectNewLine({
+                    recCurrent.selectNewLine({ 
                         sublistId   : stSublistId,
                     })
                     recCurrent.setCurrentSublistValue({
