@@ -113,14 +113,16 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             _CONFIG
         } = options
 
+        let objItemResultSet = {};
+        let objUpcMap = {};
+
         try{
 
             //Get UPC Mapping
             try{
 
-                let objItemResultSet = getInvItemsBySubsidiary({stSubsidiary});
-                
-                let objUpcMap = {};
+                objItemResultSet = getInvItemsBySubsidiary({stSubsidiary});
+
                 
                 objItemResultSet.each(function (result) {
                     objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
@@ -128,7 +130,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     return true;
                 });
                 
-                SCANNER_UI.FIELD.SCAN_UPC_CODES['defaultValue'] = JSON.stringify(objUpcMap)
+                //SCANNER_UI.FIELD.MAP_UPC_CODES['defaultValue'] = JSON.stringify(objUpcMap)
+
             }catch(e){
                 log.error('getUpcMap - Error', e)
             }
@@ -144,6 +147,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 objConfProperty : 'FIELD',
                 stType         
             })
+           
+            log.debug('_CONFIG', _CONFIG.FIELD[stType].SCAN_UPC_CODES)
             
             return  {
                 objItemResultSet,

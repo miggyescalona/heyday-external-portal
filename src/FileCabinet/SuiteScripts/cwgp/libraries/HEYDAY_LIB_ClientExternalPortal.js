@@ -214,7 +214,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             return stFailedCodes;
         }
         catch(e){
-            log.error(addScannedItemsToLines, e)
+            log.error('addScannedItemsToLines - Error', e)
             return null;
         }
     }
