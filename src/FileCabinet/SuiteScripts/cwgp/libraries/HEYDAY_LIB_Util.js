@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, EPLib) => {
+ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
