@@ -264,26 +264,20 @@
         });
     };
 
-    const addOptionsItemBySubsidiary = (fld, stSubsidiary) => {
+    const addOptionsItemBySubsidiary = (options) => {   
+
+        const {
+            fld, 
+            objResultSet
+        } = options
         fld.addSelectOption({
             value: '',
             text: ''
         });
-        search.create({
-            type: "item",
-            filters:
-                [
-                    search.createFilter({
-                        name: 'subsidiary',
-                        operator: search.Operator.ANYOF,
-                        values: stSubsidiary
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'itemid' })
-                ]
-        }).run().each(function (result) {
+
+        log.debug('objResultSet', objResultSet)
+
+        objResultSet.each(function (result) {
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'itemid' })
