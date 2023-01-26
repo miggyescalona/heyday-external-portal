@@ -13,31 +13,6 @@
 
 define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ClientExternalPortal', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, ClientEPLib, EPLib) => {
 
-    let _CONFIG = {
-        FIELD: {
-            SCAN_UPC_CODES: {
-                id: 'custpage_cwgp_scanupccodes',
-                type: serverWidget.FieldType.LONGTEXT,
-                label: 'Scan UPC Codes',
-                container: 'SCAN',
-                displayType: 'inline'
-            },
-            MAP_UPC_CODES: {
-                id: 'custpage_cwgp_upccodemap',
-                type: serverWidget.FieldType.LONGTEXT,
-                label: 'UPC Codes Map',
-                container: 'SCAN',
-                displayType: 'hidden'
-            },
-        },
-        FIELD_GROUP: {
-            SCAN: {
-                id: 'custpage_interpo_scan_grp',
-                label: 'Scanner'
-            }
-        },
-    }
-
     const processScannerInput = (options) => {
         const {
             strScannerInput

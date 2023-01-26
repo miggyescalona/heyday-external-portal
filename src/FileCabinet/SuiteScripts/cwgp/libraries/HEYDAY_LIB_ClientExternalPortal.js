@@ -12,89 +12,14 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, EPLib) => {
+define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, url, ConfEPLib) => {
 
-    const _CONFIG = {
-        ENVIRONMENT: 'DEV',
+    const _CONFIG = ConfEPLib._CONFIG;
 
-        AUTH_PAGE: {
-            DEV: {
-                SCRIPT_ID: 701,
-                DEPLOY_ID: 1
-            },
-            SB: {
-                SCRIPT_ID: 683,
-                DEPLOY_ID: 1
-            },
-            PROD: {
-                SCRIPT_ID: 9999,
-                DEPLOY_ID: 1
-            }
-        },
-        RENDER_PAGE: {
-            DEV: {
-                SCRIPT_ID: 706,
-                DEPLOY_ID: 1
-            },
-            SB: {
-                SCRIPT_ID: 682,
-                DEPLOY_ID: 1
-            },
-            PROD: {
-                SCRIPT_ID: 9999,
-                DEPLOY_ID: 1
-            }
-        },
-        FRANCHISE_PAGE: {
-            SB: {
-                SCRIPT_ID: 690,
-                DEPLOY_ID: 1
-            },
-            DEV: {
-                SCRIPT_ID: 703,
-                DEPLOY_ID: 1
-            },
-            PROD: {
-                SCRIPT_ID: 9999,
-                DEPLOY_ID: 1
-            }
-        },
-        RETAIL_PAGE: {
-            DEV: {
-                SCRIPT_ID: 705,
-                DEPLOY_ID: 1
-            },
-            SB: {
-                SCRIPT_ID: 686,
-                DEPLOY_ID: 1
-            },
-            PROD: {
-                SCRIPT_ID: 9999,
-                DEPLOY_ID: 1
-            }
-        },
-        CREATE_INTPO_PAGE: {
-            DEV: {
-                SCRIPT_ID: 702,
-                DEPLOY_ID: 1
-            },
-            SB: {
-                SCRIPT_ID: 689,
-                DEPLOY_ID: 1
-            },
-            PROD: {
-                SCRIPT_ID: 9999,
-                DEPLOY_ID: 1
-            }
-        }
-
-        
-    };    
-    
     //Calls the authentication suitelet
     const getAuthenticationScript = () => {
 
-        const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objAuthUrl = _CONFIG.AUTH_PAGE[_CONFIG.ENVIRONMENT]
         
         let stAuthBaseUrl = url.resolveScript({
             deploymentId        : objAuthUrl.DEPLOY_ID,
@@ -143,7 +68,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
                 return;
             }
 
-            const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+            const objRenderUrl = _CONFIG.RENDER_PAGE[_CONFIG.ENVIRONMENT]
 
             let stRenderBaseURL = url.resolveScript({
                 deploymentId        : objRenderUrl.DEPLOY_ID,
