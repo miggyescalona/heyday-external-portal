@@ -107,9 +107,9 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
     //BEGIN SCANNER FUNCTIONS 
     const processScannerInput = (options) => {
         const {
-            strScannerInput
+            stScannerInput
         } = options;
-        let arrItemUpcCodes = strScannerInput.split(' ');
+        let arrItemUpcCodes = stScannerInput.split(' ');
         let arrItemLines = [];
         for(var ii = 0; ii < arrItemUpcCodes.length; ii++){ 
             let intItemUpcCode = arrItemUpcCodes[ii];
@@ -146,23 +146,23 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
     const addScannedItemsToLines = (options) => {
         try{
             const {
-                strUpcMap,
-                strScannerInput,
-                strPageType
+                stUpcMap,
+                stScannerInput,
+                stPageType
             } = options;
 
-            let strSublistId = ''
-            let strFailedCodes = ''
+            let stSublistId = ''
+            let stFailedCodes = ''
 
-            switch(strPageType){
-                case 'intercompanypo'   :   strSublistId = 'custpage_interpo_itemstab'
+            switch(stPageType){
+                case 'intercompanypo'   :   stSublistId = 'custpage_interpo_itemstab'
                                             break;
-                case 'itemreceipt'      :   strSublistId = 'custpage_itemreceipt_itemstab'
+                case 'itemreceipt'      :   stSublistId = 'custpage_itemreceipt_itemstab'
                                             break;
             }
 
-            let objUpcToItemIdMap = JSON.parse(strUpcMap);
-            let arrItemLines = processScannerInput({strScannerInput})
+            let objUpcToItemIdMap = JSON.parse(stUpcMap);
+            let arrItemLines = processScannerInput({stScannerInput})
 
             let arrFailedIndices = [];
 
@@ -176,21 +176,21 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     objUpcToItemIdMap[objCurrItemLine.upc_code]
 
                     currentRecord.selectNewLine({
-                        sublistId   : strSublistId,
+                        sublistId   : stSublistId,
                     })
                     currentRecord.setCurrentSublistValue({
-                        sublistId   : strSublistId,
+                        sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_item',
                         value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                     });
                     
                     currentRecord.setCurrentSublistValue({
-                        sublistId   : strSublistId,
+                        sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_quantity',
                         value       : objCurrItemLine.qty
                     });
                     currentRecord.commitLine({
-                        sublistId   : strSublistId
+                        sublistId   : stSublistId
                     })
 
                 }
@@ -204,17 +204,17 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             let arrRemainingLines = arrItemLines.filter((element, index) => arrFailedIndices.includes(index))
 
             if(arrRemainingLines.length > 0){
-                strFailedCodes = generateFailedScannerString({arrRemainingLines})
+                stFailedCodes = generateFailedScannerString({arrRemainingLines})
                 
                 currentRecord.setFieldValue({
                     id      : 'custpage_cwgp_scanupccodes',
-                    value   : strFailedCodes
+                    value   : stFailedCodes
                 })
             }
-            return strFailedCodes;
+            return stFailedCodes;
         }
         catch(e){
-            log.error(addScannedItemsToLines, e)
+            log.error('addScannedItemsToLines - Error', e)
             return null;
         }
     }
@@ -224,27 +224,27 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             arrRemainingLines
         } = options;
         
-        let strFailedCodes = '';
+        let stFailedCodes = '';
 
         try{
             
             for(var ii = 0 ; ii < arrRemainingLines.length; ii++){
                 let objCurrLine = arrRemainingLines[ii]
                 for(var jj = 0; jj < objCurrLine.qty; jj++){
-                    strFailedCodes += objCurrLine.upc_code
+                    stFailedCodes += objCurrLine.upc_code
                     if(jj < objCurrLine.qty - 1){
-                        strFailedCodes += ' '
+                        stFailedCodes += ' '
                     }
                 }
                 if(ii < arrRemainingLines.length - 1){
-                    strFailedCodes += ' '
+                    stFailedCodes += ' '
                 }
             }
         }
         catch(e){
             log.error('generateFailedScannerString - Error', e)
         }
-        return strFailedCodes;
+        return stFailedCodes;
     }
 
     //END SCANNER FUNCTIONS
@@ -252,7 +252,6 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
     return {
         _CONFIG,
         getAuthenticationScript,
-        processScannerInput,
         addScannedItemsToLines,
         generateFailedScannerString,
     }

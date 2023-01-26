@@ -332,6 +332,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <button type="button" id="cwgp_so_btn" class="navbutton">Purchase Order</button>
                         <br>
                         <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Item Receipt</button>
+                        <br>
+                        <button type="button" id="cwgp_ia_franchise_btn" class="navbutton">Inventory Adjustment</button>
                     </div>
                 </div>
 
