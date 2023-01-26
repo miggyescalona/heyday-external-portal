@@ -30,11 +30,18 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const { currentRecord, fieldId, sublistId } = context;
 
         if(fieldId === 'custpage_cwgp_scanupccodes'){
-            let strScannerInput = currentRecord.getValue({fieldId})
-            if(strScannerInput){
+            let stScannerInput = currentRecord.getValue({fieldId})
+            let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+            if(stScannerInput){
+
+                let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+                    stUpcMap,
+                    stScannerInput
+                })
+
                 currentRecord.setValue({
                     fieldId,
-                    value               : ClientEPLib.processScannerInput({strScannerInput}),
+                    value               : stFailedCodes,
                     ignoreFieldChange   : true
                 })
             }

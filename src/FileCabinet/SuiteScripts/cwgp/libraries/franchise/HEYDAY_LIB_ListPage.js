@@ -310,30 +310,35 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stAccessType,
             stUserId
         } = options;
+        
+        if(objSearch.runPaged().count >0){
+        	const objPagedData = getPageData(objSearch, fldPage, intPage);
+            log.debug('objPagedData', objPagedData);
+            const arrPagedData = objPagedData.data;
+            log.debug('arrPagedData', arrPagedData);
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage);
-        const arrPagedData = objPagedData.data;
-        log.debug('arrPagedData', arrPagedData);
+            const arrListValues = util.mapValues({
+                stType, 
+                stAccessType, 
+                stUserId,
+                arrPagedData
+            });
+            log.debug('arrListValues', arrListValues);
 
-        const arrListValues = util.mapValues({
-            stType, 
-            stAccessType, 
-            stUserId,
-            arrPagedData
-        });
-        log.debug('arrListValues', arrListValues);
+            arrListValues.forEach((value, i) => {
+                const arrListValue = Object.keys(value);
 
-        arrListValues.forEach((value, i) => {
-            const arrListValue = Object.keys(value);
-
-            arrListValue.forEach((fieldId) => {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value[fieldId] || ' '
+                arrListValue.forEach((fieldId) => {
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value[fieldId] || ' '
+                    });
                 });
             });
-        });
+        }
+
+        
     };
 
     const htmlCss = () => {
