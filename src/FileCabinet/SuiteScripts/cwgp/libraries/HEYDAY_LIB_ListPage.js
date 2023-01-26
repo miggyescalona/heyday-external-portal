@@ -109,7 +109,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Committed'
                     },
-                    
+
                 }
             }
         }
@@ -476,7 +476,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 values: intLocation,
             }));
         }
-        const objPagedData = objSearch.runPaged({ pageSize: 20 });
+
+        let stPageSize = 20;
+        if(stType == 'itemperlocation'){
+            stPageSize = 30;
+        }
+        
+        const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
         log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
 
         objPagedData.pageRanges.map((objPageResult) => {
