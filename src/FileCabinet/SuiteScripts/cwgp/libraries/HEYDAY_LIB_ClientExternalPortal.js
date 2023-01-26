@@ -12,13 +12,14 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentRecord, url, EPLib) => {
+define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, url, ConfEPLib) => {
 
-    
+    const _CONFIG = ConfEPLib._CONFIG;
+
     //Calls the authentication suitelet
     const getAuthenticationScript = () => {
 
-        const objAuthUrl = EPLib._CONFIG.AUTH_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objAuthUrl = _CONFIG.AUTH_PAGE[_CONFIG.ENVIRONMENT]
         
         let stAuthBaseUrl = url.resolveScript({
             deploymentId        : objAuthUrl.DEPLOY_ID,
@@ -67,7 +68,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
                 return;
             }
 
-            const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+            const objRenderUrl = _CONFIG.RENDER_PAGE[_CONFIG.ENVIRONMENT]
 
             let stRenderBaseURL = url.resolveScript({
                 deploymentId        : objRenderUrl.DEPLOY_ID,
@@ -249,6 +250,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ExternalPortal'], (currentReco
     //END SCANNER FUNCTIONS
 
     return {
+        _CONFIG,
         getAuthenticationScript,
         processScannerInput,
         addScannedItemsToLines,

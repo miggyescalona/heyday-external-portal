@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     let _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -432,6 +432,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Add Scanner Field Group and Fields
+        EPLib.appendScannerUiToConfig({
+            objConfig       : _CONFIG,
+            objConfProperty : 'FIELD_GROUP',
+            stType         
+        })
+
+        EPLib.appendScannerUiToConfig({
+            objConfig       : _CONFIG,
+            objConfProperty : 'FIELD',
+            stType         
+        })
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];

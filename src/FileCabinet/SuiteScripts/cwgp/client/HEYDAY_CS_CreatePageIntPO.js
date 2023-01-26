@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', '../libraries/HEYDAY_LIB_ClientExternalPortal'], (https, util, url, EPLib, ClientEPLib) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
      /**
      * Function to be executed after page is initialized.
      *
@@ -152,7 +152,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
 
     const getItemDetails = (stItem) => {
 
-        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         let stCreateIntPOBaseUrl = url.resolveScript({
             deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
@@ -178,7 +178,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
     };
 
     const getItemQtyOnHand = (stItem,stLocation) =>{
-        const objCreateIntPOUrl = EPLib._CONFIG.CREATE_INTPO_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         
         let stCreateIntPOBaseUrl = url.resolveScript({
@@ -207,7 +207,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal', 
     const back = (stUserId, stAccessType, stRecType) =>{
        // window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stRecType}`;
    
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         let stRetailUrl = url.resolveScript({
             deploymentId        : objRetailUrl.DEPLOY_ID,

@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPortal'], (url, EPLib, ClientEPLib) => {
+define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) => {
     /**
      * Function to be executed after page is initialized.
      *
@@ -52,7 +52,7 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
     //Used in button functionName; using multiple parameters
     const toCreateTransaction = (stUserId, stAccessType) => {
         
-        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
         
         let stCreateIntPOUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,
@@ -72,7 +72,7 @@ define(['N/url', '../HEYDAY_LIB_ExternalPortal', '../HEYDAY_LIB_ClientExternalPo
 
     const back = (stUserId, stAccessType, stType) => {
 
-        const objRenderUrl = EPLib._CONFIG.RENDER_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        const objRenderUrl = ClientEPLib._CONFIG.RENDER_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
         let stRenderUrl = url.resolveScript({
             deploymentId        : objRenderUrl.DEPLOY_ID,
