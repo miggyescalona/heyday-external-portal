@@ -12,7 +12,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], (serverWidget, ConfEPLib) => {
+define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], (search, serverWidget, ConfEPLib) => {
     const _CONFIG = ConfEPLib._CONFIG
 
     const SCANNER_UI = {
@@ -108,6 +108,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], (serverWidge
     //Adds scanner UI, UPC Map into hidden fields, and searches inventory items by subsidiaary
     const initScanner = (options) => {
         const {
+            stType,
             stSubsidiary,
             _CONFIG
         } = options

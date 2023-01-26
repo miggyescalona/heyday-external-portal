@@ -438,6 +438,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             objItemResultSet,
             objUpcMap,
         }= EPLib.initScanner({
+            stType,
             stSubsidiary,
             _CONFIG
         })
@@ -717,6 +718,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             objItemResultSet,
             objUpcMap,
         }= EPLib.initScanner({
+            stType,
             stSubsidiary,
             _CONFIG
         })
