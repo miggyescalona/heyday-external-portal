@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     let _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -435,6 +435,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -495,12 +510,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 stPageMode, 
                 stUserId,
                 stAccessType,
-                stType
+                stType,
+                stUpcMap
             });
 
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
+            
         });
 
         //render sublist
@@ -530,7 +547,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             });
 
             if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
             }
 
             if (displayType) {
@@ -626,6 +646,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (objPO.body[fld.id] != 'undefined') {
                 fld.defaultValue = objPO.body[fld.id]
             }
+            else if(defaultValue){
+                fld.defaultValue = defaultValue;
+            }
         });
 
         //render sublist
@@ -703,6 +726,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+        
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -731,6 +768,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 source,
                 container,
                 mandatory,
+                defaultValue,
                 displayType
             } = objBodyFields[stCol];
 
@@ -773,7 +811,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 stPageMode, 
                 stUserId,
                 stAccessType,
-                stType
+                stType,
+                stUpcMap
             });
 
             if (objDefaultValues[fld.id] != 'undefined') {
@@ -810,7 +849,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             });
 
             if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
             }
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
@@ -850,7 +892,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stPageMode, 
             stUserId,
             stAccessType,
-            stType
+            stType,
+            stUpcMap
         } = options;
 
         return {
@@ -861,7 +904,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_htmlcss: htmlCss(),
             custpage_cwgp_date: new Date(),
-            custpage_cwgp_rectype: stType
+            custpage_cwgp_rectype: stType,
+            custpage_cwgp_upccodemap: stUpcMap
         }
     };
 
