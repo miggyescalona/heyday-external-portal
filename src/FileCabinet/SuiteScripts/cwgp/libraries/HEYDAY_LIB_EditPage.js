@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     let _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
