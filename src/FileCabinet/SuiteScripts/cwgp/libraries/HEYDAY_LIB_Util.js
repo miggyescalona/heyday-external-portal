@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -300,7 +300,7 @@
                     search.createFilter({
                         name: 'internalid',
                         operator: search.Operator.ANYOF,
-                        values: 19082
+                        values: '19082'
                     })
                 ],
             columns:
@@ -746,4 +746,3 @@
         setSublistValues
     }
 });
-
