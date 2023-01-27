@@ -165,7 +165,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
                 throw {
-                    name    : 'NO_ITEM_MATCH',
+                    name    : 'NO_UPC_CODE_MATCH',
                     message : 'No valid item was found for the UPC Code entered'
                 }
             }
@@ -192,7 +192,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             }
             else if(stPageType == 'itemreceipt'){
-                let index = recCurrent.findSublistWithValue({
+                let index = recCurrent.findSublistLineWithValue({
                     sublistId   : stSublistId,
                     fieldId     : 'custpage_cwgp_itemid',
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
@@ -211,14 +211,56 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
                     console.log(intQtyRemaining)
                     
+                    let intQty = recCurrent.getCurrentSublistValue({
+                        sublistId   : stSublistId,
+                        fieldId     : 'custpage_cwgp_quantity'
+                    });
+
+                    let intScannedQty = objCurrItemLine.qty
+
+                    try{
+                        intQtyRemaining = parseInt(intQtyRemaining)
+                        intQty          = parseInt(intQty)
+                        intScannedQty   = parseInt(intScannedQty)
+                    }
+                    catch(e){
+                        throw {
+                            name    : 'CANNOT_PROCESS_QTY',
+                            message : 'Quantity, scanned quantity, and/or quantity remaining is/are invalid.'
+                        }
+                    }
+                    let intRcvdQty = intScannedQty + intQty;
+                    let intQtyToSet;
+                    let blOverRcvd = false;
+
+                    if(intQtyRemaining <= intRcvdQty){
+                        intQtyToSet = intRcvdQty
+                    }
+                    //If received quantity exceeds quantity remaining
+                    else{
+                        intQtyToSet = intQtyRemaining
+                        objCurrItemLine.qty = intRcvdQty - intQtyRemaining
+                    }
                     recCurrent.setCurrentSublistValue({
                         sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_quantity',
-                        value       : objCurrItemLine.qty
+                        value       : intQtyToSet
                     });
                     recCurrent.commitLine({
                         sublistId   : stSublistId
                     })
+                    if(blOverRcvd){
+                        throw {
+                            name    : 'EXCESS_SCANNED_QTY',
+                            message : 'Total received quantity exceeds quantity remaining. Only the maximum allowed receivable quantity was set.'
+                        }
+                    }
+                }
+                else{
+                    throw {
+                        name    : 'NO_ITEM_LINE_MATCH',
+                        message : 'The scanned item was not found in the list of items to be received.'
+                    }
                 }
             }
         }
