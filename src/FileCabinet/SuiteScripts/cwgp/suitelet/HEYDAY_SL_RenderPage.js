@@ -352,6 +352,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                         window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
+                    const btnInvAdjFranchise = document.getElementById('cwgp_ia_franchise_btn');
+                    btnInvAdjFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
                     
                 </script>
             </div>`;
