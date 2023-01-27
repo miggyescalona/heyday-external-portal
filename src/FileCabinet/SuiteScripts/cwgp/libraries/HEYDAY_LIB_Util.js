@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, EPLib) => {
+ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record'], (serverWidget, search, util,record) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -64,20 +64,12 @@
     const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData) => {
         let arrMapIntercompanyPO = [];
 
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-
-        let stBaseUrl = url.resolveScript({
-            deploymentId        : objRetailUrl.DEPLOY_ID,
-            scriptId            : objRetailUrl.SCRIPT_ID,
-            returnExternalUrl   : true
-        });
-
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stStatus = result.getText({ name: 'statusref' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
@@ -91,23 +83,16 @@
     };
 
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
-
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-
-        let stBaseUrl = url.resolveScript({
-            deploymentId        : objRetailUrl.DEPLOY_ID,
-            scriptId            : objRetailUrl.SCRIPT_ID,
-            returnExternalUrl   : true
-        });
-
         let arrMapItemReceipt= [];
+
+        log.debug('mapItemReceipt')
 
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stCreatedFrom = result.getText({ name: 'createdfrom' });
             const stID = result.id;
-            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
 
             log.debug(stCreatedFrom);
@@ -123,23 +108,13 @@
     };
 
     const mapInventoryAdjustment = (stUserId, stAccessType, arrPagedData) => {
-        
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-
-        let stBaseUrl = url.resolveScript({
-            deploymentId        : objRetailUrl.DEPLOY_ID,
-            scriptId            : objRetailUrl.SCRIPT_ID,
-            returnExternalUrl   : true
-        });
-
-
         let arrMapInventoryAdjustment= [];
 
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
+            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
 
             arrMapInventoryAdjustment.push({
@@ -264,20 +239,26 @@
         });
     };
 
-    const addOptionsItemBySubsidiary = (options) => {   
-
-        const {
-            fld, 
-            objResultSet
-        } = options
+    const addOptionsItemBySubsidiary = (fld, stSubsidiary) => {
         fld.addSelectOption({
             value: '',
             text: ''
         });
-
-        log.debug('objResultSet', objResultSet)
-
-        objResultSet.each(function (result) {
+        search.create({
+            type: "item",
+            filters:
+                [
+                    search.createFilter({
+                        name: 'subsidiary',
+                        operator: search.Operator.ANYOF,
+                        values: stSubsidiary
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'itemid' })
+                ]
+        }).run().each(function (result) {
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'itemid' })
