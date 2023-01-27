@@ -199,21 +199,23 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                 })
                 if(index > -1){
                     console.log('index', index)
-                    recCurrent.selectLine({ 
-                        sublistId   : stSublistId,
-                        line        : index
-                    })      
+                    // recCurrent.selectLine({ 
+                    //     sublistId   : stSublistId,
+                    //     line        : index
+                    // })      
                     
-                    let intQtyRemaining = recCurrent.getCurrentSublistValue({
+                    let intQtyRemaining = recCurrent.getSublistValue({
                         sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity_remaining',
+                        fieldId     : 'custpage_cwgp_quantityremaining',
+                        line        : index
                     });
 
-                    console.log(intQtyRemaining)
+                    console.log('intQtyRemaining', intQtyRemaining)
                     
-                    let intQty = recCurrent.getCurrentSublistValue({
+                    let intQty = recCurrent.getSublistValue({
                         sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity'
+                        fieldId     : 'custpage_cwgp_quantity',
+                        line        : index
                     });
 
                     let intScannedQty = objCurrItemLine.qty
@@ -241,14 +243,15 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                         intQtyToSet = intQtyRemaining
                         objCurrItemLine.qty = intRcvdQty - intQtyRemaining
                     }
-                    recCurrent.setCurrentSublistValue({
+                    recCurrent.setSublistValue({
                         sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_quantity',
-                        value       : intQtyToSet
+                        value       : intQtyToSet,
+                        line        : index
                     });
-                    recCurrent.commitLine({
-                        sublistId   : stSublistId
-                    })
+                    // recCurrent.commitLine({
+                    //     sublistId   : stSublistId
+                    // })
                     if(blOverRcvd){
                         throw {
                             name    : 'EXCESS_SCANNED_QTY',
