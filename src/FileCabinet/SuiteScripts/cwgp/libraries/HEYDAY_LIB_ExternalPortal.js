@@ -90,7 +90,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         operator: search.Operator.ANYOF,
                         values: stSubsidiary
                     }),
-                    search.createFilter({
+                     search.createFilter({
                         name: 'type',
                         operator: search.Operator.ANYOF,
                         values: 'InvtPart'
