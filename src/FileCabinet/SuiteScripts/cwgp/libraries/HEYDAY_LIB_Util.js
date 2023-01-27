@@ -298,9 +298,9 @@
             filters:
                 [
                     search.createFilter({
-                        name: 'representingsubsidiary',
+                        name: 'internalid',
                         operator: search.Operator.ANYOF,
-                        values: stSubsidiary
+                        values: 19082
                     })
                 ],
             columns:
