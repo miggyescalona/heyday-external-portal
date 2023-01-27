@@ -298,7 +298,8 @@
             filters:
                 [
                     search.createFilter({
-                        name: 'subsidiary',
+                        name: 'internalid',
+                        join: 'msesubsidiary',
                         operator: search.Operator.ANYOF,
                         values: stSubsidiary
                     })
