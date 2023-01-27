@@ -109,7 +109,9 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         const {
             stScannerInput
         } = options;
-        let arrItemUpcCodes = stScannerInput.split(' ');
+
+        //Split scanner input string by any whitespace, and filter only elements with values 
+        let arrItemUpcCodes = stScannerInput.split(/\n*\s+\n*/).filter(el => el)
         let arrItemLines = [];
         for(var ii = 0; ii < arrItemUpcCodes.length; ii++){ 
             let intItemUpcCode = arrItemUpcCodes[ii];
