@@ -237,6 +237,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
+                        <br>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                     </div>
                 </div>
 
@@ -276,6 +278,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         const stAccessType = objParams.get('accesstype');
 
                         window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
+                    const btnItemPerLocation = document.getElementById('cwgp_ipl_btn');
+                    btnItemPerLocation.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
                 </script>
@@ -322,6 +334,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <button type="button" id="cwgp_so_btn" class="navbutton">Purchase Order</button>
                         <br>
                         <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Item Receipt</button>
+                        <br>
+                        <button type="button" id="cwgp_ia_franchise_btn" class="navbutton">Inventory Adjustment</button>
                     </div>
                 </div>
 
@@ -350,6 +364,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                         window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
+                    const btnInvAdjFranchise = document.getElementById('cwgp_ia_franchise_btn');
+                    btnInvAdjFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
                     
                 </script>
             </div>`;

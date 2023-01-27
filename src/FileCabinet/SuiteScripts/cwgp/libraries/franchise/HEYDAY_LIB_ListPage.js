@@ -19,16 +19,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         TITLE: {
         	franchisepo: 'Purchase Order',
         	itemreceipt: 'Item Receipts',
+            inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
-        	franchisepo: 'custpage_interpo_listtab_retail',
+        	franchisepo: 'custpage_interpo_listtab_franchise',
         	itemreceipt: 'custpage_ir_listtab_franchise',
+            inventoryadjustment: 'custpage_ia_listtab_franchise'
         	
         	
         },
         SUBLIST: {
-        	franchisepo: 'custpage_interpo_list_retail',
-        	itemreceipt: 'custpage_ir_list_retail',
+        	franchisepo: 'custpage_interpo_list_franchise',
+        	itemreceipt: 'custpage_ir_list_franchise',
+            inventoryadjustment: 'custpage_ia_list_franchise'
         },
         COLUMN: {
             LIST: {
@@ -59,6 +62,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_customer',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Customer'
+                    },
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
+                    }
+                },
+                inventoryadjustment: {
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Transaction No'
                     },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
@@ -284,6 +299,109 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
+    const renderInventoryAdjustment = (options) => {
+        log.debug('===LIST===','===List Inventory Adjustment===');
+        const {
+            request,
+            response,
+            stSubsidiary,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        const intLocation = request.parameters[_CONFIG.PARAMETER.LOCATION] ? request.parameters[_CONFIG.PARAMETER.LOCATION] : '';
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: ' '
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            container: _CONFIG.TAB[stType]  
+        });
+        fldPage.defaultValue = intPage;
+
+        const fldLocation = form.addField({
+            id: 'custpage_cwgp_location',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Location',
+            container: _CONFIG.TAB[stType]
+        });
+        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
+        fldLocation.defaultValue = intLocation;
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        log.debug('renderInventoryAdjustment intLocation',intLocation);
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            intLocation,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        //add buttons
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+    
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+
+        response.writePage(form);
+    };
+
     const getPageData = (objSearch, fldPage, intPage) => {
         const objPagedData = objSearch.runPaged({ pageSize: 20 });
 
@@ -310,30 +428,35 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stAccessType,
             stUserId
         } = options;
+        
+        if(objSearch.runPaged().count >0){
+        	const objPagedData = getPageData(objSearch, fldPage, intPage);
+            log.debug('objPagedData', objPagedData);
+            const arrPagedData = objPagedData.data;
+            log.debug('arrPagedData', arrPagedData);
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage);
-        const arrPagedData = objPagedData.data;
-        log.debug('arrPagedData', arrPagedData);
+            const arrListValues = util.mapValues({
+                stType, 
+                stAccessType, 
+                stUserId,
+                arrPagedData
+            });
+            log.debug('arrListValues', arrListValues);
 
-        const arrListValues = util.mapValues({
-            stType, 
-            stAccessType, 
-            stUserId,
-            arrPagedData
-        });
-        log.debug('arrListValues', arrListValues);
+            arrListValues.forEach((value, i) => {
+                const arrListValue = Object.keys(value);
 
-        arrListValues.forEach((value, i) => {
-            const arrListValue = Object.keys(value);
-
-            arrListValue.forEach((fieldId) => {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value[fieldId] || ' '
+                arrListValue.forEach((fieldId) => {
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value[fieldId] || ' '
+                    });
                 });
             });
-        });
+        }
+
+        
     };
 
     const htmlCss = () => {
@@ -375,7 +498,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             font-family: 'Roboto Mono', monospace;
         }
 
-        div#custpage_interpo_listtab_retail_pane_hd {
+        div#custpage_interpo_listtab_franchise_pane_hd {
             background-color: #dbc8b6 !important;
         }
         div#custpage_ir_listtab_franchise_pane_hd {

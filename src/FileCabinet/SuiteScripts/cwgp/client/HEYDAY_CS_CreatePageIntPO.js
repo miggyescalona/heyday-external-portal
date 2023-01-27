@@ -30,13 +30,29 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const { currentRecord, fieldId, sublistId } = context;
 
         if(fieldId === 'custpage_cwgp_scanupccodes'){
-            let strScannerInput = currentRecord.getValue({fieldId})
-            if(strScannerInput){
-                currentRecord.setValue({
-                    fieldId,
-                    value               : ClientEPLib.processScannerInput({strScannerInput}),
-                    ignoreFieldChange   : true
+            let stScannerInput = currentRecord.getValue({fieldId})
+            let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+            if(stScannerInput){
+
+                let urlParams = new URL(window.location).searchParams;
+
+                let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+                    stUpcMap,
+                    stScannerInput,
+                    stPageType: urlParams.get('rectype')
                 })
+
+                // console.log('stScannerInput', stScannerInput)
+                // console.log('stFailedCodes', stFailedCodes)
+                // console.log(stScannerInput != stFailedCodes)
+                if(stScannerInput != stFailedCodes){
+                    
+                    currentRecord.setValue({
+                        fieldId,
+                        value               : stFailedCodes,
+                        ignoreFieldChange   : true
+                    })
+                }
             }
         }
 
@@ -195,17 +211,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             url: stCreateIntPOBaseUrl,
         });
 
-        /*const objResponse = https.get({
-            url: `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=689&deploy=1&compid=5530036_SB1&h=2f0abb66a0cbb01e8d05&item=${stItem}&itemlocation=${stLocation}`,
-        });*/
-
         const { stQtyOnHand } = JSON.parse(objResponse.body);
 
         return stQtyOnHand;
     };
 
     const back = (stUserId, stAccessType, stRecType) =>{
-       // window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stRecType}`;
    
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 

@@ -44,14 +44,21 @@ define([
             log.debug('params',request.parameters);
     
             if (request.method === 'GET') {
-                if(rectype == 'intercompanypo'){
-                    renderIntercompanyPO(request, response);
-                }
-                else if(rectype == 'itemreceipt'){
-                    renderItemReceipt(request, response);
-                }
-                else if(rectype == 'inventoryadjustment'){
-                    renderInventoryAdjustment(request, response);
+                switch (rectype) {
+                    case 'intercompanypo':
+                        renderIntercompanyPO(request, response);
+                        break;
+                    case 'itemreceipt':
+                        renderItemReceipt(request, response);
+                        break;
+                    case 'inventoryadjustment':
+                        renderInventoryAdjustment(request, response);
+                        break;
+                    case 'itemperlocation':
+                        renderItemPerLocation(request, response);
+                        break;
+                    default:
+                        throw 'Page Not Found';
                 }
             } else {
                 handleIntercompanyPOTxn(request);
@@ -263,6 +270,26 @@ define([
         }
     };
 
+    const renderItemPerLocation = (request, response) => {
+        const {
+            userId: stUserId,
+            accesstype: stAccessType,
+        } = request.parameters;
+
+        log.debug('itemp per loc params',request.parameters);
+        const stLocation = getLocation(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation);
+
+        listPage.renderItemPerLocation({
+            request,
+            response,
+            stType: 'itemperlocation',
+            stAccessType,
+            stUserId,
+            objSearch: objItemPerLocationSearch
+        });
+    };
+
 
     const handleIntercompanyPOTxn = (request) => {
         log.debug('params handleIntercompanyPOTxn', request.parameters)
@@ -377,6 +404,19 @@ define([
 
         return ssItemReceipt;
     };
+
+    const buildItemPerLocationSearch = (stLocation) => {
+        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        return ssItemPerLocation;
+    };
+
 
     const getSubsidiary = (stId) => {
         const ssCredentials = search.create({
