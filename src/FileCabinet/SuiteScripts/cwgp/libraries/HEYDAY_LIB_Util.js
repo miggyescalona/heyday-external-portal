@@ -300,11 +300,7 @@
                     search.createFilter({
                         name: 'internalid',
                         operator: search.Operator.ANYOF,
-<<<<<<< HEAD
-                        values: '19082'
-=======
                         values: 19082
->>>>>>> 71ad44f1b1ce6d623099556d0a37b7eb61b11ad8
                     })
                 ],
             columns:
