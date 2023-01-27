@@ -325,7 +325,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
 
-        const fldLocation = form.addField({
+        /*const fldLocation = form.addField({
             id: 'custpage_cwgp_location',
             type: serverWidget.FieldType.SELECT,
             label: 'Location',
@@ -342,7 +342,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             tab: _CONFIG.TAB[stType]
         });
 
-        log.debug('renderInventoryAdjustment intLocation',intLocation);
+        log.debug('renderInventoryAdjustment intLocation',intLocation);*/
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
@@ -363,7 +363,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
@@ -468,14 +467,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage, intLocation, stType) => {
-        if(stType == 'inventoryadjustment' && intLocation){
+    const getPageData = (objSearch, fldPage, intPage, stType) => {
+        /*if(stType == 'inventoryadjustment' && intLocation){
             objSearch.filters.push(search.createFilter({
                 name: 'location',
                 operator: 'ANYOF',
                 values: intLocation,
             }));
-        }
+        }*/
 
         let stPageSize = 20;
         if(stType == 'itemperlocation'){
@@ -503,16 +502,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
             stUserId
         } = options;
 
-        log.debug('setListValues intLocation',intLocation);
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage, intLocation, stType);
+        const objPagedData = getPageData(objSearch, fldPage, intPage, stType);
         const arrPagedData = objPagedData.data;
         log.debug('arrPagedData', arrPagedData);
 
