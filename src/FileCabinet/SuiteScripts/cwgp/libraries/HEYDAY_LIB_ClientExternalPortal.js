@@ -110,8 +110,8 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             stScannerInput
         } = options;
 
-        //Split scanner input string by any whitespace, and filter only elements with values 
-        let arrItemUpcCodes = stScannerInput.split(/\n*\s+\n*/).filter(el => el)
+        //Split scanner input string by any whitespace (from space, tab, enter), and filter only elements that are not empty 
+        let arrItemUpcCodes = stScannerInput.split(/\s+/).filter(el => el)
         let arrItemLines = [];
         for(var ii = 0; ii < arrItemUpcCodes.length; ii++){ 
             let intItemUpcCode = arrItemUpcCodes[ii];
@@ -232,6 +232,14 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                         intQtyRemaining = parseInt(intQtyRemaining)
                         intQty          = parseInt(intQty)
                         intScannedQty   = parseInt(intScannedQty)
+                        
+                        //Default all falsy values to 0
+                        if(!intQtyRemaining){
+                            intQtyRemaining = 0;
+                        }
+                        if(!intQty){
+                            intQty = 0;
+                        }
                     }
                     catch(e){
                         throw {
