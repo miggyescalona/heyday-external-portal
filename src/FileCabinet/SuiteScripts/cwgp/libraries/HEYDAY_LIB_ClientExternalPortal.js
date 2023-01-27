@@ -194,19 +194,32 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             else if(stPageType == 'itemreceipt'){
                 let index = recCurrent.findSublistWithValue({
                     sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_item',
+                    fieldId     : 'custpage_cwgp_itemid',
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
-                recCurrent.selectLine({ 
-                    sublistId   : stSublistId,
-                    line        : index
-                })
+                if(index > -1){
+                    console.log('index', index)
+                    recCurrent.selectLine({ 
+                        sublistId   : stSublistId,
+                        line        : index
+                    })      
+                    
+                    let intQtyRemaining = recCurrent.getCurrentSublistValue({
+                        sublistId   : stSublistId,
+                        fieldId     : 'custpage_cwgp_quantity_remaining',
+                    });
 
-                recCurrent.setCurrentSublistValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_quantity',
-                    value       : objCurrItemLine.qty
-                });
+                    console.log(intQtyRemaining)
+                    
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : stSublistId,
+                        fieldId     : 'custpage_cwgp_quantity',
+                        value       : objCurrItemLine.qty
+                    });
+                    recCurrent.commitLine({
+                        sublistId   : stSublistId
+                    })
+                }
             }
         }
 

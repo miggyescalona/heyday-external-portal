@@ -42,9 +42,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     stPageType: urlParams.get('rectype')
                 })
 
-                console.log('stScannerInput', stScannerInput)
-                console.log('stFailedCodes', stFailedCodes)
-                console.log(stScannerInput != stFailedCodes)
+                // console.log('stScannerInput', stScannerInput)
+                // console.log('stFailedCodes', stFailedCodes)
+                // console.log(stScannerInput != stFailedCodes)
                 if(stScannerInput != stFailedCodes){
                     
                     currentRecord.setValue({
