@@ -26,7 +26,7 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
             scriptId            : objRetailUrl.SCRIPT_ID,
             returnExternalUrl   : true,
             params: {
-                pageMode    : 'edit',
+                pageMode    : 'create',
                 userId      : stUserId,
                 itemreceiptid : stPoId,
                 accesstype  : stAccessType,
