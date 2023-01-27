@@ -153,12 +153,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
     const mapRetailPOBodyFields = (request) => {
         const stVendor = request.parameters.custpage_cwgp_vendor;
+        const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
         const stLocation = request.parameters.custpage_cwgp_location;
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
 
         const objMapBodyFields = {
             entity: stVendor,
+            subsidiary: stSubsidiary,
             trandate: new Date(stDate),
             memo: stMemoMain || '',
             location: stLocation
