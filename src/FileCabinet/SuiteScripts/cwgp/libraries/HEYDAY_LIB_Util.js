@@ -284,6 +284,10 @@
     };
 
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
+        log.debug('addOptionsVendorsBySubsidiary', JSON.stringify({
+            'fld': fld,
+            'stSubsidiary': stSubsidiary
+        }));
         fld.addSelectOption({
             value: '',
             text: ''
