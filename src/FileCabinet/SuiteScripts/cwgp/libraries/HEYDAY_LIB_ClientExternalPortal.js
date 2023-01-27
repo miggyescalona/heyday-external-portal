@@ -269,11 +269,6 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             if(arrRemainingLines.length > 0){
                 stFailedCodes = generateFailedScannerString({arrRemainingLines})
-                
-                recCurrent.setValue({
-                    fieldId : 'custpage_cwgp_scanupccodes',
-                    value   : stFailedCodes
-                })
             }
             return stFailedCodes;
         }

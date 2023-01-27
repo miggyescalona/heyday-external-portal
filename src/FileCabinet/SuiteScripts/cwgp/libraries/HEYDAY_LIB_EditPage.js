@@ -314,7 +314,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const {
             objItemResultSet,
             objUpcMap,
-        }= EPLib.initScanner({
+        } = EPLib.initScanner({
             stType,
             stSubsidiary,
             _CONFIG
@@ -462,6 +462,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {
+            objItemResultSet,
+            objUpcMap,
+        } = EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
