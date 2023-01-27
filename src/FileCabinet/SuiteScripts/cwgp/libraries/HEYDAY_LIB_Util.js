@@ -300,7 +300,7 @@
                     search.createFilter({
                         name: 'internalid',
                         operator: search.Operator.ANYOF,
-                        values: 19082
+                        values: '19082'
                     })
                 ],
             columns:
@@ -594,7 +594,7 @@
             objPO.item.push({
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'sitemname',
                     line: x
                 }),
                 custpage_cwgp_description: objItemReceipt.getSublistValue({
