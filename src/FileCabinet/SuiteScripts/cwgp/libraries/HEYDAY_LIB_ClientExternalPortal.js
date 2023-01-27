@@ -150,10 +150,60 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             stPageType
         } = options;
 
+        const addItemLine = (options) => {
+            const {
+                recCurrent,
+                objUpcToItemIdMap,
+                stPageType,
+                objCurrItemLine,
+                stSublistId,
+            } = options;
+
+            if(stPageType == 'intercompanypo'){
+
+                recCurrent.selectNewLine({ 
+                    sublistId   : stSublistId,
+                })
+                recCurrent.setCurrentSublistValue({
+                    sublistId   : stSublistId,
+                    fieldId     : 'custpage_cwgp_item',
+                    value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                });
+                
+                recCurrent.setCurrentSublistValue({
+                    sublistId   : stSublistId,
+                    fieldId     : 'custpage_cwgp_quantity',
+                    value       : objCurrItemLine.qty
+                });
+                recCurrent.commitLine({
+                    sublistId   : stSublistId
+                })
+
+            }
+            else if(stPageType == 'itemreceipt'){
+                let index = recCurrent.findSublistWithValue({
+                    sublistId   : stSublistId,
+                    fieldId     : 'custpage_cwgp_item',
+                    value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                })
+                recCurrent.selectLine({ 
+                    sublistId   : stSublistId,
+                    line        : index
+                })
+
+                recCurrent.setCurrentSublistValue({
+                    sublistId   : stSublistId,
+                    fieldId     : 'custpage_cwgp_quantity',
+                    value       : objCurrItemLine.qty
+                });
+            }
+        }
+
         let stSublistId = ''
         let stFailedCodes = ''
 
         var recCurrent = currentRecord.get();
+        console.log(recCurrent)
 
         try{
 
@@ -176,28 +226,13 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                 //{upc_code: 12345, qty: 5}
 
                 try{
-
-                    objUpcToItemIdMap[objCurrItemLine.upc_code]
-
-
-                    recCurrent.selectNewLine({ 
-                        sublistId   : stSublistId,
+                    addItemLine({
+                        recCurrent,
+                        objUpcToItemIdMap,
+                        stPageType,
+                        objCurrItemLine,
+                        stSublistId,
                     })
-                    recCurrent.setCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_item',
-                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                    });
-                    
-                    recCurrent.setCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
-                        value       : objCurrItemLine.qty
-                    });
-                    recCurrent.commitLine({
-                        sublistId   : stSublistId
-                    })
-
                 }
                 catch(e){
                     arrFailedIndices.push(ii)

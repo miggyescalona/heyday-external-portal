@@ -36,7 +36,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
                 let stFailedCodes = ClientEPLib.addScannedItemsToLines({
                     stUpcMap,
-                    stScannerInput
+                    stScannerInput,
+                    stPageType: 'intercompanypo'
                 })
 
                 currentRecord.setValue({
