@@ -96,6 +96,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+                BUSINESS_LINE: {
+                    id: 'custpage_cwgp_businessline',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Business Line',
+                    container: 'CLASS'
+                },
                 LOCATION: {
                     id: 'custpage_cwgp_location',
                     type: serverWidget.FieldType.SELECT,
@@ -284,6 +290,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount'
+                    },
+                    BUSINESS_LINE: {
+                        id: 'custpage_cwgp_businessline',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Business Line'
                     }
                 },    
                 itemreceipt: {
@@ -380,7 +391,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line'
-                    },
+                    }
                 }
             }
         },
@@ -496,7 +507,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                fld.defaultValue = 1;
+            }
             if (id == 'custpage_cwgp_vendor') {
                 utilLib.addOptionsVendorsBySubsidiary(fld, stSubsidiary);
             }
@@ -551,6 +565,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     fld: col, 
                     objResultSet: objItemResultSet
                 });
+            }
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                fld.defaultValue = 1;
             }
 
             if (displayType) {
