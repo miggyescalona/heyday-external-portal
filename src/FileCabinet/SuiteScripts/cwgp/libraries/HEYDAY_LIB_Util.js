@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, EPLib) => {
+ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -34,7 +34,32 @@
                     id: 'custpage_cwgp_createdfrom',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From'
-                }
+                },
+                NAME: {
+                    id: 'custpage_cwgp_name',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Item Name'
+                },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Location'
+                },
+                AVAILABLE: {
+                    id: 'custpage_cwgp_available',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Available'
+                },
+                ON_HAND: {
+                    id: 'custpage_cwgp_onhand',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'On Hand'
+                },
+                COMMITTED: {
+                    id: 'custpage_cwgp_committed',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Committed'
+                },
             }
         },
         SCRIPT:{
@@ -54,7 +79,8 @@
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
-            'inventoryadjustment': mapInventoryAdjustment
+            'inventoryadjustment': mapInventoryAdjustment,
+            'itemperlocation': mapItemPerLocation
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -151,6 +177,29 @@
         return arrMapInventoryAdjustment;
     };
 
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
+
+        let arrMapItemperLocation= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stItemName = result.getValue({ name: 'itemid' });
+            const stLocation = result.getText({ name: 'inventorylocation' });
+            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
+            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
+            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
+          
+            arrMapItemperLocation.push({
+                [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
+                [_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
+                [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                [_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted
+            })
+        });
+
+        return arrMapItemperLocation;
+    };
+
 
     
 
@@ -235,6 +284,10 @@
     };
 
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
+        log.debug('addOptionsVendorsBySubsidiary', JSON.stringify({
+            'fld': fld,
+            'stSubsidiary': stSubsidiary
+        }));
         fld.addSelectOption({
             value: '',
             text: ''
@@ -245,9 +298,9 @@
             filters:
                 [
                     search.createFilter({
-                        name: 'subsidiary',
+                        name: 'internalid',
                         operator: search.Operator.ANYOF,
-                        values: stSubsidiary
+                        values: '19082'
                     })
                 ],
             columns:
@@ -264,26 +317,20 @@
         });
     };
 
-    const addOptionsItemBySubsidiary = (fld, stSubsidiary) => {
+    const addOptionsItemBySubsidiary = (options) => {   
+
+        const {
+            fld, 
+            objResultSet
+        } = options
         fld.addSelectOption({
             value: '',
             text: ''
         });
-        search.create({
-            type: "item",
-            filters:
-                [
-                    search.createFilter({
-                        name: 'subsidiary',
-                        operator: search.Operator.ANYOF,
-                        values: stSubsidiary
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'itemid' })
-                ]
-        }).run().each(function (result) {
+
+        log.debug('objResultSet', objResultSet)
+
+        objResultSet.each(function (result) {
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'itemid' })
@@ -547,7 +594,7 @@
             objPO.item.push({
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'sitemname',
                     line: x
                 }),
                 custpage_cwgp_description: objItemReceipt.getSublistValue({
