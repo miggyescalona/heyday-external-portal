@@ -332,7 +332,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             container: _CONFIG.TAB[stType]
         });
         util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;
+        fldLocation.defaultValue = intLocation;*/
 
         //add sublist values
         const sbl = form.addSublist({
@@ -342,7 +342,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             tab: _CONFIG.TAB[stType]
         });
 
-        log.debug('renderInventoryAdjustment intLocation',intLocation);*/
+        //log.debug('renderInventoryAdjustment intLocation',intLocation);*/
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
