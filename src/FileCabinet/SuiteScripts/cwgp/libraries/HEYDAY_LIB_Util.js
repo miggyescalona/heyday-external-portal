@@ -592,6 +592,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         for(var x = 0; x < intLineCount; x++){
             objPO.item.push({
+                custpage_cwgp_itemid: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: x
+                }),
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'sitemname',
