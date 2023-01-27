@@ -254,9 +254,16 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             console.log('finished')
 
             //Get array of lines that failed and map error to them
+            //Map first to preserve index reference
+            arrItemLines.map((element, index) => { 
+                console.log('element',element); 
+                console.log('index', index); 
+                if(objFailedIndices.hasOwnProperty(index)){
+                    element.error = objFailedIndices[index]
+                }
+            })
             let arrRemainingLines = arrItemLines.filter((element, index) => objFailedIndices.hasOwnProperty(index))
             console.log('arrRemainingLines', arrRemainingLines)
-            arrRemainingLines.map((element, index) => { console.log('element',element); console.log('index', index); element.error = objFailedIndices[index]})
             console.log('objFailedIndices', objFailedIndices)
             console.log('arrRemainingLines', arrRemainingLines)
 
@@ -264,7 +271,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                 stFailedCodes = generateFailedScannerString({arrRemainingLines})
                 
                 recCurrent.setValue({
-                    id      : 'custpage_cwgp_scanupccodes',
+                    fieldId : 'custpage_cwgp_scanupccodes',
                     value   : stFailedCodes
                 })
             }
