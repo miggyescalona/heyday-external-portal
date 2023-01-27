@@ -197,8 +197,14 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     fieldId     : 'custpage_cwgp_itemid',
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
+
+                console.table({
+                    intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
+                    index
+                })
+                
+
                 if(index > -1){
-                    console.log('index', index)
                     // recCurrent.selectLine({ 
                     //     sublistId   : stSublistId,
                     //     line        : index
