@@ -235,23 +235,36 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     let intQtyToSet;
                     let blOverRcvd = false;
 
-                    if(intQtyRemaining <= intRcvdQty){
+                    if(intQtyRemaining > intRcvdQty){
                         intQtyToSet = intRcvdQty
                     }
                     //If received quantity exceeds quantity remaining
                     else{
                         intQtyToSet = intQtyRemaining
                         objCurrItemLine.qty = intRcvdQty - intQtyRemaining
+                        blOverRcvd = true;
                     }
-                    recCurrent.setSublistValue({
+                    console.table({
+                        intQtyRemaining,
+                        intQty,
+                        intScannedQty,
+                        intRcvdQty,
+                        intQtyToSet
+                    })
+
+                    recCurrent.selectLine({
+                        sublistId   : stSublistId,
+                        line        : index
+                    });
+
+                    recCurrent.setCurrentSublistValue({
                         sublistId   : stSublistId,
                         fieldId     : 'custpage_cwgp_quantity',
                         value       : intQtyToSet,
-                        line        : index
                     });
-                    // recCurrent.commitLine({
-                    //     sublistId   : stSublistId
-                    // })
+                    recCurrent.commitLine({
+                        sublistId   : stSublistId
+                    })
                     if(blOverRcvd){
                         throw {
                             name    : 'EXCESS_SCANNED_QTY',
@@ -309,13 +322,9 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             }
 
-            console.log('finished')
-
             //Get array of lines that failed and map error to them
             //Map first to preserve index reference
             arrItemLines.map((element, index) => { 
-                console.log('element',element); 
-                console.log('index', index); 
                 if(objFailedIndices.hasOwnProperty(index)){
                     element.error = objFailedIndices[index]
                 }
@@ -323,7 +332,6 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             let arrRemainingLines = arrItemLines.filter((element, index) => objFailedIndices.hasOwnProperty(index))
             console.log('arrRemainingLines', arrRemainingLines)
             console.log('objFailedIndices', objFailedIndices)
-            console.log('arrRemainingLines', arrRemainingLines)
 
             if(arrRemainingLines.length > 0){
                 stFailedCodes = generateFailedScannerString({arrRemainingLines})
