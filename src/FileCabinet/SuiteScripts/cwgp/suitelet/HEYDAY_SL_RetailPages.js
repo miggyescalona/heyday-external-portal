@@ -13,13 +13,14 @@
 
 define([
     'N/search',
-    'N/redirect',
+    'N/redirect',,
     '../libraries/HEYDAY_LIB_ListPage.js',
     '../libraries/HEYDAY_LIB_CreatePage.js',
     '../libraries/HEYDAY_LIB_ViewPage.js',
     '../libraries/HEYDAY_LIB_EditPage.js',
-    '../libraries/HEYDAY_LIB_RetailInterPO.js'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib) => {
+    '../libraries/HEYDAY_LIB_RetailInterPO.js',
+    '../libraries/HEYDAY_LIB_ExternalPortal'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -321,10 +322,14 @@ define([
             }
         }
 
+        
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        
+
         if(stRecType == 'intercompanypo'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
@@ -338,8 +343,8 @@ define([
         }
         else if(stRecType == 'itemreceipt'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
@@ -353,8 +358,8 @@ define([
         }
         else if(stRecType == 'inventoryadjustment'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
