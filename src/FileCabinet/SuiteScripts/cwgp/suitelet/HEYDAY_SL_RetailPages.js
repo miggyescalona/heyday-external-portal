@@ -298,8 +298,7 @@ define([
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_tranid: stTranId
+            custpage_cwgp_rectype: stRecType
         } = request.parameters;
 
         let idRec = null;
@@ -324,7 +323,7 @@ define([
 
         
         const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-        
+        let stTranId = getTranIdSearch(idRec,stRecType);
 
         if(stRecType == 'intercompanypo'){
             redirect.toSuitelet({
@@ -371,6 +370,38 @@ define([
                 }
             });
         }
+    };
+
+    const getTranIdSearch = (recId, stRecType) => {
+        let stTranId;
+
+        stRecType = stRecType == 'intercompanypo' ? 'PurchOrd' : stRecType == 'itemreceipt' ? 'ItemRcpt' : 'InvAdjst'
+
+        log.debug('getTranIdSearch stRecType', stRecType);
+    
+        var purchaseorderSearchObj = search.create({
+            type: "purchaseorder",
+            filters:
+            [
+               ["internalid","anyof", recId], 
+               "AND", 
+               ["type","anyof",stRecType], 
+               "AND", 
+               ["mainline","is","T"]
+            ],
+            columns:
+            [
+               search.createColumn({name: "tranid", label: "Document Number"})
+            ]
+         });
+         var searchResultCount = purchaseorderSearchObj.runPaged().count;
+         log.debug("result count",searchResultCount);
+         purchaseorderSearchObj.run().each(function(result){
+            stTranId = result.getValue({ name: 'tranid' })
+            return true;
+         });
+
+        return stTranId;
     };
 
     const buildIntercompanyPOSearch = (stSubsidiary) => {
