@@ -157,13 +157,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stLocation = request.parameters.custpage_cwgp_location;
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
+        const stBusinessLine = request.parameters.custpage_cwgp_businessline;
 
         const objMapBodyFields = {
             entity: stVendor,
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),
             memo: stMemoMain || '',
-            location: stLocation
+            location: stLocation,
+            class: stBusinessLine
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -236,6 +238,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 rate: request.getSublistValue({
                     group: 'custpage_interpo_items',
                     name: 'custpage_cwgp_rate',
+                    line: i
+                }),
+                class: request.getSublistValue({
+                    group: 'custpage_interpo_items',
+                    name: 'custpage_cwgp_businessline',
                     line: i
                 })
             })
