@@ -13,7 +13,7 @@
 
 define([
     'N/search',
-    'N/redirect',,
+    'N/redirect',
     '../libraries/HEYDAY_LIB_ListPage.js',
     '../libraries/HEYDAY_LIB_CreatePage.js',
     '../libraries/HEYDAY_LIB_ViewPage.js',
