@@ -78,7 +78,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
                     container: 'PRIMARY',
-                    displayType: 'inline'
+                    displayType: 'inline',
+                    breakType: 'STARTCOL'
                 },
                 APPROVAL_STATUS: {
                     id: 'custpage_cwgp_approvalstatus',
@@ -92,7 +93,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'Amount',
                     container: 'PRIMARY',
-                    displayType: 'inline'
+                    displayType: 'inline',
+                    breakType: 'STARTCOL'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -465,7 +467,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 source,
                 container,
                 mandatory,
-                displayType
+                displayType,
+                breakType
             } = objBodyFields[stCol];
 
             let fld = form.addField({
@@ -482,6 +485,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
             if (displayType) {
                 fld.updateDisplayType({ displayType });
+            }
+
+            if (breakType) {
+                fld.updateBreakType({ breakType });
             }
 
             if (objPO.body[fld.id] != 'undefined') {
@@ -525,11 +532,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         utilLib.setSublistValues(sbl, objPO);
 
-        form.addButton({
-            id: 'custpage_edit_btn',
-            label: 'Edit',
-            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType},${stTranId},'intercompanypo')`
-        });
+        let stApprovalStatus = utilLib.getApprovalStatus(stPoId);
+
+
+        if(stApprovalStatus != 'Approved'){
+                form.addButton({
+                id: 'custpage_edit_btn',
+                label: 'Edit',
+                functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType},${stTranId},'intercompanypo')`
+            });
+        }
 
         form.addButton({
             id: 'custpage_back_button',
@@ -877,6 +889,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         div.fgroup_title {
             font-size: 14px !important;
+        }
+
+        #custpage_cwgp_totalamount_val {
+            font-weight: bold !important;
         }
     </style>`;
 
