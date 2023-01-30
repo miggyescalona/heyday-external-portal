@@ -109,7 +109,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Committed'
                     },
-                    
+
                 }
             }
         }
@@ -325,14 +325,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
 
-        const fldLocation = form.addField({
+        /*const fldLocation = form.addField({
             id: 'custpage_cwgp_location',
             type: serverWidget.FieldType.SELECT,
             label: 'Location',
             container: _CONFIG.TAB[stType]
         });
         util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;
+        fldLocation.defaultValue = intLocation;*/
 
         //add sublist values
         const sbl = form.addSublist({
@@ -342,7 +342,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             tab: _CONFIG.TAB[stType]
         });
 
-        log.debug('renderInventoryAdjustment intLocation',intLocation);
+        //log.debug('renderInventoryAdjustment intLocation',intLocation);*/
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
@@ -363,7 +363,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
@@ -392,7 +391,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const {
             request,
             response,
-            stSubsidiary,
             stType,
             stAccessType,
             stUserId,
@@ -454,7 +452,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
@@ -470,15 +467,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage, intLocation, stType) => {
-        if(stType == 'inventoryadjustment' && intLocation){
+    const getPageData = (objSearch, fldPage, intPage, stType) => {
+        /*if(stType == 'inventoryadjustment' && intLocation){
             objSearch.filters.push(search.createFilter({
                 name: 'location',
                 operator: 'ANYOF',
                 values: intLocation,
             }));
+        }*/
+
+        let stPageSize = 20;
+        if(stType == 'itemperlocation'){
+            stPageSize = 30;
         }
-        const objPagedData = objSearch.runPaged({ pageSize: 20 });
+        
+        const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
         log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
 
         objPagedData.pageRanges.map((objPageResult) => {
@@ -499,16 +502,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             objSearch,
             fldPage,
             intPage,
-            intLocation,
             sbl,
             stType,
             stAccessType,
             stUserId
         } = options;
 
-        log.debug('setListValues intLocation',intLocation);
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage, intLocation, stType);
+        const objPagedData = getPageData(objSearch, fldPage, intPage, stType);
         const arrPagedData = objPagedData.data;
         log.debug('arrPagedData', arrPagedData);
 

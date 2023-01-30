@@ -89,6 +89,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         name: 'subsidiary',
                         operator: search.Operator.ANYOF,
                         values: stSubsidiary
+                    }),
+                     search.createFilter({
+                        name: 'type',
+                        operator: search.Operator.ANYOF,
+                        values: 'InvtPart'
                     })
                 ],
                 columns:

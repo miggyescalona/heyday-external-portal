@@ -34,17 +34,25 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
             if(stScannerInput){
 
+                let urlParams = new URL(window.location).searchParams;
+
                 let stFailedCodes = ClientEPLib.addScannedItemsToLines({
                     stUpcMap,
                     stScannerInput,
-                    stPageType: 'intercompanypo'
+                    stPageType: urlParams.get('rectype')
                 })
 
-                currentRecord.setValue({
-                    fieldId,
-                    value               : stFailedCodes,
-                    ignoreFieldChange   : true
-                })
+                // console.log('stScannerInput', stScannerInput)
+                // console.log('stFailedCodes', stFailedCodes)
+                // console.log(stScannerInput != stFailedCodes)
+                if(stScannerInput != stFailedCodes){
+                    
+                    currentRecord.setValue({
+                        fieldId,
+                        value               : stFailedCodes,
+                        ignoreFieldChange   : true
+                    })
+                }
             }
         }
 

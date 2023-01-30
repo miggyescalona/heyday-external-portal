@@ -48,6 +48,9 @@ define([
                 else if(rectype== 'itemreceipt'){
                     renderItemReceipt(request, response);
                 }
+                else if(rectype == 'inventoryadjustment'){
+                    renderInventoryAdjustment(request, response);
+                }
             } else {
                 handleFranchiseTxn(request);
             }
@@ -225,8 +228,73 @@ define([
         }
     };
 
-    const handleTransactions = (request) => {
+    const renderInventoryAdjustment = (request, response) => {
+        const {
+            pageMode: stPageMode,
+            userId: stUserId,
+            inventoryadjustmentid: stPoId,
+            accesstype: stAccessType,
+            tranid: stTranId
+        } = request.parameters;
 
+        log.debug('ia params',request.parameters);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
+        const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
+
+        switch (stPageMode) {
+            case 'list':
+                listPage.renderInventoryAdjustment({
+                    request,
+                    response,
+                    stSubsidiary,
+                    stType: 'inventoryadjustment',
+                    stAccessType,
+                    stUserId,
+                    objSearch: objInventoryAdjustmentSearch
+                });
+
+                break;
+            case 'create':
+                createPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stSubsidiary,
+                    stLocation,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType
+                });
+
+                break;
+            case 'view':
+                viewPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId
+                });
+
+                break;
+            case 'edit':
+                editPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventoryadjustment',
+                    stSubsidiary,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId
+                });
+                break;
+            default:
+                throw 'Page Not Found';
+        }
     };
 
     const buildIntercompanyPOSearch = (stCustomer) => {
