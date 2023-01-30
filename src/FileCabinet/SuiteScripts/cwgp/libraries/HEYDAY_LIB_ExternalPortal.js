@@ -18,31 +18,36 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const SCANNER_UI = {
         FIELD: {
             SCAN_UPC_CODES: {
-                id: 'custpage_cwgp_scanupccodes',
-                type: serverWidget.FieldType.LONGTEXT,
-                label: 'Scan UPC Codes',
-                container: 'SCAN',
+                id          : 'custpage_cwgp_scanupccodes',
+                type        : serverWidget.FieldType.LONGTEXT,
+                label       : 'Scan UPC Codes',
+                container   : 'SCAN',
             },
-            SCAN_BUTTON: {
-                id: 'custpage_cwgp_scanbtnhtml',
-                type: serverWidget.FieldType.INLINEHTML,
-                label: 'Scan UPC Codes',
-                container: 'SCAN',
-            },
+            // SCAN_BUTTON: {
+            //     id: 'custpage_cwgp_scanbtnhtml',
+            //     type: serverWidget.FieldType.INLINEHTML,
+            //     label: 'Scan UPC Codes',
+            //     container: 'SCAN',
+            // },
             MAP_UPC_CODES: {
-                id: 'custpage_cwgp_upccodemap',
-                type: serverWidget.FieldType.LONGTEXT,
-                label: 'UPC Codes Map',
-                container: 'SCAN',
-                displayType: 'hidden'
+                id          : 'custpage_cwgp_upccodemap',
+                type        : serverWidget.FieldType.LONGTEXT,
+                label       : 'UPC Codes Map',
+                container   : 'SCAN',
+                displayType : 'hidden'
             },
         },
         FIELD_GROUP: {
             SCAN: {
-                id: 'custpage_interpo_scan_grp',
-                label: 'Scanner'
+                id      : 'custpage_interpo_scan_grp',
+                label   : 'Scanner'
             }
         },
+        SCAN_BUTTON: {
+            id          : 'custpage_cwgp_scanbtnh',
+            label       : 'Scan UPC Codes',
+            functionName: `scanInputViaBtn()`
+        }
     }
 
     //Adds fields and field group into main _CONFIG file
@@ -173,7 +178,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const getScanButtonCss = () => {
         const stBtnCss = 
         `<div>
-            <button onclick="scanInputViaBtn()" id="custpage_cwgp_scan_button" type="button">Process Codes</button>
+            <button id="custpage_cwgp_scan_button" type="button">Process Codes</button>
         </div>
       
         
@@ -193,6 +198,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         
     return {
         _CONFIG,
+        SCANNER_UI,
         initScanner,
         getInvItemsBySubsidiary,
         getScanButtonCss

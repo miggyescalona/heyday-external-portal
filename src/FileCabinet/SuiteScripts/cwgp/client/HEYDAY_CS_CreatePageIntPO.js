@@ -12,12 +12,22 @@
  */
 
 define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
-     /**
+    
+    /**
      * Function to be executed after page is initialized.
      *
      * @param {Object} context
      */
-     const pageInit = (context) => {
+    const pageInit = (context) => {
+
+        const setScanBtnOnClick = () => {
+            var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+            console.log(objScanButton)
+            $(document).ready(function(){
+                $('#custpage_cwgp_scan_button').on("click", ClientEPLib.scanInputViaBtn())
+            })
+        }
+
         ClientEPLib.getAuthenticationScript();
         setScanBtnOnClick();
     };
@@ -217,11 +227,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         return stQtyOnHand;
     };
 
-    const setScanBtnOnClick = () => {
-        var objScanButton = document.getElementById('custpage_cwgp_scan_button');
-        objScanButton.onclick = ClientEPLib.scanInputViaBtn();         
-    }
-
     const back = (stUserId, stAccessType, stRecType) =>{
    
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
@@ -242,10 +247,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
+    const scanInputViaBtn = ClientEPLib.scanInputViaBtn();
+
     return {
         pageInit,
         fieldChanged,
-        scanInputViaBtn,
-        back
+        back,
+        scanInputViaBtn
     };
 });

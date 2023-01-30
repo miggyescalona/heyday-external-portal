@@ -390,10 +390,11 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
     }
 
     const scanInputViaBtn = () => {
+        console.log('test button')
         let recCurrent = currentRecord.get();
 
-        let stScannerInput = currentRecord.getValue({fieldId})
-        let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        let stScannerInput = recCurrent.getValue({fieldId: 'custpage_cwgp_scanupccodes'})
+        let stUpcMap = recCurrent.getValue({fieldId: 'custpage_cwgp_upccodemap'})
         if(stScannerInput){
 
             let urlParams = new URL(window.location).searchParams;
@@ -410,7 +411,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             // console.log(stScannerInput != stFailedCodes)
             if(stScannerInput != stFailedCodes){
                 
-                currentRecord.setValue({
+                recCurrent.setValue({
                     fieldId             : 'custpage_cwgp_scanupccodes',
                     value               : stFailedCodes,
                     ignoreFieldChange   : true,
