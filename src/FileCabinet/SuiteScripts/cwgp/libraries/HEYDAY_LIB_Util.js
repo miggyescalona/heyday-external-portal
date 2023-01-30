@@ -741,6 +741,36 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
+    const getApprovalStatus = (stPoId) => {
+        let stApprovalStatus;
+
+        search.create({
+            type: search.Type.PURCHASE_ORDER,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: stPoId
+                    }),
+                    search.createFilter({
+                        name: 'mainline',
+                        operator: search.Operator.IS,
+                        values: "T"
+                    }),
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'approvalstatus' }),
+                ]
+        }).run().each((result) => {
+            stApprovalStatus = result.getText({ name: 'approvalstatus' });
+            return true;
+        });
+
+        return stApprovalStatus;
+    };
+
     return {
         mapValues,
         addOptionsVendorsBySubsidiary,
@@ -755,6 +785,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         mapItemReceiptValues,
         mapPOtoItemReceiptValues,
         mapInventoryAdjustmentValues,
-        setSublistValues
+        setSublistValues,
+        getApprovalStatus
     }
 });
