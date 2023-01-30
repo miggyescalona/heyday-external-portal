@@ -29,32 +29,32 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     const fieldChanged = (context) => {
         const { currentRecord, fieldId, sublistId } = context;
 
-        if(fieldId === 'custpage_cwgp_scanupccodes'){
-            let stScannerInput = currentRecord.getValue({fieldId})
-            let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
-            if(stScannerInput){
+        // if(fieldId === 'custpage_cwgp_scanupccodes'){
+        //     let stScannerInput = currentRecord.getValue({fieldId})
+        //     let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        //     if(stScannerInput){
 
-                let urlParams = new URL(window.location).searchParams;
+        //         let urlParams = new URL(window.location).searchParams;
 
-                let stFailedCodes = ClientEPLib.addScannedItemsToLines({
-                    stUpcMap,
-                    stScannerInput,
-                    stPageType: urlParams.get('rectype')
-                })
+        //         let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+        //             stUpcMap,
+        //             stScannerInput,
+        //             stPageType: urlParams.get('rectype')
+        //         })
 
-                // console.log('stScannerInput', stScannerInput)
-                // console.log('stFailedCodes', stFailedCodes)
-                // console.log(stScannerInput != stFailedCodes)
-                if(stScannerInput != stFailedCodes){
+        //         // console.log('stScannerInput', stScannerInput)
+        //         // console.log('stFailedCodes', stFailedCodes)
+        //         // console.log(stScannerInput != stFailedCodes)
+        //         if(stScannerInput != stFailedCodes){
                     
-                    currentRecord.setValue({
-                        fieldId,
-                        value               : stFailedCodes,
-                        ignoreFieldChange   : true
-                    })
-                }
-            }
-        }
+        //             currentRecord.setValue({
+        //                 fieldId,
+        //                 value               : stFailedCodes,
+        //                 ignoreFieldChange   : true
+        //             })
+        //         }
+        //     }
+        // }
 
         if (sublistId === 'custpage_interpo_items') {
             //default item details

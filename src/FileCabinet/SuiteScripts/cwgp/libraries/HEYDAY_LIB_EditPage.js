@@ -349,6 +349,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_tranid = stTranId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        objPO.body.custpage_cwgp_upccodemap = EPLib.getScanButtonCss();
         //log.debug('objPO', objPO);
 
         //render body fields
