@@ -399,7 +399,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             let urlParams = new URL(window.location).searchParams;
 
-            let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+            let stFailedCodes = addScannedItemsToLines({
                 stUpcMap,
                 stScannerInput,
                 stPageType: urlParams.get('rectype'),

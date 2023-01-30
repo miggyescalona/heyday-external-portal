@@ -23,12 +23,12 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 label       : 'Scan UPC Codes',
                 container   : 'SCAN',
             },
-            // SCAN_BUTTON: {
-            //     id: 'custpage_cwgp_scanbtnhtml',
-            //     type: serverWidget.FieldType.INLINEHTML,
-            //     label: 'Scan UPC Codes',
-            //     container: 'SCAN',
-            // },
+            SCAN_BUTTON: {
+                id: 'custpage_cwgp_scanbtnhtml',
+                type: serverWidget.FieldType.INLINEHTML,
+                label: 'Scan UPC Codes',
+                container: 'SCAN',
+            },
             MAP_UPC_CODES: {
                 id          : 'custpage_cwgp_upccodemap',
                 type        : serverWidget.FieldType.LONGTEXT,
@@ -44,7 +44,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             }
         },
         SCAN_BUTTON: {
-            id          : 'custpage_cwgp_scanbtnh',
+            id          : 'custpage_cwgp_scanbtn',
             label       : 'Scan UPC Codes',
             functionName: `scanInputViaBtn()`
         }
