@@ -389,7 +389,8 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         return stFailedCodes;
     }
 
-    const scanInputViaBtn = () => {
+    const scanInputViaBtn = (event) => {
+        event.preventDefault();
         console.log('test button')
         let recCurrent = currentRecord.get();
 

@@ -43,11 +43,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 label   : 'Scanner'
             }
         },
-        SCAN_BUTTON: {
-            id          : 'custpage_cwgp_scanbtn',
-            label       : 'Scan UPC Codes',
-            functionName: `scanInputViaBtn()`
-        }
+        // SCAN_BUTTON: {
+        //     id          : 'custpage_cwgp_scanbtn',
+        //     label       : 'Scan UPC Codes',
+        //     functionName: `scanInputViaBtn()`
+        // }
     }
 
     //Adds fields and field group into main _CONFIG file
@@ -177,14 +177,12 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = () => {
         const stBtnCss = 
-        `<div>
-            <button id="custpage_cwgp_scan_button" type="button">Process Codes</button>
-        </div>
-      
+        `<input id="custpage_cwgp_scan_button" type="button">Process Codes</input>
         
         <style>
 
-        button#custpage_cwgp_scan_button {
+        input#custpage_cwgp_scan_button, 
+        input#custpage_cwgp_scan_button {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;

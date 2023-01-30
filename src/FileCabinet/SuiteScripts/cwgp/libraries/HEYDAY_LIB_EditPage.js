@@ -453,6 +453,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             functionName: `back(${stUserId}, ${stAccessType}, 'intercompanypo')`
         });
 
+        // form.addButton(EPLib.SCANNER_UI.SCAN_BUTTON);
+
         response.writePage(form);
     };
 
