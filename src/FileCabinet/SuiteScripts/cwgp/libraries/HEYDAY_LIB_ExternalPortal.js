@@ -23,6 +23,12 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 label: 'Scan UPC Codes',
                 container: 'SCAN',
             },
+            SCAN_BUTTON: {
+                id: 'custpage_cwgp_scan_button',
+                type: serverWidget.FieldType.INLINEHTML,
+                label: 'Scan UPC Codes',
+                container: 'SCAN',
+            },
             MAP_UPC_CODES: {
                 id: 'custpage_cwgp_upccodemap',
                 type: serverWidget.FieldType.LONGTEXT,
@@ -163,10 +169,32 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             log.error('initScanner  - Error', e)
         }
     }
+
+    const getScanButtonCss = () => {
+        const stBtnCss = 
+        `<div>
+            <button onclick="scanInputViaBtn()">Process Codes</button>
+        </div>
+      
+        
+        <style>
+
+        input#custpage_cwgp_scan_button {
+            background-color: white !important;
+            color: #105368 !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        </style>`;
+
+        return stBtnCss;
+    };
+    
         
     return {
         _CONFIG,
         initScanner,
         getInvItemsBySubsidiary,
+        getScanButtonCss
     }
 });
