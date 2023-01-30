@@ -194,11 +194,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
+                        displayType: 'DISABLED'
                     },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Description'
+                        label: 'Description',
+                        displayType: 'DISABLED'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -208,12 +210,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     RATE: {
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
+                        label: 'Rate',
+                        displayType: 'DISABLED'
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Amount'
+                        label: 'Amount',
+                        displayType: 'DISABLED'
                     }
                 },    
                 itemreceipt: {
