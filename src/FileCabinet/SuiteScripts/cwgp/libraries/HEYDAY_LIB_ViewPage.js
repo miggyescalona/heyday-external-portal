@@ -80,6 +80,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                APPROVAL_STATUS: {
+                    id: 'custpage_cwgp_approvalstatus',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Approval Status',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                AMOUNT: {
+                    id: 'custpage_cwgp_totalamount',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Amount',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -256,6 +270,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',

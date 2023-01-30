@@ -465,7 +465,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'memo' }),
                     search.createColumn({ name: 'quantity' }),
                     search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'amount' })
+                    search.createColumn({ name: 'amount' }),
+                    search.createColumn({ name: 'approvalstatus' }),
+                    search.createColumn({ name: 'custitem_heyday_sku', join: 'item' }),
+                    search.createColumn({ name: 'custitemheyday_upccode', join: 'item' })
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -476,6 +479,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_date = result.getValue({ name: 'trandate' });
                 objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
                 objPO.body.custpage_cwgp_location = result.getValue({ name: 'location' });
+                objPO.body.custpage_cwgp_approvalstatus= result.getValue({ name: 'approvalstatus' });
+                objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
@@ -483,6 +488,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
+                    custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }),
+                    custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }),
                 });
             }
 
