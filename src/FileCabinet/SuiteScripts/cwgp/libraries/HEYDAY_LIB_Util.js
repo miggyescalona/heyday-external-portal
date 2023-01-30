@@ -479,7 +479,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_date = result.getValue({ name: 'trandate' });
                 objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
                 objPO.body.custpage_cwgp_location = result.getValue({ name: 'location' });
-                objPO.body.custpage_cwgp_approvalstatus= result.getValue({ name: 'approvalstatus' });
+                objPO.body.custpage_cwgp_approvalstatus= result.getText({ name: 'approvalstatus' });
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
             } else {
                 objPO.item.push({
