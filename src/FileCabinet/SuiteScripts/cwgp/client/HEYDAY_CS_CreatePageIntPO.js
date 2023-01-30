@@ -19,6 +19,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      */
      const pageInit = (context) => {
         ClientEPLib.getAuthenticationScript();
+        setScanBtnOnClick();
     };
     
     /**
@@ -216,6 +217,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         return stQtyOnHand;
     };
 
+    const setScanBtnOnClick = () => {
+        var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+        objScanButton.onclick = ClientEPLib.scanInputViaBtn();         
+    }
+
     const back = (stUserId, stAccessType, stRecType) =>{
    
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
@@ -236,10 +242,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
-
     return {
         pageInit,
         fieldChanged,
+        scanInputViaBtn,
         back
     };
 });

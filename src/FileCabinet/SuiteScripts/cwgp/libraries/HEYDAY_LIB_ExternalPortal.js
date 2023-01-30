@@ -24,7 +24,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 container: 'SCAN',
             },
             SCAN_BUTTON: {
-                id: 'custpage_cwgp_scan_button',
+                id: 'custpage_cwgp_scanbtnhtml',
                 type: serverWidget.FieldType.INLINEHTML,
                 label: 'Scan UPC Codes',
                 container: 'SCAN',
@@ -173,13 +173,13 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const getScanButtonCss = () => {
         const stBtnCss = 
         `<div>
-            <button onclick="scanInputViaBtn()">Process Codes</button>
+            <button onclick="scanInputViaBtn()" id="custpage_cwgp_scan_button" type="button">Process Codes</button>
         </div>
       
         
         <style>
 
-        input#custpage_cwgp_scan_button {
+        button#custpage_cwgp_scan_button {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;
