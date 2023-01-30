@@ -194,11 +194,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
+                        displayType: 'DISABLED'
                     },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Description'
+                        label: 'Description',
+                        displayType: 'DISABLED'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -208,12 +210,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     RATE: {
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
+                        label: 'Rate',
+                        displayType: 'DISABLED'
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Amount'
+                        label: 'Amount',
+                        displayType: 'DISABLED'
                     }
                 },    
                 itemreceipt: {
@@ -349,7 +353,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_tranid = stTranId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
         //log.debug('objPO', objPO);
 
         //render body fields
@@ -449,8 +452,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'intercompanypo')`
         });
-
-        form.addButton(EPLib.SCANNER_UI.SCAN_BUTTON);
 
         response.writePage(form);
     };
