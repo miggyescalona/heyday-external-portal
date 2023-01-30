@@ -92,7 +92,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'Amount',
                     container: 'PRIMARY',
-                    displayType: 'inline'
+                    displayType: 'inline',
+                    breakType: 'STARTCOL'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -465,7 +466,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 source,
                 container,
                 mandatory,
-                displayType
+                displayType,
+                breakType
             } = objBodyFields[stCol];
 
             let fld = form.addField({
@@ -482,6 +484,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
             if (displayType) {
                 fld.updateDisplayType({ displayType });
+            }
+
+            if (breakType) {
+                fld.updateBreakType({ breakType });
             }
 
             if (objPO.body[fld.id] != 'undefined') {
