@@ -177,15 +177,49 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = () => {
         const stBtnCss = 
-        `<input id="custpage_cwgp_scan_button" type="button">Process Codes</input>
+        `<button id="custpage_cwgp_scan_button" type="button" class="navbutton">Process<br />UPC Codes</button>
         
         <style>
 
-        input#custpage_cwgp_scan_button, 
-        input#custpage_cwgp_scan_button {
-            background-color: white !important;
-            color: #105368 !important;
+        .navbutton {
+            font-family: 'Roboto', sans-serif;
             font-family: 'Roboto Mono', monospace;
+            color: #105368;
+            background-color: transparent;
+            transition-duration: 0.4s;
+            background-position-x: 0%;
+            background-position-y: 0%;
+            background-repeat: repeat;
+            background-attachment: scroll;
+            background-image: none;
+            background-size: auto;
+            background-origin: padding-box;
+            background-clip: border-box;
+        }
+
+        .navbutton:hover {
+            background-color: #105368;
+            color: white;
+        }
+
+        button#custpage_cwgp_scan_button{
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px !important;
+            font-weight: 600;
+            padding: 20px 15px;
+        }
+
+         
+        tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
+            width: 3%
+        }
+
+
+        tr#tr_fg_custpage_interpo_scan_grp > td:nth-child(2) > table.table_fields>tbody{
+            height: "165px";
+            display: grid;
+            height: 165px;
+            align-items: center;
         }
 
         </style>`;
