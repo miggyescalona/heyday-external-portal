@@ -323,11 +323,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_adjustqtyby',
                     line: i
                 }),
-                department: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_department',
-                    line: i
-                }),
                 class: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
                     name: 'custpage_cwgp_businessline',

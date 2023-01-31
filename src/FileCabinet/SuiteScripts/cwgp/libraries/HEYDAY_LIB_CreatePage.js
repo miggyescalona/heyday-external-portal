@@ -251,7 +251,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     id: 'custpage_cwgp_businessline',
                     type: serverWidget.FieldType.SELECT,
                     label: 'Business Line',
-                    container: 'CLASS'
+                    container: 'CLASS',
+                    displayType: 'inline'
                 },
                 ADJUSTMENT_LOCATION: {
                     id: 'custpage_cwgp_adjustmentlocation',
@@ -839,11 +840,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
 
             if(id == 'custpage_cwgp_location'){
-                col.defaultValue = stLocation;
+                fld.defaultValue = stLocation;
             }
 
             if(id == 'custpage_cwgp_businessline'){
-                col.defaultValue = 1;
+                fld.defaultValue = 1;
             }
 
 
@@ -898,16 +899,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+                log.debug('loc',stLocation);
+                col.defaultValue = stLocation;
             }
             if (id == 'custpage_cwgp_businessline') {
                 utilLib.addOptionsBusinessLine(col);
+                col.defaultValue = 1;
             }
             if (displayType) {
                 col.updateDisplayType({ displayType });
-            }
-
-            if(id == 'custpage_cwgp_location'){
-                col.defaultValue = stLocation;
             }
 
 
