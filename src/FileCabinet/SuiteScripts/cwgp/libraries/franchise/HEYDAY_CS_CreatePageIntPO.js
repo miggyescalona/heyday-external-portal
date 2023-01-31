@@ -80,6 +80,35 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 
             }
         }
+
+        if(sublistId === 'custpage_inventorayadjustment_items'){
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventorayadjustment_items',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });
+
+                const stCustomer = currentRecord.getValue({fieldId: 'custpage_cwgp_customer'});
+                console.log('stCustomer', stCustomer);
+                const getQtyOnHand = getQtyOnHandFranchise(stItem,stCustomer);
+
+            }
+
+        }
+
+
     };
 
     const getItemDetails = (stItem) => {
@@ -126,6 +155,34 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         });
 
         window.location = stFranchiseUrl;
+    };
+
+    const getQtyOnHandFranchise = (stItem, stCustomer) => {
+
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                item:   stItem,
+                customer: stCustomer
+            }
+        });
+
+        const objResponse = https.get({
+            url: stCreateIntPOBaseUrl,
+        });
+        console.log('objResponse', objResponse);
+        const { item } = JSON.parse(objResponse.body);
+
+        return {
+            'custpage_cwgp_description': item.itemid,
+            'custpage_cwgp_rate': item.cost || 0,
+            'custpage_cwgp_quantity': 1,
+            'custpage_cwgp_amount': item.cost || 0
+        };
     };
 
     return {
