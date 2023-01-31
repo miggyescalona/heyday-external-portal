@@ -11,22 +11,25 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
             franchisepo: 'Franchise - Purchase Order',
-            itemreceipt: 'Item Receipt'
+            itemreceipt: 'Item Receipt',
+            inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
             franchisepo: 'custpage_interpo_itemstab',
-            itemreceipt: 'custpage_itemreceipt_itemstab'
+            itemreceipt: 'custpage_itemreceipt_itemstab',
+            inventoryadjustment: 'custpage_inventoryadjustment_itemstab'
         },
         SUBLIST: {
             franchisepo: 'custpage_interpo_items',
-            itemreceipt: 'custpage_itemreceipt_items'
+            itemreceipt: 'custpage_itemreceipt_items',
+            inventoryadjustment: 'custpage_inventorayadjustment_items'
         },
         FIELD: {
             franchisepo: {
@@ -165,6 +168,53 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+            },
+            inventoryadjustment:{
+                HTML_CSS: {
+                    id: 'custpage_cwgp_htmlcss',
+                    type: serverWidget.FieldType.INLINEHTML,
+                    label: 'Html Css',
+                },
+                PAGE_MODE: {
+                    id: 'custpage_cwgp_pagemode',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'pageMode',
+                    displayType: 'hidden'
+                },
+                USER_ID: {
+                    id: 'custpage_cwgp_userid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'pageMode',
+                    displayType: 'hidden'
+                },
+                ACCESS_TYPE: {
+                    id: 'custpage_cwgp_accesstype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'accessType',
+                    displayType: 'hidden'
+                }, 
+                CUSTOMER: {
+                    id: 'custpage_cwgp_customer',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Customer',
+                    container: 'PRIMARY',
+                    source: 'customer',
+                    mandatory: true,
+                    displayType: 'inline'
+                },
+                DATE: {
+                    id: 'custpage_cwgp_date',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Date',
+                    container: 'PRIMARY',
+                    mandatory: true
+                },
+                MEMO: {
+                    id: 'custpage_cwgp_memomain',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Memo',
+                    container: 'PRIMARY'
+                }
             }
         },
         COLUMN: {
@@ -235,6 +285,35 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
                     }
+                },
+                inventoryadjustment: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity On Hand'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjust Qty. By'
+                    },
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'New Quantity'
+                    }
                 }
             }
         },
@@ -258,12 +337,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_itemreceipt_class_grp',
                     label: 'Classification'
                 }
+            },
+            inventoryadjustment:{
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustment_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustment_class_grp',
+                    label: 'Classification'
+                }
             }
         },
-        CLIENT_SCRIPT: {
-            franchisepo: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
-            itemreceipt: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
-        }
+        CLIENT_SCRIPT: '../franchise/HEYDAY_CS_CreatePageIntPO.js'
+        
     }
 
     const render = (options) => {
@@ -280,7 +367,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -296,19 +398,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 label
             });
         });
-
-        //get inventory items and map UPC codes for scanning
-        let objItemResultSet = utilLib.getInvItemsBySubsidiary(stSubsidiary);
-
-        let objUpcMap = {};
-
-        objItemResultSet.each(function (result) {
-            objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
-            
-            return true;
-        });
-
-        log.debug('objUpcMap', objUpcMap)
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -359,7 +448,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 stAccessType,
                 stCustomer,
                 stLocation,
-                stType
+                stType,
+                stUpcMap
             });
 
             if (objDefaultValues[fld.id] != 'undefined') {
@@ -429,7 +519,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -461,6 +566,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -563,6 +670,131 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         response.writePage(form);
     };
 
+    const renderInventoryAdjustment = (options) => {
+        const {
+            response,
+            stType,
+            stSubsidiary,
+            stPageMode,
+            stUserId,
+            stAccessType,
+            stCustomer,
+            stLocation
+        } = options;
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
+        //add field group
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+        const arrFldGrp = Object.keys(objFldGrp);
+        log.debug('arrFldGrp', arrFldGrp);
+        arrFldGrp.forEach((stCol) => {
+            const { id, label } = objFldGrp[stCol];
+            form.addFieldGroup({
+                id,
+                label
+            });
+        });
+        
+        //render body fields
+        const objBodyFields = _CONFIG.FIELD[stType];
+        const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
+        arrFlds.forEach((stCol) => {
+            const {
+                id,
+                type,
+                label,
+                source,
+                container,
+                mandatory,
+                displayType
+            } = objBodyFields[stCol];
+            log.debug('mandatory', mandatory);
+            let fld = form.addField({
+                id,
+                type,
+                label,
+                source,
+                container: _CONFIG.FIELD_GROUP[stType][container]?.id
+            });
+            if (mandatory) {
+                fld.isMandatory = true;
+            }
+            if (displayType) {
+                fld.updateDisplayType({ displayType });
+            }
+            if (id == 'custpage_cwgp_vendor') {
+                utilLib.addOptionsVendorsBySubsidiary(fld, stSubsidiary);
+            }
+            /*if (id == 'custpage_cwgp_location') {
+                utilLib.addOptionsLocationBySubsidiary(fld, stSubsidiary);
+            }*/
+            const objDefaultValues = mapDefaultValues({
+                stSubsidiary, 
+                stPageMode, 
+                stUserId,
+                stAccessType,
+                stCustomer,
+                stLocation,
+                stType
+            });
+            if (objDefaultValues[fld.id] != 'undefined') {
+                fld.defaultValue = objDefaultValues[fld.id]
+            }
+        });
+        //render sublist
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.INLINEEDITOR,
+            tab: _CONFIG.TAB[stType]
+        });
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+        const arrCols = Object.keys(objItemCols);
+        log.debug('arrCols', arrCols);
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objItemCols[stCol];
+            let col = sbl.addField({
+                id,
+                type,
+                label
+            });
+            if (id == 'custpage_cwgp_item') {
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
+            }
+        });
+        form.addSubmitButton({ label: 'Save' });
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType})`
+        });
+        response.writePage(form);
+    };
+
     const mapDefaultValues = (options) => {
         const {
             stSubsidiary, 
@@ -571,19 +803,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stAccessType,
             stCustomer,
             stLocation,
-            stType
+            stType,
+            stUpcMap
         } = options;
 
         return {
-            custpage_cwgp_subsidiary: stSubsidiary,
-            custpage_cwgp_pagemode: stPageMode,
-            custpage_cwgp_userid: stUserId,
-            custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_htmlcss: htmlCss(),
-            custpage_cwgp_date: new Date(),
-            custpage_cwgp_customer: stCustomer,
-            custpage_cwgp_location: stLocation,
-            custpage_cwgp_rectype: stType
+            custpage_cwgp_subsidiary    : stSubsidiary,
+            custpage_cwgp_pagemode      : stPageMode,
+            custpage_cwgp_userid        : stUserId,
+            custpage_cwgp_accesstype    : stAccessType,
+            custpage_cwgp_htmlcss       : htmlCss(),
+            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss(),
+            custpage_cwgp_upccodemap    : stUpcMap,
+            custpage_cwgp_dat           : new Date(),
+            custpage_cwgp_customer      : stCustomer,
+            custpage_cwgp_location      : stLocation,
+            custpage_cwgp_rectype       : stType
         }
     };
 
@@ -636,6 +871,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             background-color: #dbc8b6 !important;
         }
 
+        div#custpage_inventoryadjustment_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+
         td.fgroup_title {
             padding: 4px;
             background: #f8f2ed;
@@ -666,7 +905,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
     return {
         render,
-        renderItemReceipt
+        renderItemReceipt,
+        renderInventoryAdjustment
     }
 });
 

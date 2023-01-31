@@ -19,7 +19,20 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
      */
 	
 	const pageInit = (context) => {
+        const setScanBtnOnClick = () => {
+            try{
+                var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+                objScanButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn()
+                })
+                console.log(objScanButton)
+            }catch(e){
+                console.warn('Cannot set button click')
+            }
+        }
+
         ClientEPLib.getAuthenticationScript();
+        setScanBtnOnClick();
     };
 	
     const fieldChanged = (context) => {

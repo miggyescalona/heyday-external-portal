@@ -12,13 +12,29 @@
  */
 
 define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
-     /**
+    
+    /**
      * Function to be executed after page is initialized.
      *
      * @param {Object} context
      */
-     const pageInit = (context) => {
+    const pageInit = (context) => {
+
+        const setScanBtnOnClick = () => {
+            try{
+                
+                var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+                objScanButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn()
+                })
+                console.log(objScanButton)
+            }catch(e){
+                console.warn('Cannot set button click')
+            }
+        }
+
         ClientEPLib.getAuthenticationScript();
+        setScanBtnOnClick();
     };
     
     /**
@@ -29,32 +45,32 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     const fieldChanged = (context) => {
         const { currentRecord, fieldId, sublistId } = context;
 
-        if(fieldId === 'custpage_cwgp_scanupccodes'){
-            let stScannerInput = currentRecord.getValue({fieldId})
-            let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
-            if(stScannerInput){
+        // if(fieldId === 'custpage_cwgp_scanupccodes'){
+        //     let stScannerInput = currentRecord.getValue({fieldId})
+        //     let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        //     if(stScannerInput){
 
-                let urlParams = new URL(window.location).searchParams;
+        //         let urlParams = new URL(window.location).searchParams;
 
-                let stFailedCodes = ClientEPLib.addScannedItemsToLines({
-                    stUpcMap,
-                    stScannerInput,
-                    stPageType: urlParams.get('rectype')
-                })
+        //         let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+        //             stUpcMap,
+        //             stScannerInput,
+        //             stPageType: urlParams.get('rectype')
+        //         })
 
-                // console.log('stScannerInput', stScannerInput)
-                // console.log('stFailedCodes', stFailedCodes)
-                // console.log(stScannerInput != stFailedCodes)
-                if(stScannerInput != stFailedCodes){
+        //         // console.log('stScannerInput', stScannerInput)
+        //         // console.log('stFailedCodes', stFailedCodes)
+        //         // console.log(stScannerInput != stFailedCodes)
+        //         if(stScannerInput != stFailedCodes){
                     
-                    currentRecord.setValue({
-                        fieldId,
-                        value               : stFailedCodes,
-                        ignoreFieldChange   : true
-                    })
-                }
-            }
-        }
+        //             currentRecord.setValue({
+        //                 fieldId,
+        //                 value               : stFailedCodes,
+        //                 ignoreFieldChange   : true
+        //             })
+        //         }
+        //     }
+        // }
 
         if (sublistId === 'custpage_interpo_items') {
             //default item details
@@ -236,10 +252,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
+    const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
+
 
     return {
         pageInit,
         fieldChanged,
-        back
+        back,
+        scanInputViaBtn
     };
 });

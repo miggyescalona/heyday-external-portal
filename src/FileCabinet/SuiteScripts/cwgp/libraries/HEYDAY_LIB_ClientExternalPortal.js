@@ -12,7 +12,7 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, url, ConfEPLib) => {
+define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, dialog, url, ConfEPLib) => {
 
     const _CONFIG = ConfEPLib._CONFIG;
 
@@ -146,83 +146,168 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         return arrItemLines;
     }
 
+    //Processes scanner input into sublist lines
     const addScannedItemsToLines = (options) => {
         const {
             stUpcMap,
             stScannerInput,
-            stPageType
+            stRecType,
+            recCurrent
         } = options;
+
+        let UI_CONFIG = {}
+
+        //Map sublist fields based on record type
+        switch(stRecType){
+            case 'intercompanypo'   :   
+            case 'franchisepo'      :
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_interpo_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID : 'custpage_cwgp_itemid',
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_quantity'
+                    }
+                }
+                break;
+            case 'itemreceipt'      :   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_itemreceipt_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID         : 'custpage_cwgp_itemid',
+                        ITEM            : 'custpage_cwgp_item',
+                        QTY             : 'custpage_cwgp_quantity',
+                        QTY_REMAINING   : 'custpage_cwgp_quantityremaining'
+                    }
+                }    
+                break;
+            case 'inventoryadjustment':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventorayadjustment_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID : 'custpage_cwgp_itemid',
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_quantity'
+                    }
+                }    
+                break;
+        }
+
+        //console.table(UI_CONFIG)
 
         const addItemLine = (options) => {
             const {
                 recCurrent,
                 objUpcToItemIdMap,
-                stPageType,
+                stRecType,
                 objCurrItemLine,
-                stSublistId,
+                UI_CONFIG
             } = options;
 
-            console.log(stSublistId);
+
             console.log(objUpcToItemIdMap[objCurrItemLine.upc_code]);
 
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
                 throw {
                     name    : 'NO_UPC_CODE_MATCH',
-                    message : 'No valid item was found for the UPC Code entered'
+                    message : 'No item matched the UPC Code entered.'
                 }
             }
 
-            if(stPageType == 'intercompanypo'){
+            if(stRecType == 'intercompanypo' || stRecType == 'franchisepo'){
 
-                recCurrent.selectNewLine({ 
-                    sublistId   : stSublistId,
-                })
-                recCurrent.setCurrentSublistValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_item',
+                let index = recCurrent.findSublistLineWithValue({
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                });
-                
+                })
+                let intQty = 0;
+                let intScannedQty = 0;
+                console.log('index', index);
+
+                //If line already exists, just update it
+                if(index > -1){
+                    recCurrent.selectLine({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        line        : index
+
+                    })
+                    intQty = recCurrent.getCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                    });
+                }
+                else{
+                    recCurrent.selectNewLine({ 
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                    })
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    });
+                }
+
+                try{
+                    console.log(intQty + ' + ' + intScannedQty, intQty + intScannedQty)
+                    intQty          = parseInt(intQty)
+                    intScannedQty   = parseInt(objCurrItemLine.qty)
+                    
+                    //Default all falsy values to 0
+                    if(!intScannedQty){
+                        intScannedQty = 0;
+                    }
+                    if(!intQty){
+                        intQty = 0;
+                    }
+                }
+                catch(e){
+                    console.error(e)
+                    throw {
+                        name    : 'CANNOT_PROCESS_QTY',
+                        message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                    }
+                }
                 recCurrent.setCurrentSublistValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_quantity',
-                    value       : objCurrItemLine.qty
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                    value       : intQty + intScannedQty
                 });
                 recCurrent.commitLine({
-                    sublistId   : stSublistId
+                    sublistId   : UI_CONFIG.SUBLIST_ID
                 })
 
             }
-            else if(stPageType == 'itemreceipt'){
+            else if(stRecType == 'itemreceipt'){
                 let index = recCurrent.findSublistLineWithValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_itemid',
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
 
-                console.table({
-                    intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
-                    index
-                })
+                // console.table({
+                //     intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
+                //     index
+                // })
                 
 
                 if(index > -1){
                     // recCurrent.selectLine({ 
-                    //     sublistId   : stSublistId,
+                    //     sublistId   : UI_CONFIG.SUBLIST_ID,
                     //     line        : index
                     // })      
                     
                     let intQtyRemaining = recCurrent.getSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantityremaining',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY_REMAINING,
                         line        : index
                     });
 
                     console.log('intQtyRemaining', intQtyRemaining)
                     
                     let intQty = recCurrent.getSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                         line        : index
                     });
 
@@ -260,26 +345,26 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                         objCurrItemLine.qty = intRcvdQty - intQtyRemaining
                         blOverRcvd = true;
                     }
-                    console.table({
-                        intQtyRemaining,
-                        intQty,
-                        intScannedQty,
-                        intRcvdQty,
-                        intQtyToSet
-                    })
+                    // console.table({
+                    //     intQtyRemaining,
+                    //     intQty,
+                    //     intScannedQty,
+                    //     intRcvdQty,
+                    //     intQtyToSet
+                    // })
 
                     recCurrent.selectLine({
-                        sublistId   : stSublistId,
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
                         line        : index
                     });
 
                     recCurrent.setCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                         value       : intQtyToSet,
                     });
                     recCurrent.commitLine({
-                        sublistId   : stSublistId
+                        sublistId   : UI_CONFIG.SUBLIST_ID
                     })
                     if(blOverRcvd){
                         throw {
@@ -297,22 +382,13 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             }
         }
 
-        let stSublistId = ''
         let stFailedCodes = ''
         
         let objFailedIndices = {};
 
-        var recCurrent = currentRecord.get();
+        // var recCurrent = currentRecord.get();
 
         try{
-
-            switch(stPageType){
-                case 'intercompanypo'       :   stSublistId = 'custpage_interpo_items'
-                                                break;
-                case 'itemreceipt'          :   stSublistId = 'custpage_itemreceipt_items'
-                                                break;
-                case 'inventoryadjustment'  :   stSublistId = 'custpage_inventorayadjustment_items';
-            }
 
             let objUpcToItemIdMap = JSON.parse(stUpcMap);
             let arrItemLines = processScannerInput({stScannerInput})
@@ -326,9 +402,9 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     addItemLine({
                         recCurrent,
                         objUpcToItemIdMap,
-                        stPageType,
+                        stRecType,
                         objCurrItemLine,
-                        stSublistId,
+                        UI_CONFIG
                     })
                 }
                 catch(e){
@@ -350,7 +426,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             console.log('objFailedIndices', objFailedIndices)
 
             if(arrRemainingLines.length > 0){
-                stFailedCodes = generateFailedScannerString({arrRemainingLines})
+                stFailedCodes = generateScanErrorSummary({arrRemainingLines})
             }
             return stFailedCodes;
         }
@@ -360,32 +436,74 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         }
     }
 
-    const generateFailedScannerString = (options) => {
+    //Creates a string of all remaining UPC Codes that were not successfully added to the lines
+    const generateScanErrorSummary = (options) => {
         const {
             arrRemainingLines
         } = options;
-        
+        console.table(arrRemainingLines)
         let stFailedCodes = '';
+        let stErrorSummary = ''
 
         try{
             
             for(var ii = 0 ; ii < arrRemainingLines.length; ii++){
                 let objCurrLine = arrRemainingLines[ii]
                 for(var jj = 0; jj < objCurrLine.qty; jj++){
-                    stFailedCodes += objCurrLine.upc_code
+                    stFailedCodes +=    objCurrLine.upc_code
                     if(jj < objCurrLine.qty - 1){
-                        stFailedCodes += ' '
+                        stFailedCodes   += ' '
                     }
                 }
+                stErrorSummary+=    `<b>${objCurrLine.upc_code}: ${objCurrLine.error.name}</b>
+                                    <br />
+                                    ${objCurrLine.error.message}`
                 if(ii < arrRemainingLines.length - 1){
-                    stFailedCodes += ' '
+                    stFailedCodes   += ' '
+                    stErrorSummary  += '<br /><br />'
+
                 }
+            }
+
+            if(stErrorSummary){
+                dialog.alert({
+                    title: 'UPC Code Errors',
+                    message: stErrorSummary
+                })
             }
         }
         catch(e){
-            log.error('generateFailedScannerString - Error', e)
+            log.error('generateScanErrorSummary - Error', e)
         }
         return stFailedCodes;
+    }
+
+    const scanInputViaBtn = () => {
+        console.log('test button')
+        let recCurrent = currentRecord.get();
+
+        let stScannerInput = recCurrent.getValue({fieldId: 'custpage_cwgp_scanupccodes'})
+        let stUpcMap = recCurrent.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        if(stScannerInput){
+
+            let urlParams = new URL(window.location).searchParams;
+
+            let stFailedCodes = addScannedItemsToLines({
+                stUpcMap,
+                stScannerInput,
+                stRecType: urlParams.get('rectype'),
+                recCurrent
+            })
+
+            if(stScannerInput != stFailedCodes){
+                
+                recCurrent.setValue({
+                    fieldId             : 'custpage_cwgp_scanupccodes',
+                    value               : stFailedCodes,
+                    ignoreFieldChange   : true,
+                })
+            }
+        }
     }
 
     //END SCANNER FUNCTIONS
@@ -394,7 +512,8 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         _CONFIG,
         getAuthenticationScript,
         addScannedItemsToLines,
-        generateFailedScannerString,
+        generateScanErrorSummary,
+        scanInputViaBtn
     }
 });
 
