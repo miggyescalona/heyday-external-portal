@@ -318,11 +318,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_location',
                     line: i
                 }),
-                adjustqtyby: parseInt(request.getSublistValue({
+                adjustqtyby: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
                     name: 'custpage_cwgp_adjustqtyby',
                     line: i
-                })),
+                }),
                 department: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
                     name: 'custpage_cwgp_department',

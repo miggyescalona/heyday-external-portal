@@ -247,12 +247,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     source: 'subsidiary',
                     displayType: 'inline'
                 },
-                DEPARTMENT: {
-                    id: 'custpage_cwgp_department',
-                    type: serverWidget.FieldType.SELECT,
-                    label: 'Department',
-                    container: 'CLASS',
-                },
                 BUSINESS_LINE: {
                     id: 'custpage_cwgp_businessline',
                     type: serverWidget.FieldType.SELECT,
@@ -307,7 +301,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Business Line'
+                        label: 'Business Line',
+                        displayType: 'inline'
                     }
                 },    
                 itemreceipt: {
@@ -378,12 +373,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Location',
+                        displayType: 'disabled'
                     },
-                    /*UNITS: {
-                        id: 'custpage_cwgp_units',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'UNITS',
-                    },*/
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
@@ -401,15 +392,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'New Quantity',
                         displayType: 'disabled'
                     },
-                    DEPARTMENT: {
-                        id: 'custpage_cwgp_department',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Department'
-                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Business Line'
+                        label: 'Business Line',
+                        displayType: 'disabled'
                     }
                 }
             }
@@ -847,12 +834,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 utilLib.addOptionsPostingPeriod(fld);
             }
 
-            if (id == 'custpage_cwgp_department') {
-                utilLib.addOptionsDepartmentBySubsidiary(fld, stSubsidiary);
-            }
-
             if (id == 'custpage_cwgp_adjustmentaccount') {
                 utilLib.addOptionsAccountsBySubsidiary(fld, stSubsidiary);
+            }
+
+            if(id == 'custpage_cwgp_location'){
+                col.defaultValue = stLocation;
+            }
+
+            if(id == 'custpage_cwgp_businessline'){
+                col.defaultValue = 1;
             }
 
 
@@ -908,18 +899,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
             }
-            if (id == 'custpage_cwgp_department') {
-                utilLib.addOptionsDepartmentBySubsidiary(col, stSubsidiary);
-            }
             if (id == 'custpage_cwgp_businessline') {
                 utilLib.addOptionsBusinessLine(col);
             }
-            /*if (id == 'custpage_cwgp_units') {
-                log.debug('id',id);
-                utilLib.addOptionsUnits(col);
-            }*/
             if (displayType) {
                 col.updateDisplayType({ displayType });
+            }
+
+            if(id == 'custpage_cwgp_location'){
+                col.defaultValue = stLocation;
             }
 
 
