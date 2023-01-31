@@ -150,7 +150,8 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         const {
             stUpcMap,
             stScannerInput,
-            stPageType
+            stPageType,
+            recCurrent
         } = options;
 
         const addItemLine = (options) => {
@@ -302,7 +303,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         
         let objFailedIndices = {};
 
-        var recCurrent = currentRecord.get();
+        // var recCurrent = currentRecord.get();
 
         try{
 
@@ -388,6 +389,37 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         return stFailedCodes;
     }
 
+    const scanInputViaBtn = (event) => {
+        console.log('test button')
+        let recCurrent = currentRecord.get();
+
+        let stScannerInput = recCurrent.getValue({fieldId: 'custpage_cwgp_scanupccodes'})
+        let stUpcMap = recCurrent.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        if(stScannerInput){
+
+            let urlParams = new URL(window.location).searchParams;
+
+            let stFailedCodes = addScannedItemsToLines({
+                stUpcMap,
+                stScannerInput,
+                stPageType: urlParams.get('rectype'),
+                recCurrent
+            })
+
+            // console.log('stScannerInput', stScannerInput)
+            // console.log('stFailedCodes', stFailedCodes)
+            // console.log(stScannerInput != stFailedCodes)
+            if(stScannerInput != stFailedCodes){
+                
+                recCurrent.setValue({
+                    fieldId             : 'custpage_cwgp_scanupccodes',
+                    value               : stFailedCodes,
+                    ignoreFieldChange   : true,
+                })
+            }
+        }
+    }
+
     //END SCANNER FUNCTIONS
 
     return {
@@ -395,6 +427,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         getAuthenticationScript,
         addScannedItemsToLines,
         generateFailedScannerString,
+        scanInputViaBtn
     }
 });
 

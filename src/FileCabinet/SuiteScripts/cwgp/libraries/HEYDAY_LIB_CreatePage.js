@@ -96,6 +96,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+                BUSINESS_LINE: {
+                    id: 'custpage_cwgp_businessline',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Business Line',
+                    container: 'CLASS'
+                },
                 LOCATION: {
                     id: 'custpage_cwgp_location',
                     type: serverWidget.FieldType.SELECT,
@@ -284,6 +290,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount'
+                    },
+                    BUSINESS_LINE: {
+                        id: 'custpage_cwgp_businessline',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Business Line'
                     }
                 },    
                 itemreceipt: {
@@ -386,7 +397,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line'
-                    },
+                    }
                 }
             }
         },
@@ -486,7 +497,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 mandatory,
                 displayType
             } = objBodyFields[stCol];
-
             let fld = form.addField({
                 id,
                 type,
@@ -502,15 +512,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(fld);
+            }
             if (id == 'custpage_cwgp_vendor') {
                 utilLib.addOptionsVendorsBySubsidiary(fld, stSubsidiary);
             }
-
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(fld, stSubsidiary);
             }
-
             const objDefaultValues = mapDefaultValues({
                 stSubsidiary, 
                 stPageMode, 
@@ -525,7 +535,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             
         });
-
+       
         //render sublist
         form.addSubtab({
             id: _CONFIG.TAB[stType],
@@ -551,12 +561,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 type,
                 label
             });
-
             if (id == 'custpage_cwgp_item') {
                 utilLib.addOptionsItemBySubsidiary({
                     fld: col, 
                     objResultSet: objItemResultSet
                 });
+            }
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                col.defaultValue = 1;
             }
 
             if (displayType) {
@@ -927,7 +940,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_htmlcss: htmlCss(),
             custpage_cwgp_date: new Date(),
             custpage_cwgp_rectype: stType,
-            custpage_cwgp_upccodemap: stUpcMap
+            custpage_cwgp_upccodemap: stUpcMap,
+            custpage_cwgp_businessline: 1
         }
     };
 
