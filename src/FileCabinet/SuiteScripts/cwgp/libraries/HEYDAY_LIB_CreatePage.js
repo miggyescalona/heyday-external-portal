@@ -270,6 +270,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
                     },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
@@ -643,6 +649,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -933,15 +940,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         return {
             custpage_cwgp_adjustmentlocation: stLocation,
-            custpage_cwgp_subsidiary: stSubsidiary,
-            custpage_cwgp_pagemode: stPageMode,
-            custpage_cwgp_userid: stUserId,
-            custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_htmlcss: htmlCss(),
-            custpage_cwgp_date: new Date(),
-            custpage_cwgp_rectype: stType,
-            custpage_cwgp_upccodemap: stUpcMap,
-            custpage_cwgp_businessline: 1
+            custpage_cwgp_subsidiary        : stSubsidiary,
+            custpage_cwgp_pagemode          : stPageMode,
+            custpage_cwgp_userid            : stUserId,
+            custpage_cwgp_accesstype        : stAccessType,
+            custpage_cwgp_htmlcss           : htmlCss(),
+            custpage_cwgp_scanbtnhtml       : EPLib.getScanButtonCss(),
+            custpage_cwgp_date              : new Date(),
+            custpage_cwgp_rectype           : stType,
+            custpage_cwgp_upccodemap        : stUpcMap,
+            custpage_cwgp_businessline      : 1
         }
     };
 

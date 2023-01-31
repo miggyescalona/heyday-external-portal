@@ -211,12 +211,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
          
         tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
-            width: 3%
+            width: 1%
         }
 
 
         tr#tr_fg_custpage_interpo_scan_grp > td:nth-child(2) > table.table_fields>tbody{
-            height: "165px";
             display: grid;
             height: 165px;
             align-items: center;

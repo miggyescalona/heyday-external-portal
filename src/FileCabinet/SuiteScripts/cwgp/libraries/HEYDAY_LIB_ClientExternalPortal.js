@@ -175,19 +175,62 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
 
             if(stPageType == 'intercompanypo'){
 
-                recCurrent.selectNewLine({ 
+                let index = recCurrent.findSublistLineWithValue({
                     sublistId   : stSublistId,
-                })
-                recCurrent.setCurrentSublistValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_item',
+                    fieldId     : 'custpage_cwgp_itemid',
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                });
-                
+                })
+                let intQty = 0;
+                let intScannedQty = 0;
+                console.log('index', index);
+
+                //If line already exists, just update it
+                if(index > -1){
+                    recCurrent.selectLine({
+                        sublistId   : stSublistId,
+                        line        : index
+
+                    })
+                    intQty = recCurrent.getCurrentSublistValue({
+                        sublistId   : stSublistId,
+                        fieldId     : 'custpage_cwgp_quantity',
+                    });
+                }
+                else{
+                    recCurrent.selectNewLine({ 
+                        sublistId   : stSublistId,
+                    })
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : stSublistId,
+                        fieldId     : 'custpage_cwgp_item',
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    });
+                }
+
+                try{
+                    console.log(intQty + ' + ' + intScannedQty, intQty + intScannedQty)
+                    intQty          = parseInt(intQty)
+                    intScannedQty   = parseInt(objCurrItemLine.qty)
+                    
+                    //Default all falsy values to 0
+                    if(!intScannedQty){
+                        intScannedQty = 0;
+                    }
+                    if(!intQty){
+                        intQty = 0;
+                    }
+                }
+                catch(e){
+                    console.error(e)
+                    throw {
+                        name    : 'CANNOT_PROCESS_QTY',
+                        message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                    }
+                }
                 recCurrent.setCurrentSublistValue({
                     sublistId   : stSublistId,
                     fieldId     : 'custpage_cwgp_quantity',
-                    value       : objCurrItemLine.qty
+                    value       : intQty + intScannedQty
                 });
                 recCurrent.commitLine({
                     sublistId   : stSublistId
@@ -389,7 +432,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         return stFailedCodes;
     }
 
-    const scanInputViaBtn = (event) => {
+    const scanInputViaBtn = () => {
         console.log('test button')
         let recCurrent = currentRecord.get();
 
@@ -406,9 +449,6 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                 recCurrent
             })
 
-            // console.log('stScannerInput', stScannerInput)
-            // console.log('stFailedCodes', stFailedCodes)
-            // console.log(stScannerInput != stFailedCodes)
             if(stScannerInput != stFailedCodes){
                 
                 recCurrent.setValue({
