@@ -18,25 +18,36 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const SCANNER_UI = {
         FIELD: {
             SCAN_UPC_CODES: {
-                id: 'custpage_cwgp_scanupccodes',
-                type: serverWidget.FieldType.LONGTEXT,
+                id          : 'custpage_cwgp_scanupccodes',
+                type        : serverWidget.FieldType.LONGTEXT,
+                label       : 'Scan UPC Codes',
+                container   : 'SCAN',
+            },
+            SCAN_BUTTON: {
+                id: 'custpage_cwgp_scanbtnhtml',
+                type: serverWidget.FieldType.INLINEHTML,
                 label: 'Scan UPC Codes',
                 container: 'SCAN',
             },
             MAP_UPC_CODES: {
-                id: 'custpage_cwgp_upccodemap',
-                type: serverWidget.FieldType.LONGTEXT,
-                label: 'UPC Codes Map',
-                container: 'SCAN',
-                displayType: 'hidden'
+                id          : 'custpage_cwgp_upccodemap',
+                type        : serverWidget.FieldType.LONGTEXT,
+                label       : 'UPC Codes Map',
+                container   : 'SCAN',
+                displayType : 'hidden'
             },
         },
         FIELD_GROUP: {
             SCAN: {
-                id: 'custpage_interpo_scan_grp',
-                label: 'Scanner'
+                id      : 'custpage_interpo_scan_grp',
+                label   : 'Scanner'
             }
         },
+        // SCAN_BUTTON: {
+        //     id          : 'custpage_cwgp_scanbtn',
+        //     label       : 'Scan UPC Codes',
+        //     functionName: `scanInputViaBtn()`
+        // }
     }
 
     //Adds fields and field group into main _CONFIG file
@@ -89,6 +100,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         name: 'subsidiary',
                         operator: search.Operator.ANYOF,
                         values: stSubsidiary
+                    }),
+                     search.createFilter({
+                        name: 'type',
+                        operator: search.Operator.ANYOF,
+                        values: 'InvtPart'
                     })
                 ],
                 columns:
@@ -158,10 +174,65 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             log.error('initScanner  - Error', e)
         }
     }
+
+    const getScanButtonCss = () => {
+        const stBtnCss = 
+        `<button id="custpage_cwgp_scan_button" type="button" class="navbutton">Process<br />UPC Codes</button>
+        
+        <style>
+
+        .navbutton {
+            font-family: 'Roboto', sans-serif;
+            font-family: 'Roboto Mono', monospace;
+            color: #105368;
+            background-color: transparent;
+            transition-duration: 0.4s;
+            background-position-x: 0%;
+            background-position-y: 0%;
+            background-repeat: repeat;
+            background-attachment: scroll;
+            background-image: none;
+            background-size: auto;
+            background-origin: padding-box;
+            background-clip: border-box;
+        }
+
+        .navbutton:hover {
+            background-color: #105368;
+            color: white;
+        }
+
+        button#custpage_cwgp_scan_button{
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px !important;
+            font-weight: 600;
+            padding: 20px 15px;
+        }
+
+         
+        tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
+            width: 3%
+        }
+
+
+        tr#tr_fg_custpage_interpo_scan_grp > td:nth-child(2) > table.table_fields>tbody{
+            height: "165px";
+            display: grid;
+            height: 165px;
+            align-items: center;
+        }
+
+        </style>`;
+
+        return stBtnCss;
+    };
+    
         
     return {
         _CONFIG,
+        SCANNER_UI,
         initScanner,
         getInvItemsBySubsidiary,
+        getScanButtonCss
     }
 });
