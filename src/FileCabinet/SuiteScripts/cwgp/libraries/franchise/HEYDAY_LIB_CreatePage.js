@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -282,6 +282,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
 
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -296,19 +311,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 label
             });
         });
-
-        //get inventory items and map UPC codes for scanning
-        let objItemResultSet = utilLib.getInvItemsBySubsidiary(stSubsidiary);
-
-        let objUpcMap = {};
-
-        objItemResultSet.each(function (result) {
-            objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
-            
-            return true;
-        });
-
-        log.debug('objUpcMap', objUpcMap)
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -430,6 +432,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
