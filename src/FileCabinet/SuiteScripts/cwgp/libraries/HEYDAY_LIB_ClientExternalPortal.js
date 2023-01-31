@@ -193,6 +193,8 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 break;
         }
 
+        //console.table(UI_CONFIG)
+
         const addItemLine = (options) => {
             const {
                 recCurrent,
@@ -201,6 +203,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 objCurrItemLine,
                 UI_CONFIG
             } = options;
+
 
             console.log(objUpcToItemIdMap[objCurrItemLine.upc_code]);
 
@@ -211,7 +214,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
             }
 
-            if(stRecType == 'intercompanypo'){
+            if(stRecType == 'intercompanypo' || stRecType == 'franchisepo'){
 
                 let index = recCurrent.findSublistLineWithValue({
                     sublistId   : UI_CONFIG.SUBLIST_ID,

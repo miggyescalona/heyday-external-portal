@@ -946,9 +946,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_accesstype        : stAccessType,
             custpage_cwgp_htmlcss           : htmlCss(),
             custpage_cwgp_scanbtnhtml       : EPLib.getScanButtonCss(),
+            custpage_cwgp_upccodemap        : stUpcMap,
             custpage_cwgp_date              : new Date(),
             custpage_cwgp_rectype           : stType,
-            custpage_cwgp_upccodemap        : stUpcMap,
             custpage_cwgp_businessline      : 1
         }
     };
