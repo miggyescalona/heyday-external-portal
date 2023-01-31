@@ -90,23 +90,28 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         const {
             stSubsidiary
         } = options
+        
 
         try{
+            let filters = [
+                 search.createFilter({
+                    name: 'type',
+                    operator: search.Operator.ANYOF,
+                    values: 'InvtPart'
+                })
+            ]
+
+            if(stSubsidiary){
+                filters.push(search.createFilter({
+                    name: 'subsidiary',
+                    operator: search.Operator.ANYOF,
+                    values: stSubsidiary
+                }))
+            }
+
             let objItemSearchProps = {
                 type: search.Type.INVENTORY_ITEM,
-                filters:
-                [
-                    search.createFilter({
-                        name: 'subsidiary',
-                        operator: search.Operator.ANYOF,
-                        values: stSubsidiary
-                    }),
-                     search.createFilter({
-                        name: 'type',
-                        operator: search.Operator.ANYOF,
-                        values: 'InvtPart'
-                    })
-                ],
+                filters,
                 columns:
                 [
                     search.createColumn({ name: 'itemid' }),
