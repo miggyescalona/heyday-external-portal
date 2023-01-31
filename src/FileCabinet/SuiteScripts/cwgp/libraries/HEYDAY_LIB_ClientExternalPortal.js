@@ -12,7 +12,7 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, url, ConfEPLib) => {
+define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, dialog, url, ConfEPLib) => {
 
     const _CONFIG = ConfEPLib._CONFIG;
 
@@ -169,7 +169,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
                 throw {
                     name    : 'NO_UPC_CODE_MATCH',
-                    message : 'No valid item was found for the UPC Code entered'
+                    message : 'No item matched the UPC Code entered.'
                 }
             }
 
@@ -244,10 +244,10 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
 
-                console.table({
-                    intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
-                    index
-                })
+                // console.table({
+                //     intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
+                //     index
+                // })
                 
 
                 if(index > -1){
@@ -304,13 +304,13 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
                         objCurrItemLine.qty = intRcvdQty - intQtyRemaining
                         blOverRcvd = true;
                     }
-                    console.table({
-                        intQtyRemaining,
-                        intQty,
-                        intScannedQty,
-                        intRcvdQty,
-                        intQtyToSet
-                    })
+                    // console.table({
+                    //     intQtyRemaining,
+                    //     intQty,
+                    //     intScannedQty,
+                    //     intRcvdQty,
+                    //     intQtyToSet
+                    // })
 
                     recCurrent.selectLine({
                         sublistId   : stSublistId,
@@ -394,7 +394,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
             console.log('objFailedIndices', objFailedIndices)
 
             if(arrRemainingLines.length > 0){
-                stFailedCodes = generateFailedScannerString({arrRemainingLines})
+                stFailedCodes = generateScanErrorSummary({arrRemainingLines})
             }
             return stFailedCodes;
         }
@@ -404,30 +404,44 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         }
     }
 
-    const generateFailedScannerString = (options) => {
+    //Creates a string of all remaining UPC Codes that were not successfully added to the lines
+    const generateScanErrorSummary = (options) => {
         const {
             arrRemainingLines
         } = options;
-        
+        console.table(arrRemainingLines)
         let stFailedCodes = '';
+        let stErrorSummary = ''
 
         try{
             
             for(var ii = 0 ; ii < arrRemainingLines.length; ii++){
                 let objCurrLine = arrRemainingLines[ii]
                 for(var jj = 0; jj < objCurrLine.qty; jj++){
-                    stFailedCodes += objCurrLine.upc_code
+                    stFailedCodes +=    objCurrLine.upc_code
                     if(jj < objCurrLine.qty - 1){
-                        stFailedCodes += ' '
+                        stFailedCodes   += ' '
                     }
                 }
+                stErrorSummary+=    `<b>${objCurrLine.upc_code}: ${objCurrLine.error.name}</b>
+                                    <br />
+                                    ${objCurrLine.error.message}`
                 if(ii < arrRemainingLines.length - 1){
-                    stFailedCodes += ' '
+                    stFailedCodes   += ' '
+                    stErrorSummary  += '<br /><br />'
+
                 }
+            }
+
+            if(stErrorSummary){
+                dialog.alert({
+                    title: 'UPC Code Errors',
+                    message: stErrorSummary
+                })
             }
         }
         catch(e){
-            log.error('generateFailedScannerString - Error', e)
+            log.error('generateScanErrorSummary - Error', e)
         }
         return stFailedCodes;
     }
@@ -466,7 +480,7 @@ define(['N/currentRecord', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (curr
         _CONFIG,
         getAuthenticationScript,
         addScannedItemsToLines,
-        generateFailedScannerString,
+        generateScanErrorSummary,
         scanInputViaBtn
     }
 });
