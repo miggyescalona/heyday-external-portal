@@ -554,7 +554,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             form.addButton({
                 id: 'custpage_receive_btn',
                 label: 'Receive',
-                functionName: `toReceive(${stUserId}, ${stPoId}, ${stAccessType}, 'itemreceipt')`
+                functionName: `toReceive(${stUserId}, ${stPoId}, ${stAccessType}, ${stTranId}, 'itemreceipt')`
             });
         }
 
