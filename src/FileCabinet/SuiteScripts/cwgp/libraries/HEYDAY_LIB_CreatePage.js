@@ -168,6 +168,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Memo',
                     container: 'PRIMARY'
                 },
+                CREATEDFROM: {
+                    id: 'custpage_cwgp_createdfrom',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Created From',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -603,6 +610,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPageMode,
             stUserId,
             stPoId,
+            stTranId,
             stAccessType
         } = options;
 
@@ -649,6 +657,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stTranId;
         objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         //render body fields
