@@ -235,13 +235,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'CLASS',
                     displayType: 'inline'
                 },
-                DEPARTMENT: {
-                    id: 'custpage_cwgp_department',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Department',
-                    container: 'CLASS',
-                    displayType: 'inline'
-                },
                 BUSINESS_LINE: {
                     id: 'custpage_cwgp_businessline',
                     type: serverWidget.FieldType.TEXT,
@@ -350,7 +343,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     UNITS: {
                         id: 'custpage_cwgp_units',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Location',
+                        label: 'Units',
                     },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
@@ -367,10 +360,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'New Quantity'
                     },
-                    DEPARTMENT: {
-                        id: 'custpage_cwgp_department',
+                    ESTIMATED_UNIT_COST: {
+                        id: 'custpage_cwgp_estimatedunitcost',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Department'
+                        label: 'New Quantity'
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',

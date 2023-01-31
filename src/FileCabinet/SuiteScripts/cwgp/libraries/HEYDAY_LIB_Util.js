@@ -662,7 +662,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_postingperiod = objInventoryAdjustment.getText('postingperiod');
         objPO.body.custpage_cwgp_memomain = objInventoryAdjustment.getValue('memo');
         objPO.body.custpage_cwgp_subsidiary = objInventoryAdjustment.getText('subsidiary');
-        objPO.body.custpage_cwgp_department = objInventoryAdjustment.getText('department');
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
 
@@ -710,12 +709,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'newquantity',
                     line: x
                 })),
-                custpage_cwgp_department: objInventoryAdjustment.getSublistValue({
+                custpage_cwgp_estimatedunitcost: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
-                    fieldId: 'department',
+                    fieldId: 'unitcost',
                     line: x
                 }),
-                custpage_cwgp_businessline: objInventoryAdjustment.getSublistValue({
+                custpage_cwgp_businessline: objInventoryAdjustment.getSublistText({
                     sublistId: 'inventory',
                     fieldId: 'class',
                     line: x
