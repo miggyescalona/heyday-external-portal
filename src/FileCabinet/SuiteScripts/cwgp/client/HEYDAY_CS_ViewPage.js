@@ -17,7 +17,7 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
         ClientEPLib.getAuthenticationScript();
     };
 
-    const toReceive = (stUserId, stPoId, stAccessType, stType) => {
+    const toReceive = (stUserId, stPoId, stAccessType, stTranId, stType) => {
         
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
@@ -30,6 +30,7 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
                 userId      : stUserId,
                 itemreceiptid : stPoId,
                 accesstype  : stAccessType,
+                tranid: stTranId,
                 rectype     : stType //Retail PO or IR
             }
         })
