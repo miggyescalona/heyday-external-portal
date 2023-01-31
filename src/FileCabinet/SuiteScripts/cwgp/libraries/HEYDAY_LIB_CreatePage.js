@@ -611,6 +611,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stUserId,
             stPoId,
             stTranId,
+            stTranId,
             stAccessType
         } = options;
 
