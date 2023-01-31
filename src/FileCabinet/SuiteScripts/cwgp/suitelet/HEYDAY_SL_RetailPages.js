@@ -169,6 +169,7 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
+                    stTranId,
                     stAccessType
                 });
 
