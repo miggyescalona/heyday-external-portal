@@ -532,10 +532,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         utilLib.setSublistValues(sbl, objPO);
 
-        let stApprovalStatus = utilLib.getApprovalStatus(stPoId);
+        let objPOValues = utilLib.getPOValues(stPoId);
 
+        log.debug('objPOValues', JSON.stringify(objPOValues));
 
-        if(stApprovalStatus != 'Approved'){
+        if(objPOValues.stApprovalStatus != 'Approved'){
                 form.addButton({
                 id: 'custpage_edit_btn',
                 label: 'Edit',
@@ -549,11 +550,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             functionName: `back(${stUserId}, ${stAccessType}, 'intercompanypo')`
         });
 
-        form.addButton({
-            id: 'custpage_receive_btn',
-            label: 'Receive',
-            functionName: `toReceive(${stUserId}, ${stPoId}, ${stAccessType}, 'itemreceipt')`
-        });
+        if(objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled'){
+            form.addButton({
+                id: 'custpage_receive_btn',
+                label: 'Receive',
+                functionName: `toReceive(${stUserId}, ${stPoId}, ${stAccessType}, 'itemreceipt')`
+            });
+        }
 
         response.writePage(form);
     };
