@@ -741,8 +741,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
-    const getApprovalStatus = (stPoId) => {
+    const getPOValues = (stPoId) => {
         let stApprovalStatus;
+        let stPairedInterco;
+        let stPairedIntercoStatus = null;
+        let objPO ={};
 
         search.create({
             type: search.Type.PURCHASE_ORDER,
@@ -762,14 +765,36 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             columns:
                 [
                     search.createColumn({ name: 'approvalstatus' }),
+                    search.createColumn({ name: 'intercotransaction' }),
                 ]
         }).run().each((result) => {
             stApprovalStatus = result.getText({ name: 'approvalstatus' });
+            stPairedInterco = result.getValue({ name: 'intercotransaction' });
             return true;
         });
 
-        return stApprovalStatus;
+        log.debug('search results', JSON.stringify({
+            'stApprovalStatus': stApprovalStatus,
+            'stPairedInterco': stPairedInterco
+        }));
+
+        if(stPairedInterco){
+            stPairedIntercoStatus = search.lookupFields({
+                type: search.Type.SALES_ORDER,
+                id: stPairedInterco,
+                columns: ['statusref']
+            });
+
+            stPairedIntercoStatus = stPairedIntercoStatus.statusref[0].value
+            log.debug('stPairedIntercoStatus',stPairedIntercoStatus);
+        }
+
+        objPO.stApprovalStatus = stApprovalStatus;
+        objPO.stPairedIntercoStatus = stPairedIntercoStatus;
+
+        return objPO;
     };
+    
 
     return {
         mapValues,
@@ -786,6 +811,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         mapPOtoItemReceiptValues,
         mapInventoryAdjustmentValues,
         setSublistValues,
-        getApprovalStatus
+        getPOValues
     }
 });
