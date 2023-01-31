@@ -146,24 +146,62 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         return arrItemLines;
     }
 
+    //Processes scanner input into sublist lines
     const addScannedItemsToLines = (options) => {
         const {
             stUpcMap,
             stScannerInput,
-            stPageType,
+            stRecType,
             recCurrent
         } = options;
+
+        let UI_CONFIG = {}
+
+        //Map sublist fields based on record type
+        switch(stRecType){
+            case 'intercompanypo'   :   
+            case 'franchisepo'      :
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_interpo_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID : 'custpage_cwgp_itemid',
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_quantity'
+                    }
+                }
+                break;
+            case 'itemreceipt'      :   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_itemreceipt_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID         : 'custpage_cwgp_itemid',
+                        ITEM            : 'custpage_cwgp_item',
+                        QTY             : 'custpage_cwgp_quantity',
+                        QTY_REMAINING   : 'custpage_cwgp_quantityremaining'
+                    }
+                }    
+                break;
+            case 'inventoryadjustment':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventorayadjustment_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID : 'custpage_cwgp_itemid',
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_quantity'
+                    }
+                }    
+                break;
+        }
 
         const addItemLine = (options) => {
             const {
                 recCurrent,
                 objUpcToItemIdMap,
-                stPageType,
+                stRecType,
                 objCurrItemLine,
-                stSublistId,
+                UI_CONFIG
             } = options;
 
-            console.log(stSublistId);
             console.log(objUpcToItemIdMap[objCurrItemLine.upc_code]);
 
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
@@ -173,11 +211,11 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
             }
 
-            if(stPageType == 'intercompanypo'){
+            if(stRecType == 'intercompanypo'){
 
                 let index = recCurrent.findSublistLineWithValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_itemid',
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
                 let intQty = 0;
@@ -187,22 +225,22 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 //If line already exists, just update it
                 if(index > -1){
                     recCurrent.selectLine({
-                        sublistId   : stSublistId,
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
                         line        : index
 
                     })
                     intQty = recCurrent.getCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                     });
                 }
                 else{
                     recCurrent.selectNewLine({ 
-                        sublistId   : stSublistId,
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
                     })
                     recCurrent.setCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_item',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
                         value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                     });
                 }
@@ -228,19 +266,19 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     }
                 }
                 recCurrent.setCurrentSublistValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_quantity',
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                     value       : intQty + intScannedQty
                 });
                 recCurrent.commitLine({
-                    sublistId   : stSublistId
+                    sublistId   : UI_CONFIG.SUBLIST_ID
                 })
 
             }
-            else if(stPageType == 'itemreceipt'){
+            else if(stRecType == 'itemreceipt'){
                 let index = recCurrent.findSublistLineWithValue({
-                    sublistId   : stSublistId,
-                    fieldId     : 'custpage_cwgp_itemid',
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
                     value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                 })
 
@@ -252,21 +290,21 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
 
                 if(index > -1){
                     // recCurrent.selectLine({ 
-                    //     sublistId   : stSublistId,
+                    //     sublistId   : UI_CONFIG.SUBLIST_ID,
                     //     line        : index
                     // })      
                     
                     let intQtyRemaining = recCurrent.getSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantityremaining',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY_REMAINING,
                         line        : index
                     });
 
                     console.log('intQtyRemaining', intQtyRemaining)
                     
                     let intQty = recCurrent.getSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                         line        : index
                     });
 
@@ -313,17 +351,17 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     // })
 
                     recCurrent.selectLine({
-                        sublistId   : stSublistId,
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
                         line        : index
                     });
 
                     recCurrent.setCurrentSublistValue({
-                        sublistId   : stSublistId,
-                        fieldId     : 'custpage_cwgp_quantity',
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                         value       : intQtyToSet,
                     });
                     recCurrent.commitLine({
-                        sublistId   : stSublistId
+                        sublistId   : UI_CONFIG.SUBLIST_ID
                     })
                     if(blOverRcvd){
                         throw {
@@ -341,7 +379,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
         }
 
-        let stSublistId = ''
         let stFailedCodes = ''
         
         let objFailedIndices = {};
@@ -349,14 +386,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         // var recCurrent = currentRecord.get();
 
         try{
-
-            switch(stPageType){
-                case 'intercompanypo'       :   stSublistId = 'custpage_interpo_items'
-                                                break;
-                case 'itemreceipt'          :   stSublistId = 'custpage_itemreceipt_items'
-                                                break;
-                case 'inventoryadjustment'  :   stSublistId = 'custpage_inventorayadjustment_items';
-            }
 
             let objUpcToItemIdMap = JSON.parse(stUpcMap);
             let arrItemLines = processScannerInput({stScannerInput})
@@ -370,9 +399,9 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     addItemLine({
                         recCurrent,
                         objUpcToItemIdMap,
-                        stPageType,
+                        stRecType,
                         objCurrItemLine,
-                        stSublistId,
+                        UI_CONFIG
                     })
                 }
                 catch(e){
@@ -459,7 +488,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             let stFailedCodes = addScannedItemsToLines({
                 stUpcMap,
                 stScannerInput,
-                stPageType: urlParams.get('rectype'),
+                stRecType: urlParams.get('rectype'),
                 recCurrent
             })
 
