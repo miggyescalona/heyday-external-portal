@@ -98,6 +98,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     name: 'type',
                     operator: search.Operator.ANYOF,
                     values: 'InvtPart'
+                }),
+                search.createFilter({
+                    name: 'isinactive',
+                    operator: search.Operator.IS,
+                    values: 'F'
                 })
             ]
 

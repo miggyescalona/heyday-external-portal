@@ -303,6 +303,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                     },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businesslinetext',
                         type: serverWidget.FieldType.TEXT,
@@ -334,6 +344,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
                     },
                     LOCATION: {
                         id: 'custpage_cwgp_location',

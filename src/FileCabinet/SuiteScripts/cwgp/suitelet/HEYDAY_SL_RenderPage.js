@@ -232,9 +232,9 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                     </div>
                     <div class="buttonsdiv">
                         <br>
-                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Intercompany P.O.</button>
+                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Replenishment Purchase Order</button>
                         <br>
-                        <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
+                        <button type="button" id="cwgp_ir_btn" class="navbutton">Receive Items</button>
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
