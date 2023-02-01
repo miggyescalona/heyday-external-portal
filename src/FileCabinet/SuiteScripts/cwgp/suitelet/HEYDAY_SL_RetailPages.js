@@ -82,6 +82,7 @@ define([
 
         log.debug('interco params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
 
         switch (stPageMode) {
@@ -101,6 +102,7 @@ define([
                     response,
                     stType: 'intercompanypo',
                     stSubsidiary,
+                    stLocation,
                     stPageMode,
                     stUserId,
                     stAccessType

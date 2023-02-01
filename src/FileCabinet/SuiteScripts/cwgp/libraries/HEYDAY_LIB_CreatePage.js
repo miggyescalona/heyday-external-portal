@@ -100,14 +100,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     id: 'custpage_cwgp_businessline',
                     type: serverWidget.FieldType.SELECT,
                     label: 'Business Line',
-                    container: 'CLASS'
+                    container: 'CLASS',
+                    displayType: 'inline'
                 },
                 LOCATION: {
                     id: 'custpage_cwgp_location',
                     type: serverWidget.FieldType.SELECT,
                     label: 'Location',
                     container: 'CLASS',
-                    mandatory: true
+                    displayType: 'inline'
                 }
             },
             itemreceipt: {
@@ -282,7 +283,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
-                        displayType:'inline'
+                        displayType:'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -303,7 +316,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
-                        displayType: 'inline'
+                        displayType: 'disabled'
                     }
                 },    
                 itemreceipt: {
@@ -369,6 +382,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                         displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
                     },
                     LOCATION: {
                         id: 'custpage_cwgp_location',
@@ -444,6 +469,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             response,
             stType,
             stSubsidiary,
+            stLocation,
             stPageMode,
             stUserId,
             stAccessType
@@ -524,6 +550,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             const objDefaultValues = mapDefaultValues({
                 stSubsidiary, 
+                stLocation,
                 stPageMode, 
                 stUserId,
                 stAccessType,
@@ -946,7 +973,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_upccodemap        : stUpcMap,
             custpage_cwgp_date              : new Date(),
             custpage_cwgp_rectype           : stType,
-            custpage_cwgp_businessline      : 1
+            custpage_cwgp_businessline      : 1,
+            custpage_cwgp_location: stLocation
         }
     };
 
