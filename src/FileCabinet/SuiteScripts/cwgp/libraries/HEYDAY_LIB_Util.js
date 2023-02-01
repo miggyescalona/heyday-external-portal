@@ -570,6 +570,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'item',
                     fieldId: 'rate',
                     line: x
+                }),
+                custpage_cwgp_internalsku: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_hiddeninternalsku',
+                    line: x
+                }),
+                custpage_cwgp_upccode: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_hiddenupccode',
+                    line: x
                 })
             });
         }
@@ -679,6 +689,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'description',
                     line: x
                 }),
+                custpage_cwgp_internalsku: lookUpItem(custpage_cwgp_item, 'sku'),
+                custpage_cwgp_upccode: lookUpItem(custpage_cwgp_item, 'upc'),
                 custpage_cwgp_description: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'description',
@@ -722,6 +734,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
+        const lookUpItem = (itemId, type) => {
+            if(!itemId){
+                let fieldLookUp = search.lookupFields({
+                    type: search.Type.ITEM,
+                    id: itemId,
+                    columns: ['custitem_heyday_sku','custitemheyday_upccode']
+                });
+                
+                if(type == 'sku'){
+                    return fieldLookUp.custitem_heyday_sku;
+                }
+                else if(type == 'upc'){
+                    return fieldLookUp.custitemheyday_upccode;
+                }
+            }
+        }
         return objPO;
     }
 
