@@ -713,22 +713,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'inventory',
                     fieldId: 'quantityonhand',
                     line: x
-                })),
+                })) || '0',
                 custpage_cwgp_adjustqtyby: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'adjustqtyby',
                     line: x
-                })) || 0,
+                })),
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
                     line: x
-                })) || 0.00,
+                })),
                 custpage_cwgp_estimatedunitcost: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'unitcost',
                     line: x
-                }),
+                }) || '0.00',
                 custpage_cwgp_businessline: objInventoryAdjustment.getSublistText({
                     sublistId: 'inventory',
                     fieldId: 'class',

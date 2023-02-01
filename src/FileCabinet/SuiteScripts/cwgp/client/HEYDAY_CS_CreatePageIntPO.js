@@ -113,6 +113,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
 
             }
+
         }
 
         if (sublistId === 'custpage_inventorayadjustment_items') {
@@ -133,15 +134,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         fieldId: fieldId,
                         value: value
                     });
-                });
-            }
-
-            if (fieldId === 'custpage_cwgp_location') {
-                const stItem = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_item'
-                });
-                console.log('stItem', stItem);
+                });       
 
                 const stLocation = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustment_items',
@@ -205,7 +198,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             'custpage_cwgp_description': item.itemid,
             'custpage_cwgp_rate': item.cost || 0,
             'custpage_cwgp_quantity': 1,
-            'custpage_cwgp_amount': item.cost || 0
+            'custpage_cwgp_amount': item.cost || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode
         };
     };
 

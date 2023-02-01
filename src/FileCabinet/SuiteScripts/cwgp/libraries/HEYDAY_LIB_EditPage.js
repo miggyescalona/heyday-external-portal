@@ -106,6 +106,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.SELECT,
                     label: 'Location',
                     container: 'CLASS',
+                    displayType: 'inline'
                 }
             },
             itemreceipt: {
@@ -194,13 +195,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
-                        displayType: 'DISABLED'
                     },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
-                        displayType: 'DISABLED'
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType: 'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType: 'disabled'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -211,13 +223,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate',
-                        displayType: 'DISABLED'
+                        displayType: 'disabled',
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount',
-                        displayType: 'DISABLED'
+                        displayType: 'disabled'
                     }
                 },    
                 itemreceipt: {
@@ -242,16 +254,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                     },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
-                        displayType: 'ENTRY'
+                        displayType: 'inline'
                     },
                     TRANSFER_LOCATION: {
                         id: 'custpage_cwgp_transferlocation',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Transfer Location',
+                        displayType: 'inline'
                     },
                     QUANTITY_REMAINING: {
                         id: 'custpage_cwgp_quantityremaining',
