@@ -678,19 +678,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
 
         for(var x = 0; x < intLineCount; x++){
-            log.debug('qty on hand', parseInt(objInventoryAdjustment.getSublistValue({
-                sublistId: 'inventory',
-                fieldId: 'quantityonhand',
-                line: x
-            })));
             objPO.item.push({
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
-                    fieldId: 'description',
+                    fieldId: 'item_display',
                     line: x
                 }),
-                custpage_cwgp_internalsku: lookUpItem(custpage_cwgp_item, 'sku'),
-                custpage_cwgp_upccode: lookUpItem(custpage_cwgp_item, 'upc'),
+                custpage_cwgp_internalsku: lookUpItem(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'item',
+                    line: x
+                }), 'sku'),
+                custpage_cwgp_upccode: lookUpItem(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'item',
+                    line: x
+                }), 'upc'),
                 custpage_cwgp_description: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'description',
@@ -734,8 +737,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
-        const lookUpItem = (itemId, type) => {
-            if(!itemId){
+        function lookUpItem(itemId, type){
+            if(itemId){
                 let fieldLookUp = search.lookupFields({
                     type: search.Type.ITEM,
                     id: itemId,
