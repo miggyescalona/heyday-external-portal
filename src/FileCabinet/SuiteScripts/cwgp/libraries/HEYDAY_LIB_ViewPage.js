@@ -383,7 +383,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     ESTIMATED_UNIT_COST: {
                         id: 'custpage_cwgp_estimatedunitcost',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'New Quantity'
+                        label: 'Est Unit Cost'
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
