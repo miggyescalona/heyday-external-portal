@@ -104,7 +104,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
-            const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
+            const stViewLink = `<a href='${stUrl}'>Replenishment Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -272,12 +272,40 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             ],
             columns:
                 [
-                    search.createColumn({ name: 'periodname' })
+                    search.createColumn({ name: 'periodname' }),
+                    search.createColumn({
+                        name: "internalid",
+                        sort: search.Sort.ASC,
+                        label: "Internal ID"
+                     })
                 ]
         }).run().each(function (result) {
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'periodname' })
+            });
+            return true;
+        });
+    };
+
+    const addOptionsAdjusmentReason= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "customlist_cwgp_adjustmentreason",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'name' })
             });
             return true;
         });
@@ -733,7 +761,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'inventory',
                     fieldId: 'class',
                     line: x
-                })
+                }),
+                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmentreason',
+                    line: x
+                }),
             });
         }
 
@@ -834,6 +867,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
+        addOptionsAdjusmentReason,
         addOptionsDepartmentBySubsidiary,
         addOptionsAccountsBySubsidiary,
         mapPOValues,

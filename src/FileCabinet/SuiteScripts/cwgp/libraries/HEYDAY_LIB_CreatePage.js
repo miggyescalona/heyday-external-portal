@@ -17,8 +17,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Intercompany P.O.',
-            itemreceipt: 'Item Receipt',
+            intercompanypo: 'Replenishment Purchase Order',
+            itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
@@ -73,7 +73,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.SELECT,
                     label: 'Vendor',
                     container: 'PRIMARY',
-                    mandatory: true
+                    displayType: 'inline'
                 },
                 DATE: {
                     id: 'custpage_cwgp_date',
@@ -305,12 +305,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     RATE: {
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
+                        label: 'Rate',
+                        displayType: 'disabled',
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
-                        label: 'Amount'
+                        label: 'Amount',
+                        displayType: 'disabled'
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
@@ -423,6 +425,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'disabled'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Reason'
                     }
                 }
             }
@@ -825,6 +832,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -909,13 +917,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const arrCols = Object.keys(objItemCols);
 
         arrCols.forEach((stCol) => {
-            const { id, type, label, displayType } = objItemCols[stCol];
+            const { id, type, label, displayType, source } = objItemCols[stCol];
 
 
             let col = sbl.addField({
                 id,
                 type,
                 label,
+                source
             });
 
             if (id == 'custpage_cwgp_item') {
@@ -926,13 +935,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
-                log.debug('loc',stLocation);
                 col.defaultValue = stLocation;
             }
             if (id == 'custpage_cwgp_businessline') {
                 utilLib.addOptionsBusinessLine(col);
                 col.defaultValue = 1;
             }
+            if(id == 'custpage_cwgp_adjustmentreason'){
+                utilLib.addOptionsAdjusmentReason(col);
+            }
+
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
@@ -974,7 +986,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_date              : new Date(),
             custpage_cwgp_rectype           : stType,
             custpage_cwgp_businessline      : 1,
-            custpage_cwgp_location: stLocation
+            custpage_cwgp_location: stLocation,
+            custpage_cwgp_vendor: 19082
         }
     };
 

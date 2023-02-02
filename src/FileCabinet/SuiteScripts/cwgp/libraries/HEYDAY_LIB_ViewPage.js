@@ -17,7 +17,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Intercompany PO #',
+            intercompanypo: 'Replenishment Purchase Order #',
             itemreceipt: 'Item Receipt #',
             inventoryadjustment: 'Inventory Adjustment #'
         },
@@ -390,6 +390,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'Business Line'
                     },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjustment Reason'
+                    }
                 }
             }
         },
