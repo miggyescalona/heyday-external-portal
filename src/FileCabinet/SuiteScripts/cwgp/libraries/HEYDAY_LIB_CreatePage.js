@@ -176,6 +176,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                DAMAGED_INVENTORY_ID:{
+                    id: 'custpage_cwgp_damagedinventoryadjustmentid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Damaged Inventory Adjustment',
+                    container: 'CLASS',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -348,13 +355,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
-                        displayType: 'ENTRY'
+                        displayType: 'inline'
                     },
                     TRANSFER_LOCATION: {
                         id: 'custpage_cwgp_transferlocation',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Transfer Location',
-                        displayType: 'ENTRY'
+                        displayType: 'inline'
                     },
                     QUANTITY_REMAINING: {
                         id: 'custpage_cwgp_quantityremaining',
@@ -365,6 +372,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity',
+                        displayType: 'ENTRY'
+                    },
+                    DAMAGED_QUANTITY: {
+                        id: 'custpage_cwgp_damagedquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Damaged Quantity',
                         displayType: 'ENTRY'
                     },
                     RATE: {
@@ -406,13 +419,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity On Hand',
+                        label: 'Qty On Hand',
                         displayType: 'disabled'
                     },
+
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Adjust Qty. By'
+                        label: 'Adjust Qty By'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',

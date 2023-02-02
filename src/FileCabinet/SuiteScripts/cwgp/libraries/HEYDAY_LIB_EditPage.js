@@ -18,15 +18,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         },
         TITLE: {
             intercompanypo: 'Replenishment Purchase Order #',
-            itemreceipt: 'Item Receipt #'
+            itemreceipt: 'Item Receipt #',
+            inventoryadjustment: 'Inventory Adjustment #'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
-            itemreceipt: 'custpage_itemreceipt_itemstab'
+            itemreceipt: 'custpage_itemreceipt_itemstab',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustment_itemstab'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_items',
-            itemreceipt: 'custpage_itemreceipt_items'
+            itemreceipt: 'custpage_itemreceipt_items',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items'
         },
         FIELD: {
             intercompanypo: {
@@ -185,7 +188,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Created From',
                     container: 'CLASS',
                     displayType: 'inline'
-                }
+                },
+                DAMAGED_INVENTORY_ID:{
+                    id: 'custpage_cwgp_damagediaid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Damaged Inventory Adjustment',
+                    container: 'CLASS',
+                    displayType: 'inline'
+                },
             }
         },
         COLUMN: {
@@ -291,7 +301,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
+                    },      
+                },
+                inventoryadjustment_damaged:{
+                    INVENTORY_ADJUSTMENT: {
+                        id: 'custpage_cwgp_inventoryadjustment',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Inventory Adjustment #',
                     },
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Items',
+                    },
+                    DAMAGED_QUANTITY:{
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Damaged Quantity',
+                    }
                 }
             }
         },
@@ -538,6 +565,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+
+        let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
         
 
         //render body fields
@@ -580,7 +609,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
         });
 
-        //render sublist
+        //render item sublist
         form.addSubtab({
             id: _CONFIG.TAB[stType],
             label: 'Items'
@@ -627,6 +656,49 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         });
 
         utilLib.setSublistValues(sbl, objPO);
+
+           ////render damaged sublist
+           if(stDamageIAid){
+            const stType = 'inventoryadjustment_damaged';
+
+            let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
+
+            form.addSubtab({
+                id: _CONFIG.TAB[stType],
+                label: 'Damaged'
+            });
+    
+            const sbl = form.addSublist({
+                id: _CONFIG.SUBLIST[stType],
+                label: ' ',
+                type: serverWidget.SublistType.LIST,
+                tab: _CONFIG.TAB[stType]
+            });
+    
+            const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+    
+            const arrCols = Object.keys(objItemCols);
+            log.debug('arrCols', arrCols);
+    
+            arrCols.forEach((stCol) => {
+                const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
+    
+                let col = sbl.addField({
+                    id,
+                    type,
+                    label,
+                    source,
+                    displayType,
+                    dsiplaySize
+                });
+    
+                if (displayType) {
+                    col.updateDisplayType({ displayType });
+                }
+            });
+    
+            utilLib.setSublistValues(sbl, objPO);
+        }
 
         form.addSubmitButton({ label: 'Save' });
         
