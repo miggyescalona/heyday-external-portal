@@ -18,8 +18,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             LOCATION: 'custparam_cwgp_location'
         },
         TITLE: {
-            intercompanypo: 'Intercompany P.O.',
-            itemreceipt: 'Item Receipts',
+            intercompanypo: 'Replenishment Purchase Order',
+            itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment',
             itemperlocation: 'Item Per Location'
         },
