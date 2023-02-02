@@ -17,7 +17,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Replenishment Purchase Order',
+            intercompanypo: 'Replenishment Purchase Order #',
             itemreceipt: 'Item Receipt #'
         },
         TAB: {
