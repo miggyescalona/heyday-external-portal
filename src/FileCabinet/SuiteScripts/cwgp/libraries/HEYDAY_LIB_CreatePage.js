@@ -73,7 +73,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.SELECT,
                     label: 'Vendor',
                     container: 'PRIMARY',
-                    mandatory: true
+                    displayType: 'inline'
                 },
                 DATE: {
                     id: 'custpage_cwgp_date',
@@ -423,6 +423,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'disabled'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.SELECT,
+                        source: 460,
+                        label: 'Adjustment Reason',
                     }
                 }
             }
@@ -866,6 +872,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 utilLib.addOptionsAccountsBySubsidiary(fld, stSubsidiary);
             }
 
+            if(id == 'custpage_cwgp_adjustmentreason'){
+              //  utilLib.addOptionsAdjusmentReason(fld);
+            }
+
             if(id == 'custpage_cwgp_location'){
                 fld.defaultValue = stLocation;
             }
@@ -974,7 +984,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_date              : new Date(),
             custpage_cwgp_rectype           : stType,
             custpage_cwgp_businessline      : 1,
-            custpage_cwgp_location: stLocation
+            custpage_cwgp_location: stLocation,
+            custpage_cwgp_vendor: 19082
         }
     };
 

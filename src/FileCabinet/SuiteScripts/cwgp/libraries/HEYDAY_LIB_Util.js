@@ -283,6 +283,30 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
+    const addOptionsAdjusmentReason= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "customlist_cwgp_adjustmentreason",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'internalId' })
+                ]
+        }).run().each(function (result) {
+            log.debug('result',result);
+            fld.addSelectOption({
+                value: result.getValue({ name: 'internalId' }),
+                text: result.getValue({ name: 'internalId' })
+            });
+            return true;
+        });
+    };
+
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
         log.debug('addOptionsVendorsBySubsidiary', JSON.stringify({
             'fld': fld,
@@ -834,6 +858,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
+        addOptionsAdjusmentReason,
         addOptionsDepartmentBySubsidiary,
         addOptionsAccountsBySubsidiary,
         mapPOValues,

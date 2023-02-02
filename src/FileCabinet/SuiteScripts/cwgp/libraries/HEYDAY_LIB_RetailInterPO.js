@@ -328,6 +328,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_businessline',
                     line: i
                 }),
+                custcol_cwgp_adjustmentreason: request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }),
             })
         }
 
