@@ -544,6 +544,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
         objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
         objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+        objPO.body.custpage_cwgp_damagediaid = objItemReceipt.getValue('custbody_cwgp_damagediaid');
 
         const intLineCount = objItemReceipt.getLineCount('item');
 
@@ -707,6 +708,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         for(var x = 0; x < intLineCount; x++){
             objPO.item.push({
+                custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'item_display',

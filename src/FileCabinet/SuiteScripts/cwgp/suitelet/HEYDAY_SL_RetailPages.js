@@ -296,12 +296,12 @@ define([
 
 
     const handleIntercompanyPOTxn = (request) => {
-        log.debug('params handleIntercompanyPOTxn', request.parameters)
+        log.debug('params handleIntercompanyPOTxn', JSON.stringify(request.parameters))
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_rectype: stRecType
+            custpage_cwgp_rectype: stRecType,
         } = request.parameters;
 
         let idRec = null;
@@ -354,7 +354,7 @@ define([
                     itemreceiptid: idRec,
                     accesstype: stAccessType,
                     rectype: stRecType,
-                    tranid: stTranId
+                    tranid: stTranId,
                 }
             });
         }
@@ -544,7 +544,7 @@ define([
         //details sourced from the Edit external page UI
         const objItemReceiptEditDetails = {
             body: txnLib.mapRetailItemReceiptBodyFields(request),
-            item: txnLib.mapItemReceiptSublistFields(request)
+            item: (txnLib.mapItemReceiptSublistFields(request))[0]
         }
         log.debug('objItemReceiptEditDetails', objItemReceiptEditDetails);
 
