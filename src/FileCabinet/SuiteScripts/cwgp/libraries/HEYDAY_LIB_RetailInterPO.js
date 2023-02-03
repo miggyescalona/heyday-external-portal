@@ -381,6 +381,36 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
         for (let i = 0; i < intLineCount; i++) {
+            let intFinalQuantity = 0;
+
+            const intAdjQtyBy = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_adjustqtyby',
+                line: i
+            }));
+
+            const intEndingInvQty = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_endinginventoryqty',
+                line: i
+            }));
+
+            const intQtyOnHand = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_qtyonhand',
+                line: i
+            }));
+
+            log.debug('intAdjQtyBy | intEndingInvQty | intQtyOnHand', intAdjQtyBy +'|' + intEndingInvQty + '|' + intQtyOnHand);
+
+            if(intAdjQtyBy && intAdjQtyBy !=0){
+                intFinalQuantity = intAdjQtyBy;
+            }
+            else if(intEndingInvQty && intEndingInvQty !=0){
+                intFinalQuantity = intEndingInvQty-intQtyOnHand;
+            }
+            log.debug('intFinalQuantity', intFinalQuantity);
+
             arrMapSblFields.push({
                 item: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
@@ -392,11 +422,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_location',
                     line: i
                 }),
-                adjustqtyby: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_adjustqtyby',
-                    line: i
-                }),
+                adjustqtyby: intFinalQuantity,
                 class: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
                     name: 'custpage_cwgp_businessline',

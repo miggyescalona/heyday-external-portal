@@ -419,14 +419,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Qty On Hand',
+                        label: 'Quantity On Hand',
                         displayType: 'disabled'
                     },
-
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Adjust Qty By'
+                        label: 'Adjust Inventory Quantity'
+                    },
+                    ENDING_INVENTORY_QUANTITY: {
+                        id: 'custpage_cwgp_endinginventoryqty',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Ending Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',

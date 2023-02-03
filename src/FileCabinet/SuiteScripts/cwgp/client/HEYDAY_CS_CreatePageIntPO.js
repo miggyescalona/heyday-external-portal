@@ -72,6 +72,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         //     }
         // }
 
+        ///Interco PO
         if (sublistId === 'custpage_interpo_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -116,6 +117,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         }
 
+        ///Inventory Adjustment
         if (sublistId === 'custpage_inventorayadjustment_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -152,7 +154,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
             }
 
-            if (fieldId === 'custpage_cwgp_adjustqtyby') {
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+            if (fieldId === 'custpage_cwgp_adjustqtyby'){
                 const stAdjustQtyBy = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustment_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
@@ -170,10 +175,71 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_newquantity',
                     value: stNewQty || 0
                 });
+
+                const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+           
+                if(stAdjQtyBy && stAdjQtyBy != 0){
+                    objEndingInvCol.isDisabled = true;
+                }
+                else{
+                    objEndingInvCol.isDisabled = false;
+                }
+            }
+            if(fieldId === 'custpage_cwgp_endinginventoryqty'){
+                const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+                
+                if(stEndingInvCol && stEndingInvCol != 0){
+                    objAdjQtyByCol.isDisabled = true;
+                }
+                else{
+                    objAdjQtyByCol.isDisabled = false;
+                }
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stEndingInvCol || 0
+                });
             }
             
         }
     };
+
+    const lineInit = (context) => {
+        const { currentRecord, fieldId, sublistId } = context;
+
+        /*var intLineCount = currentRecord.getLineCount("custpage_inventorayadjustment_items");
+        var intCurrentLine = currentRecord.getCurrentSublistIndex({ sublistId: "custpage_inventorayadjustment_items" });
+        var quantity = currentRecord.getCurrentSublistValue({ sublistId: "item", fieldId: "quantity" });*/
+
+        if(sublistId == 'custpage_inventorayadjustment_items'){
+
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+
+            const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+            const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+            if(stAdjQtyBy && stAdjQtyBy != 0){
+                objEndingInvCol.isDisabled = true;
+            }
+            else{
+                objEndingInvCol.isDisabled = false;
+            }
+
+               
+            if(stEndingInvCol && stEndingInvCol != 0){
+                objAdjQtyByCol.isDisabled = true;
+            }
+            else{
+                objAdjQtyByCol.isDisabled = false;
+            }
+        }
+    }
+
+
 
     const getItemDetails = (stItem) => {
 
@@ -253,6 +319,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     return {
         pageInit,
         fieldChanged,
+        lineInit,
         back,
         scanInputViaBtn
     };
