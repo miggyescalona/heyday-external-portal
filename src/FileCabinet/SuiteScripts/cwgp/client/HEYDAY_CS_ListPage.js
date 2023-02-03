@@ -83,7 +83,6 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                userId      : stUserId,
                accesstype  : stAccessType,
                rectype     : stType,
-               subtype     : subType 
            }
        });
        window.location = stCreateIntPOUrl;
