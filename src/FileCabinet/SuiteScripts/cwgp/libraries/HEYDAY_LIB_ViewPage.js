@@ -24,8 +24,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
-            itemreceipt_damaged: 'custpage_itemreceiptdamaged_itemstab',
-            inventoryadjustment_damaged: 'custpage_inventoryadjustment_itemstab'
+            inventoryadjustment: 'custpage_inventoryadjustment_itemstab',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_items',
@@ -382,7 +382,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Qty. By'
+                        label: 'Adjust Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',

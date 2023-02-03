@@ -211,7 +211,8 @@ define([
             userId: stUserId,
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId
+            tranid: stTranId,
+            subtype: stSubType
         } = request.parameters;
 
         log.debug('ia params',request.parameters);
@@ -241,7 +242,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stSubType
                 });
 
                 break;

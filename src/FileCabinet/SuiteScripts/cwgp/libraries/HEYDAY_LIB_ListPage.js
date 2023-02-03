@@ -325,15 +325,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
 
-        /*const fldLocation = form.addField({
-            id: 'custpage_cwgp_location',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Location',
-            container: _CONFIG.TAB[stType]
-        });
-        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;*/
-
         //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
@@ -341,8 +332,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
-
-        //log.debug('renderInventoryAdjustment intLocation',intLocation);*/
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
@@ -369,13 +358,32 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stUserId
         });
 
-        //add buttons
         form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `createInventoryAdjustment(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+    
+       ///add buttons
+       /* form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
             functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
         });
-    
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create Backbar',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','backbar')`
+        });
+
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create Damage/Tester',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','damage')`
+        });*/
+
 
         form.addButton({
             id: 'custpage_back_button',
