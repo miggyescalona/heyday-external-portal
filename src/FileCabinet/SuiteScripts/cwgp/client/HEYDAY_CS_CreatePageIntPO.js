@@ -83,7 +83,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 console.log('stItem', stItem);
 
                 const objItem = getItemDetails(stItem);
-                console.log('objItem', objItem);
+                console.log('objItem1', JSON.stringify(objItem));
 
                 util.each(objItem, function (value, fieldId) {
                     currentRecord.setCurrentSublistValue({
@@ -266,7 +266,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             'custpage_cwgp_quantity': 1,
             'custpage_cwgp_amount': item.cost || 0,
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
-            'custpage_cwgp_upccode': item.custitemheyday_upccode
+            'custpage_cwgp_upccode': item.custitemheyday_upccode,
+            'custpage_cwgp_itemid': item.internalid[0].value
         };
     };
 
