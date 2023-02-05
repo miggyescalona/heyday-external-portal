@@ -45,7 +45,7 @@ define(['N/search'], (search) => {
             columns: ['itemid', 'cost', 'custitem_heyday_sku', 'custitemheyday_upccode', 'internalid']
         });
 
-        log.debug('objLookup', objLookup);
+        log.debug('objLookup1', objLookup);
 
         return objLookup
     };
