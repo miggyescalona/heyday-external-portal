@@ -512,6 +512,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             } else {
                 objPO.item.push({
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
+                    custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                     custpage_cwgp_description: result.getValue({ name: 'memo' }),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),

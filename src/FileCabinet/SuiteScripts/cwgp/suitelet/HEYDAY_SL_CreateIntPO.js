@@ -42,7 +42,7 @@ define(['N/search'], (search) => {
         const objLookup = search.lookupFields({
             type: search.Type.ITEM,
             id: stItem,
-            columns: ['itemid', 'cost', 'custitem_heyday_sku', 'custitemheyday_upccode']
+            columns: ['itemid', 'cost', 'custitem_heyday_sku', 'custitemheyday_upccode', 'internalid']
         });
 
         log.debug('objLookup', objLookup);
