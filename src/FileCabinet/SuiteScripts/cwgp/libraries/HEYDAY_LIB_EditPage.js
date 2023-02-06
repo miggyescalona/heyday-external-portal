@@ -371,6 +371,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
         // const {
         //     objItemResultSet,
         //     objUpcMap,
