@@ -115,9 +115,6 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 
             }
         }
-
-        
-
         if(sublistId === 'custpage_inventorayadjustment_items'){
             if (fieldId === 'custpage_cwgp_item') {
                 const stItem = currentRecord.getCurrentSublistValue({
@@ -223,7 +220,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 
         window.location = stFranchiseUrl;
     };
-
+  
     function addBusinessDays(d,n) {
         d = new Date(d.getTime());
         var day = d.getDay();

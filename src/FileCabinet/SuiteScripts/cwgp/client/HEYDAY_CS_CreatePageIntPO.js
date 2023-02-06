@@ -12,13 +12,29 @@
  */
 
 define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
-     /**
+    
+    /**
      * Function to be executed after page is initialized.
      *
      * @param {Object} context
      */
-     const pageInit = (context) => {
+    const pageInit = (context) => {
+
+        const setScanBtnOnClick = () => {
+            try{
+                
+                var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+                objScanButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn()
+                })
+                console.log(objScanButton)
+            }catch(e){
+                console.warn('Cannot set button click')
+            }
+        }
+
         ClientEPLib.getAuthenticationScript();
+        setScanBtnOnClick();
     };
     
     /**
@@ -29,24 +45,34 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     const fieldChanged = (context) => {
         const { currentRecord, fieldId, sublistId } = context;
 
-        if(fieldId === 'custpage_cwgp_scanupccodes'){
-            let stScannerInput = currentRecord.getValue({fieldId})
-            let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
-            if(stScannerInput){
+        // if(fieldId === 'custpage_cwgp_scanupccodes'){
+        //     let stScannerInput = currentRecord.getValue({fieldId})
+        //     let stUpcMap = currentRecord.getValue({fieldId: 'custpage_cwgp_upccodemap'})
+        //     if(stScannerInput){
 
-                let stFailedCodes = ClientEPLib.addScannedItemsToLines({
-                    stUpcMap,
-                    stScannerInput
-                })
+        //         let urlParams = new URL(window.location).searchParams;
 
-                currentRecord.setValue({
-                    fieldId,
-                    value               : stFailedCodes,
-                    ignoreFieldChange   : true
-                })
-            }
-        }
+        //         let stFailedCodes = ClientEPLib.addScannedItemsToLines({
+        //             stUpcMap,
+        //             stScannerInput,
+        //             stPageType: urlParams.get('rectype')
+        //         })
 
+        //         // console.log('stScannerInput', stScannerInput)
+        //         // console.log('stFailedCodes', stFailedCodes)
+        //         // console.log(stScannerInput != stFailedCodes)
+        //         if(stScannerInput != stFailedCodes){
+                    
+        //             currentRecord.setValue({
+        //                 fieldId,
+        //                 value               : stFailedCodes,
+        //                 ignoreFieldChange   : true
+        //             })
+        //         }
+        //     }
+        // }
+
+        ///Interco PO
         if (sublistId === 'custpage_interpo_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -57,7 +83,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 console.log('stItem', stItem);
 
                 const objItem = getItemDetails(stItem);
-                console.log('objItem', objItem);
+                console.log('objItem1', JSON.stringify(objItem));
 
                 util.each(objItem, function (value, fieldId) {
                     currentRecord.setCurrentSublistValue({
@@ -88,8 +114,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
 
             }
+
         }
 
+        ///Inventory Adjustment
         if (sublistId === 'custpage_inventorayadjustment_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -108,15 +136,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         fieldId: fieldId,
                         value: value
                     });
-                });
-            }
-
-            if (fieldId === 'custpage_cwgp_location') {
-                const stItem = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_item'
-                });
-                console.log('stItem', stItem);
+                });       
 
                 const stLocation = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustment_items',
@@ -134,7 +154,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
             }
 
-            if (fieldId === 'custpage_cwgp_adjustqtyby') {
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+            if (fieldId === 'custpage_cwgp_adjustqtyby'){
                 const stAdjustQtyBy = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustment_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
@@ -152,10 +175,71 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_newquantity',
                     value: stNewQty || 0
                 });
+
+                const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+           
+                if(stAdjQtyBy && stAdjQtyBy != 0){
+                    objEndingInvCol.isDisabled = true;
+                }
+                else{
+                    objEndingInvCol.isDisabled = false;
+                }
+            }
+            if(fieldId === 'custpage_cwgp_endinginventoryqty'){
+                const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+                
+                if(stEndingInvCol && stEndingInvCol != 0){
+                    objAdjQtyByCol.isDisabled = true;
+                }
+                else{
+                    objAdjQtyByCol.isDisabled = false;
+                }
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stEndingInvCol || 0
+                });
             }
             
         }
     };
+
+    const lineInit = (context) => {
+        const { currentRecord, fieldId, sublistId } = context;
+
+        /*var intLineCount = currentRecord.getLineCount("custpage_inventorayadjustment_items");
+        var intCurrentLine = currentRecord.getCurrentSublistIndex({ sublistId: "custpage_inventorayadjustment_items" });
+        var quantity = currentRecord.getCurrentSublistValue({ sublistId: "item", fieldId: "quantity" });*/
+
+        if(sublistId == 'custpage_inventorayadjustment_items'){
+
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+
+            const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+            const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+            if(stAdjQtyBy && stAdjQtyBy != 0){
+                objEndingInvCol.isDisabled = true;
+            }
+            else{
+                objEndingInvCol.isDisabled = false;
+            }
+
+               
+            if(stEndingInvCol && stEndingInvCol != 0){
+                objAdjQtyByCol.isDisabled = true;
+            }
+            else{
+                objAdjQtyByCol.isDisabled = false;
+            }
+        }
+    }
+
+
 
     const getItemDetails = (stItem) => {
 
@@ -180,7 +264,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             'custpage_cwgp_description': item.itemid,
             'custpage_cwgp_rate': item.cost || 0,
             'custpage_cwgp_quantity': 1,
-            'custpage_cwgp_amount': item.cost || 0
+            'custpage_cwgp_amount': item.cost || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode,
+            'custpage_cwgp_itemid': item.internalid[0].value
         };
     };
 
@@ -202,17 +289,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             url: stCreateIntPOBaseUrl,
         });
 
-        /*const objResponse = https.get({
-            url: `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=689&deploy=1&compid=5530036_SB1&h=2f0abb66a0cbb01e8d05&item=${stItem}&itemlocation=${stLocation}`,
-        });*/
-
         const { stQtyOnHand } = JSON.parse(objResponse.body);
 
         return stQtyOnHand;
     };
 
     const back = (stUserId, stAccessType, stRecType) =>{
-       // window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stRecType}`;
    
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
 
@@ -232,10 +314,14 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
+    const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
+
 
     return {
         pageInit,
         fieldChanged,
-        back
+        lineInit,
+        back,
+        scanInputViaBtn
     };
 });

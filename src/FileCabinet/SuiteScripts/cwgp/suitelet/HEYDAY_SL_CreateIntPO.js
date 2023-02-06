@@ -49,7 +49,7 @@ define(['N/search'], (search) => {
             id: stItem,
             columns: ['itemid','salesdescription', 'cost', 'custitem_heyday_sku', 'custitemheyday_upccode']
         });
-
+      
         objLookup['franchiseprice'] = getFranchisePrice(stItem);
 
         log.debug('objLookup', objLookup);

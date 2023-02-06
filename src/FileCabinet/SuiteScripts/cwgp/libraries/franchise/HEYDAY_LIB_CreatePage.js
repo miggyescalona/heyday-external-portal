@@ -17,6 +17,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
+
             franchisepo: 'Purchase Order',
             itemreceipt: 'Item Receipt',
             inventoryadjustment: 'Inventory Adjustment'
@@ -409,6 +410,35 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'New Quantity',
                         displayType: 'DISABLED'
                     }
+                },
+                inventoryadjustment: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity On Hand'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjust Qty. By'
+                    },
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'New Quantity'
+                    }
                 }
             }
         },
@@ -463,7 +493,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
-
         
         //Initialize Add Scanner Field Group and Fields
         const {
@@ -479,7 +508,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
         }
-        
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -779,7 +807,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stLocation
         } = options;
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
-
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //Initialize Add Scanner Field Group and Fields
@@ -836,7 +863,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-            
             const objDefaultValues = mapDefaultValues({
                 stSubsidiary, 
                 stPageMode, 
@@ -876,7 +902,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
-
             if (id == 'custpage_cwgp_item') {
                 utilLib.addOptionsItemBySubsidiary({
                     fld: col, 

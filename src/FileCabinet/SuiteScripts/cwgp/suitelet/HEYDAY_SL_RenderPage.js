@@ -232,11 +232,13 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                     </div>
                     <div class="buttonsdiv">
                         <br>
-                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Intercompany P.O.</button>
+                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Replenishment Purchase Order</button>
                         <br>
-                        <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
+                        <button type="button" id="cwgp_ir_btn" class="navbutton">Receive Items</button>
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
+                        <br>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                     </div>
                 </div>
 
@@ -276,6 +278,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         const stAccessType = objParams.get('accesstype');
 
                         window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
+                    const btnItemPerLocation = document.getElementById('cwgp_ipl_btn');
+                    btnItemPerLocation.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
                 </script>

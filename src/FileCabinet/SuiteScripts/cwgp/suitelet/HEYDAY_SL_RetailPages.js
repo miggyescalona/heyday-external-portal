@@ -18,8 +18,9 @@ define([
     '../libraries/HEYDAY_LIB_CreatePage.js',
     '../libraries/HEYDAY_LIB_ViewPage.js',
     '../libraries/HEYDAY_LIB_EditPage.js',
-    '../libraries/HEYDAY_LIB_RetailInterPO.js'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib) => {
+    '../libraries/HEYDAY_LIB_RetailInterPO.js',
+    '../libraries/HEYDAY_LIB_ExternalPortal'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -44,14 +45,21 @@ define([
             log.debug('params',request.parameters);
     
             if (request.method === 'GET') {
-                if(rectype == 'intercompanypo'){
-                    renderIntercompanyPO(request, response);
-                }
-                else if(rectype == 'itemreceipt'){
-                    renderItemReceipt(request, response);
-                }
-                else if(rectype == 'inventoryadjustment'){
-                    renderInventoryAdjustment(request, response);
+                switch (rectype) {
+                    case 'intercompanypo':
+                        renderIntercompanyPO(request, response);
+                        break;
+                    case 'itemreceipt':
+                        renderItemReceipt(request, response);
+                        break;
+                    case 'inventoryadjustment':
+                        renderInventoryAdjustment(request, response);
+                        break;
+                    case 'itemperlocation':
+                        renderItemPerLocation(request, response);
+                        break;
+                    default:
+                        throw 'Page Not Found';
                 }
             } else {
                 handleIntercompanyPOTxn(request);
@@ -74,6 +82,7 @@ define([
 
         log.debug('interco params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
 
         switch (stPageMode) {
@@ -93,6 +102,7 @@ define([
                     response,
                     stType: 'intercompanypo',
                     stSubsidiary,
+                    stLocation,
                     stPageMode,
                     stUserId,
                     stAccessType
@@ -161,6 +171,7 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
+                    stTranId,
                     stAccessType
                 });
 
@@ -200,7 +211,8 @@ define([
             userId: stUserId,
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId
+            tranid: stTranId,
+            subtype: stSubType
         } = request.parameters;
 
         log.debug('ia params',request.parameters);
@@ -230,7 +242,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stSubType
                 });
 
                 break;
@@ -263,15 +276,34 @@ define([
         }
     };
 
+    const renderItemPerLocation = (request, response) => {
+        const {
+            userId: stUserId,
+            accesstype: stAccessType,
+        } = request.parameters;
+
+        log.debug('itemp per loc params',request.parameters);
+        const stLocation = getLocation(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation);
+
+        listPage.renderItemPerLocation({
+            request,
+            response,
+            stType: 'itemperlocation',
+            stAccessType,
+            stUserId,
+            objSearch: objItemPerLocationSearch
+        });
+    };
+
 
     const handleIntercompanyPOTxn = (request) => {
-        log.debug('params handleIntercompanyPOTxn', request.parameters)
+        log.debug('params handleIntercompanyPOTxn', JSON.stringify(request.parameters))
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_tranid: stTranId
         } = request.parameters;
 
         let idRec = null;
@@ -294,10 +326,14 @@ define([
             }
         }
 
+        
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+        let stTranId = getTranIdSearch(idRec,stRecType);
+
         if(stRecType == 'intercompanypo'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
@@ -311,8 +347,8 @@ define([
         }
         else if(stRecType == 'itemreceipt'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
@@ -320,14 +356,14 @@ define([
                     itemreceiptid: idRec,
                     accesstype: stAccessType,
                     rectype: stRecType,
-                    tranid: stTranId
+                    tranid: stTranId,
                 }
             });
         }
         else if(stRecType == 'inventoryadjustment'){
             redirect.toSuitelet({
-                scriptId: _CONFIG.SCRIPT.ID,
-                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
                 isExternal: true,
                 parameters: {
                     pageMode: 'view',
@@ -339,6 +375,38 @@ define([
                 }
             });
         }
+    };
+
+    const getTranIdSearch = (recId, stRecType) => {
+        let stTranId;
+
+        stRecType = stRecType == 'intercompanypo' ? 'PurchOrd' : stRecType == 'itemreceipt' ? 'ItemRcpt' : 'InvAdjst'
+
+        log.debug('getTranIdSearch stRecType', stRecType);
+    
+        var purchaseorderSearchObj = search.create({
+            type: "purchaseorder",
+            filters:
+            [
+               ["internalid","anyof", recId], 
+               "AND", 
+               ["type","anyof",stRecType], 
+               "AND", 
+               ["mainline","is","T"]
+            ],
+            columns:
+            [
+               search.createColumn({name: "tranid", label: "Document Number"})
+            ]
+         });
+         var searchResultCount = purchaseorderSearchObj.runPaged().count;
+         log.debug("result count",searchResultCount);
+         purchaseorderSearchObj.run().each(function(result){
+            stTranId = result.getValue({ name: 'tranid' })
+            return true;
+         });
+
+        return stTranId;
     };
 
     const buildIntercompanyPOSearch = (stSubsidiary) => {
@@ -377,6 +445,19 @@ define([
 
         return ssItemReceipt;
     };
+
+    const buildItemPerLocationSearch = (stLocation) => {
+        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        return ssItemPerLocation;
+    };
+
 
     const getSubsidiary = (stId) => {
         const ssCredentials = search.create({
@@ -465,7 +546,7 @@ define([
         //details sourced from the Edit external page UI
         const objItemReceiptEditDetails = {
             body: txnLib.mapRetailItemReceiptBodyFields(request),
-            item: txnLib.mapItemReceiptSublistFields(request)
+            item: (txnLib.mapItemReceiptSublistFields(request))[0]
         }
         log.debug('objItemReceiptEditDetails', objItemReceiptEditDetails);
 

@@ -330,7 +330,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stUserId,
             stPoId
         } = options;
-
+      
         const {
             objItemResultSet,
             objUpcMap,
@@ -358,7 +358,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + objPO.body.custpage_cwgp_orderno });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
-
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -480,7 +479,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stAccessType,
             stTranId
         } = options;
-        
+       
         const {
             objItemResultSet,
             objUpcMap,
@@ -642,7 +641,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             font-family: 'Libre Baskerville', serif;
             font-weight: 200 !important;
         }
-    
+   
         input#submitter, input#secondarysubmitter, input#custpage_franchisepo_items_addedit {
             background-color: #105368 !important;
             color: white !important;
@@ -657,7 +656,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;
         }
-
+        
         div#custpage_franchisepo_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }

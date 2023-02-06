@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
- define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -34,7 +34,32 @@
                     id: 'custpage_cwgp_createdfrom',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From'
-                }
+                },
+                NAME: {
+                    id: 'custpage_cwgp_name',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Item Name'
+                },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Location'
+                },
+                AVAILABLE: {
+                    id: 'custpage_cwgp_available',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Available'
+                },
+                ON_HAND: {
+                    id: 'custpage_cwgp_onhand',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'On Hand'
+                },
+                COMMITTED: {
+                    id: 'custpage_cwgp_committed',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Committed'
+                },
             }
         },
         SCRIPT:{
@@ -54,7 +79,8 @@
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
-            'inventoryadjustment': mapInventoryAdjustment
+            'inventoryadjustment': mapInventoryAdjustment,
+            'itemperlocation': mapItemPerLocation
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -78,7 +104,7 @@
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
-            const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
+            const stViewLink = `<a href='${stUrl}'>Replenishment Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -149,6 +175,29 @@
         });
 
         return arrMapInventoryAdjustment;
+    };
+
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
+
+        let arrMapItemperLocation= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stItemName = result.getValue({ name: 'itemid' });
+            const stLocation = result.getText({ name: 'inventorylocation' });
+            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
+            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
+            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
+          
+            arrMapItemperLocation.push({
+                [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
+                [_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
+                [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                [_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted
+            })
+        });
+
+        return arrMapItemperLocation;
     };
 
 
@@ -223,7 +272,12 @@
             ],
             columns:
                 [
-                    search.createColumn({ name: 'periodname' })
+                    search.createColumn({ name: 'periodname' }),
+                    search.createColumn({
+                        name: "internalid",
+                        sort: search.Sort.ASC,
+                        label: "Internal ID"
+                     })
                 ]
         }).run().each(function (result) {
             fld.addSelectOption({
@@ -234,7 +288,34 @@
         });
     };
 
+    const addOptionsAdjusmentReason= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "customlist_cwgp_adjustmentreason",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'name' })
+            });
+            return true;
+        });
+    };
+
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
+        log.debug('addOptionsVendorsBySubsidiary', JSON.stringify({
+            'fld': fld,
+            'stSubsidiary': stSubsidiary
+        }));
         fld.addSelectOption({
             value: '',
             text: ''
@@ -245,9 +326,9 @@
             filters:
                 [
                     search.createFilter({
-                        name: 'subsidiary',
+                        name: 'internalid',
                         operator: search.Operator.ANYOF,
-                        values: stSubsidiary
+                        values: '19082'
                     })
                 ],
             columns:
@@ -412,7 +493,10 @@
                     search.createColumn({ name: 'memo' }),
                     search.createColumn({ name: 'quantity' }),
                     search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'amount' })
+                    search.createColumn({ name: 'amount' }),
+                    search.createColumn({ name: 'approvalstatus' }),
+                    search.createColumn({ name: 'custitem_heyday_sku', join: 'item' }),
+                    search.createColumn({ name: 'custitemheyday_upccode', join: 'item' })
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -423,13 +507,18 @@
                 objPO.body.custpage_cwgp_date = result.getValue({ name: 'trandate' });
                 objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
                 objPO.body.custpage_cwgp_location = result.getValue({ name: 'location' });
+                objPO.body.custpage_cwgp_approvalstatus= result.getText({ name: 'approvalstatus' });
+                objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
+                    custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                     custpage_cwgp_description: result.getValue({ name: 'memo' }),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
+                    custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }),
+                    custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }),
                 });
             }
 
@@ -456,6 +545,7 @@
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
         objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
         objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+        objPO.body.custpage_cwgp_damagediaid = objItemReceipt.getValue('custbody_cwgp_damagediaid');
 
         const intLineCount = objItemReceipt.getLineCount('item');
 
@@ -468,7 +558,7 @@
                 }),
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'sitemname',
                     line: x
                 }),
                 custpage_cwgp_description: objItemReceipt.getSublistValue({
@@ -510,6 +600,16 @@
                     sublistId: 'item',
                     fieldId: 'rate',
                     line: x
+                }),
+                custpage_cwgp_internalsku: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_hiddeninternalsku',
+                    line: x
+                }),
+                custpage_cwgp_upccode: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_hiddenupccode',
+                    line: x
                 })
             });
         }
@@ -539,9 +639,14 @@
 
         for(var x = 0; x < intLineCount; x++){
             objPO.item.push({
+                custpage_cwgp_itemid: objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: x
+                }),
                 custpage_cwgp_item: objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'sitemname',
                     line: x
                 }),
                 custpage_cwgp_description: objItemReceipt.getSublistValue({
@@ -597,24 +702,29 @@
         objPO.body.custpage_cwgp_postingperiod = objInventoryAdjustment.getText('postingperiod');
         objPO.body.custpage_cwgp_memomain = objInventoryAdjustment.getValue('memo');
         objPO.body.custpage_cwgp_subsidiary = objInventoryAdjustment.getText('subsidiary');
-        objPO.body.custpage_cwgp_department = objInventoryAdjustment.getText('department');
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
 
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
 
         for(var x = 0; x < intLineCount; x++){
-            log.debug('qty on hand', parseInt(objInventoryAdjustment.getSublistValue({
-                sublistId: 'inventory',
-                fieldId: 'quantityonhand',
-                line: x
-            })));
             objPO.item.push({
+                custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
-                    fieldId: 'description',
+                    fieldId: 'item_display',
                     line: x
                 }),
+                custpage_cwgp_internalsku: lookUpItem(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'item',
+                    line: x
+                }), 'sku'),
+                custpage_cwgp_upccode: lookUpItem(objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'item',
+                    line: x
+                }), 'upc'),
                 custpage_cwgp_description: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'description',
@@ -634,30 +744,51 @@
                     sublistId: 'inventory',
                     fieldId: 'quantityonhand',
                     line: x
-                })),
+                })) || '0',
                 custpage_cwgp_adjustqtyby: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'adjustqtyby',
                     line: x
-                })),
+                })) || 0,
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
                     line: x
-                })),
-                custpage_cwgp_department: objInventoryAdjustment.getSublistValue({
+                })) || 0.00,
+                custpage_cwgp_estimatedunitcost: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
-                    fieldId: 'department',
+                    fieldId: 'unitcost',
                     line: x
-                }),
-                custpage_cwgp_businessline: objInventoryAdjustment.getSublistValue({
+                }) || '0.00',
+                custpage_cwgp_businessline: objInventoryAdjustment.getSublistText({
                     sublistId: 'inventory',
                     fieldId: 'class',
                     line: x
-                })
+                }),
+                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmentreason',
+                    line: x
+                }),
             });
         }
 
+        function lookUpItem(itemId, type){
+            if(itemId){
+                let fieldLookUp = search.lookupFields({
+                    type: search.Type.ITEM,
+                    id: itemId,
+                    columns: ['custitem_heyday_sku','custitemheyday_upccode']
+                });
+                
+                if(type == 'sku'){
+                    return fieldLookUp.custitem_heyday_sku;
+                }
+                else if(type == 'upc'){
+                    return fieldLookUp.custitemheyday_upccode;
+                }
+            }
+        }
         return objPO;
     }
 
@@ -676,6 +807,61 @@
         });
     };
 
+    const getPOValues = (stPoId) => {
+        let stApprovalStatus;
+        let stPairedInterco;
+        let stPairedIntercoStatus = null;
+        let objPO ={};
+
+        search.create({
+            type: search.Type.PURCHASE_ORDER,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: stPoId
+                    }),
+                    search.createFilter({
+                        name: 'mainline',
+                        operator: search.Operator.IS,
+                        values: "T"
+                    }),
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'approvalstatus' }),
+                    search.createColumn({ name: 'intercotransaction' }),
+                ]
+        }).run().each((result) => {
+            stApprovalStatus = result.getText({ name: 'approvalstatus' });
+            stPairedInterco = result.getValue({ name: 'intercotransaction' });
+            return true;
+        });
+
+        log.debug('search results', JSON.stringify({
+            'stApprovalStatus': stApprovalStatus,
+            'stPairedInterco': stPairedInterco
+        }));
+
+        if(stPairedInterco){
+            stPairedIntercoStatus = search.lookupFields({
+                type: search.Type.SALES_ORDER,
+                id: stPairedInterco,
+                columns: ['statusref']
+            });
+
+            stPairedIntercoStatus = stPairedIntercoStatus.statusref[0].value
+            log.debug('stPairedIntercoStatus',stPairedIntercoStatus);
+        }
+
+        objPO.stApprovalStatus = stApprovalStatus;
+        objPO.stPairedIntercoStatus = stPairedIntercoStatus;
+
+        return objPO;
+    };
+    
+
     return {
         mapValues,
         addOptionsVendorsBySubsidiary,
@@ -684,13 +870,14 @@
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
+        addOptionsAdjusmentReason,
         addOptionsDepartmentBySubsidiary,
         addOptionsAccountsBySubsidiary,
         mapPOValues,
         mapItemReceiptValues,
         mapPOtoItemReceiptValues,
         mapInventoryAdjustmentValues,
-        setSublistValues
+        setSublistValues,
+        getPOValues
     }
 });
-
