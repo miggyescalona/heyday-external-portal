@@ -55,6 +55,10 @@ define(['N/search'], (search) => {
                     response.write(JSON.stringify({ stQtyOnHand: stQtyOnHand }))	
                 }
             }
+            if(stItem&&stCustomer){
+                const stQtyOnHand = getQtyOnHandFranchise(stItem,stCustomer);
+                response.write(JSON.stringify({ stQtyOnHand: stQtyOnHand }))
+            }
         }
     };
 
@@ -64,6 +68,8 @@ define(['N/search'], (search) => {
             id: stItem,
             columns: ['itemid', 'salesdescription','purchasedescription','cost', 'custitem_heyday_sku', 'custitemheyday_upccode', 'internalid']
         });
+      
+        objLookup['franchiseprice'] = getFranchisePrice(stItem);
 
         if(stType != 'retail'){
             objLookup['franchiseprice'] = getFranchisePrice(stItem);
@@ -95,7 +101,7 @@ define(['N/search'], (search) => {
          });
          return stQtyOnHand;
     };
-
+    
     const getQtyOnHandFranchise  = (stItem,stCustomer) => {	
         var qtyOnHand = 0;	
         var IRLineSearch = search.create({	

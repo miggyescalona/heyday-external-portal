@@ -21,11 +21,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             itemreceipt: 'Item Receipt'
         },
         TAB: {
-            franchisepo: 'custpage_interpo_itemstab',
+            franchisepo: 'custpage_franchisepo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab'
         },
         SUBLIST: {
-            franchisepo: 'custpage_interpo_items',
+            franchisepo: 'custpage_franchisepo_items',
             itemreceipt: 'custpage_itemreceipt_items'
         },
         FIELD: {
@@ -87,7 +87,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
-                    defaultValue: new Date()
+                    //defaultValue: new Date()
+                },
+                DELIVERY_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver by Date',
+                    container: 'PRIMARY',
+                    mandatory: true,
+                    //defaultValue: new Date()
                 },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
@@ -137,17 +145,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'accessType',
                     displayType: 'hidden'
                 },
-                REC_ID: {
-                    id: 'custpage_cwgp_recid',
+                ITEMRECEIPT_ID: {
+                    id: 'custpage_cwgp_itemreceiptid',
                     type: serverWidget.FieldType.TEXT,
-                    label: 'recId',
-                    //displayType: 'hidden'
+                    label: 'poId',
+                    displayType: 'hidden'
                 },
                 PO_ID: {
                     id: 'custpage_cwgp_poid',
                     type: serverWidget.FieldType.TEXT,
-                    label: 'poId',
-                    //displayType: 'hidden'
+                    label: 'Created From',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
                 },
                 REC_TYPE: {
                     id: 'custpage_cwgp_rectype',
@@ -175,8 +184,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
-                    container: 'PRIMARY',
-                    displayType: 'inline'
+                    container: 'PRIMARY'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -186,11 +194,17 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     container: 'CLASS',
                     displayType: 'inline'
                 },
-            }
+            },
         },
         COLUMN: {
             ITEMS: {
             	franchisepo:{
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item ID',
+                        displayType:'hidden'
+                    },
                     ITEM: {
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
@@ -202,6 +216,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description'
                     },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.INTEGER,
@@ -211,13 +237,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate',
-                        //displayType: 'inline'
+                        displayType: 'disabled'
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount',
-                        //displayType: 'inline'
+                        displayType: 'disabled'
                     }
                 },    
                 itemreceipt: {
@@ -233,38 +259,47 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                     },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity',
-                        displayType: 'ENTRY'
+                        label: 'Received Quantity',
+                        displayType: 'inline'
+                    },
+                    DAMAGED: {
+                        id: 'custpage_cwgp_quantitydamaged',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Damaged Quantity',
+                        displayType: 'inline'
                     },
                     LINE: {
                         id: 'custpage_cwgp_line',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Line'
-                    },
-                    RATE: {
-                        id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
-                    },
-                    ID: {
-                        id: 'custpage_cwgp_id',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'id'
-                    },
+                        label: 'Line',
+                        displayType: 'hidden'
+                    }
                 }
             }
         },
         FIELD_GROUP: {
             franchisepo: {
                 PRIMARY: {
-                    id: 'custpage_interpo_pi_grp',
+                    id: 'custpage_franchisepo_pi_grp',
                     label: 'Primary Information'
                 },
                 CLASS: {
-                    id: 'custpage_interpo_class_grp',
+                    id: 'custpage_franchisepo_class_grp',
                     label: 'Classification'
                 },
             },
@@ -295,20 +330,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stUserId,
             stPoId
         } = options;
+      
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
 
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
-
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
         
         let objPO = utilLib.mapPOValues(stPoId);
         objPO.body.custpage_cwgp_rectype = stType;
@@ -317,13 +353,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + objPO.body.custpage_cwgp_orderno });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
-
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
@@ -445,31 +480,31 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stAccessType,
             stTranId
         } = options;
-        
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary: '',
-            _CONFIG
-        })
+       
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary: '',
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         let objPO = utilLib.mapIRValuesViewEdit(stPoId);
-        
-        objPO.body.custpage_cwgp_recid = stPoId
+        objPO.body.custpage_cwgp_itemreceiptid = stPoId;
         objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
+        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
         log.debug('objPO', objPO);
         
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
@@ -607,8 +642,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             font-family: 'Libre Baskerville', serif;
             font-weight: 200 !important;
         }
-    
-        input#submitter, input#secondarysubmitter, input#custpage_interpo_items_addedit {
+   
+        input#submitter, input#secondarysubmitter, input#custpage_franchisepo_items_addedit {
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;
@@ -616,14 +651,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
     
         input#custpage_back_button, 
         input#secondarycustpage_back_button, 
-        input#custpage_interpo_items_clear, 
-        input#custpage_interpo_items_remove {
+        input#custpage_franchisepo_items_clear, 
+        input#custpage_franchisepo_items_remove {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;
         }
-
-        div#custpage_interpo_itemstab_pane_hd {
+        
+        div#custpage_franchisepo_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
         

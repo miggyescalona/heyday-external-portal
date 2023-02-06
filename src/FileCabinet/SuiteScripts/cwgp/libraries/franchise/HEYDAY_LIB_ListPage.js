@@ -48,8 +48,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     },
                     STATUS: {
                         id: 'custpage_cwgp_trandstatus',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Status'
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Status',
+                        displayType: 'inline'
+
+                    },
+                    FOR_RECEiVING: {
+                        id: 'custpage_cwgp_forreceiving',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'For Receiving',
+                        displayType: 'inline'
                     }
                 },
                 itemreceipt: {
@@ -75,6 +83,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
                     },
+                    CUSTOMER: {
+                        id: 'custpage_cwgp_customer',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Customer'
+                    },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
@@ -82,7 +95,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     }
                 }
             }
-        }
+        },
+        CLIENT_SCRIPT: '../franchise/HEYDAY_CS_ListPage.js'
     }
 
     const render = (options) => {
@@ -98,10 +112,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('request.parameters', request.parameters)
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
         log.debug('intPage main', intPage);
+        const stStatus = request.parameters['approvalstatus'] ? request.parameters['approvalstatus'] : '';
+        const stReceiving = request.parameters['isreceiving'] ? request.parameters['isreceiving'] : '';
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
         //add body fields
         const fldHtml = form.addField({
@@ -113,7 +129,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -124,29 +140,35 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
         
-        const fldCategory = form.addField({
-            id: 'custpage_cwgp_category',
+        const fldApprovalStatus = form.addField({
+            id: 'custpage_cwgp_approvalstatus',
             type: serverWidget.FieldType.SELECT,
-            label: 'Category',
+            label: 'Approval Status',
             //container: _CONFIG.TAB[stType]
         });
-        fldCategory.addSelectOption({
-            value: 0,
-            text: 'All'
+        if(stStatus){
+            fldApprovalStatus.defaultValue = stStatus;
+        }
+        
+
+        util.addOptionsFranchiseApprovalStatus(fldApprovalStatus);
+
+        const fldForReceiving = form.addField({
+            id: 'custpage_cwgp_forreceiving',
+            type: serverWidget.FieldType.CHECKBOX,
+            label: 'For Receiving',
+            //container: _CONFIG.TAB[stType]
         });
-        fldCategory.addSelectOption({
-            value: 1,
-            text: 'Pending Approval'
-        });
-        fldCategory.addSelectOption({
-            value: 2,
-            text: 'Created by Franchise'
-        });
+        if(stReceiving =='true'){
+            fldForReceiving.defaultValue = 'T';
+        }
+
+        //util.addOptionsForReceiving(fldForReceiving);
 
         //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
-            label: ' ',
+            label: 'Transactions',
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
@@ -157,13 +179,28 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
-            const { id, type, label } = objListCols[stCol];
+            const { id, type, label, displayType} = objListCols[stCol];
 
-            sbl.addField({
+            let col = sbl.addField({
                 id,
                 type,
-                label
+                label,
+                displayType
             });
+
+            if(id == 'custpage_cwgp_trandstatus'){
+                util.addOptionsFranchiseApprovalStatus(col);
+            }
+    
+            if(id == 'custpage_cwgp_forreceiving'){
+                util.addOptionsForReceiving(col);
+            }
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
+
+            
         });
 
         setListValues({
@@ -180,7 +217,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType})`
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'franchisepo')`
         });
 
         form.addButton({
@@ -208,7 +245,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = '../franchise/HEYDAY_CS_ListPage.js';
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
         //add body fields
         const fldHtml = form.addField({
@@ -220,7 +257,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -253,7 +290,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
-            label: ' ',
+            label: 'Transactions',
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
@@ -317,7 +354,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
         //add body fields
         const fldHtml = form.addField({
@@ -329,7 +366,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -340,19 +377,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
 
-        const fldLocation = form.addField({
-            id: 'custpage_cwgp_location',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Location',
-            container: _CONFIG.TAB[stType]
-        });
-        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;
-
         //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
-            label: ' ',
+            label: 'Transactions',
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
@@ -504,6 +532,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         div#custpage_ir_listtab_franchise_pane_hd {
             background-color: #dbc8b6 !important;
         }
+        div#custpage_ia_listtab_franchise_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
 
     </style>`;
 
@@ -512,7 +543,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
     return {
         render,
-        renderItemReceipt
+        renderItemReceipt,
+        renderInventoryAdjustment
     }
 });
 

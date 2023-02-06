@@ -558,19 +558,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //Initialize Add Scanner Field Group and Fields
-        const {
-            objItemResultSet,
-            objUpcMap,
-        }= EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // }= EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -633,8 +634,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 stUserId,
                 stAccessType,
                 stType,
-                stUpcMap,
-                stOperator
+                // stUpcMap
+
             });
 
             if (objDefaultValues[fld.id] != 'undefined') {
