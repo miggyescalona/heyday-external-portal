@@ -381,10 +381,17 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         sublistId   : UI_CONFIG.SUBLIST_ID
                     })
                     if(blOverRcvd){
-                        throw {
+                        let objError = {
                             name    : 'EXCESS_SCANNED_QTY',
-                            message : 'Total received quantity exceeds quantity remaining. Only the maximum allowed receivable quantity was set.'
+                            message : ''
                         }
+                        if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
+                            objError['message'] = 'Total received quantity exceeds shipped quantity. Only the maximum allowed receivable quantity was set.'
+                        }
+                        else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
+                            objError['message'] = 'Total damaged quantity exceeds received quantity. Only the maximum allowed damaged quantity was set.'
+                        }
+                        throw objError;
                     }
                 }
                 else{
