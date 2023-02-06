@@ -188,8 +188,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const getScanButtonCss = () => {
         const stBtnCss = 
         `<span>
-            <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Receive<br />Scanned Codes</button>
-            <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Mark as<br />Damaged</button>
+            <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
+            <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
          </span>
         
         <style>
@@ -200,6 +200,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             font-size: 14px !important;
             font-weight: 600;
             padding: 20px 15px;
+            margin: 20px 5px;
             color: #105368;
             background-color: transparent;
             transition-duration: 0.4s;

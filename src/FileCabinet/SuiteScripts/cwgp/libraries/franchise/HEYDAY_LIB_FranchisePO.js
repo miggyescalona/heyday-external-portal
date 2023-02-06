@@ -262,7 +262,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 });
                 let qtyDamaged = request.getSublistValue({
                     group: 'custpage_itemreceipt_items',
-                    name: 'custpage_cwgp_quantitydamaged',
+                    name: 'custpage_cwgp_damagedquantity',
                     line: i
                 });
                 let qtyActual = qtyReceived - qtyDamaged;
@@ -308,7 +308,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             });
             let qtyDamaged = request.getSublistValue({
                 group: 'custpage_itemreceipt_items',
-                name: 'custpage_cwgp_quantitydamaged',
+                name: 'custpage_cwgp_damagedquantity',
                 line: i
             });
         	log.debug('recieve', recieve);
