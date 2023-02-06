@@ -182,14 +182,16 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     SUBLIST_FIELDS  : {
                         ITEM_ID         : 'custpage_cwgp_itemid',
                         ITEM            : 'custpage_cwgp_item',
-                        SHIPPED_QUANTITY: 'custpage_cwgp_shippedquantity'
                     }
                 }    
                 if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
-                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_quantity'
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_quantity'
+                    UI_CONFIG.SUBLIST_FIELDS['MAX_QTY'] = 'custpage_cwgp_shippedquantity'
+                    
                 }
                 else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
-                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_damagedquantity'
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_damagedquantity'
+                    UI_CONFIG.SUBLIST_FIELDS['MAX_QTY'] = 'custpage_cwgp_quantity'
                 }
                 break;
             case 'inventoryadjustment':   
@@ -222,7 +224,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
                 throw {
                     name    : 'NO_UPC_CODE_MATCH',
-                    message : 'No item matched the UPC Code entered. If the item line exists, ensure that there are no items sharing its UPC Code.'
+                    message : 'No item matched the UPC Code entered.'
                 }
             }
 
@@ -309,13 +311,13 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     //     line        : index
                     // })      
                     
-                    let intQtyRemaining = recCurrent.getSublistValue({
+                    let intMaxQty = recCurrent.getSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.SHIPPED_QUANTITY,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.MAX_QTY,
                         line        : index
                     });
 
-                    console.log('intQtyRemaining', intQtyRemaining)
+                    console.log('intMaxQty', intMaxQty)
                     
                     let intQty = recCurrent.getSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
@@ -326,13 +328,13 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     let intScannedQty = objCurrItemLine.qty
 
                     try{
-                        intQtyRemaining = parseInt(intQtyRemaining)
+                        intMaxQty = parseInt(intMaxQty)
                         intQty          = parseInt(intQty)
                         intScannedQty   = parseInt(intScannedQty)
                         
                         //Default all falsy values to 0
-                        if(!intQtyRemaining){
-                            intQtyRemaining = 0;
+                        if(!intMaxQty){
+                            intMaxQty = 0;
                         }
                         if(!intQty){
                             intQty = 0;
@@ -348,17 +350,17 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     let intQtyToSet;
                     let blOverRcvd = false;
 
-                    if(intQtyRemaining >= intNewQty || stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
+                    if(intMaxQty >= intNewQty){
                         intQtyToSet = intNewQty
                     }
                     //If received quantity exceeds quantity remaining
                     else{
-                        intQtyToSet = intQtyRemaining
-                        objCurrItemLine.qty = intNewQty - intQtyRemaining
+                        intQtyToSet = intMaxQty
+                        objCurrItemLine.qty = intNewQty - intMaxQty
                         blOverRcvd = true;
                     }
                     // console.table({
-                    //     intQtyRemaining,
+                    //     intMaxQty,
                     //     intQty,
                     //     intScannedQty,
                     //     intNewQty,
@@ -388,7 +390,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 else{
                     throw {
                         name    : 'NO_ITEM_LINE_MATCH',
-                        message : 'The scanned item was not found in the list of items to be received.'
+                        message : 'The scanned code does not match any item to be received. Otherwise, verify that the UPC Code is not shared by other items.'
                     }
                 }
             }
