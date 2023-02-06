@@ -300,7 +300,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         displayType: 'inline'
                     },
                     DAMAGED: {
-                        id: 'custpage_cwgp_quantitydamaged',
+                        id: 'custpage_cwgp_damagedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Damaged Quantity',
                         displayType: 'inline'

@@ -741,8 +741,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         franchisePOReceivable,
         mapItemReceipt,
         mapInventoryAdjustment,
-        addScannedItemsToLines,
-        generateFailedScannerString,
         mapIRValuesViewEdit,
         mapInvAdjValues,
         setSublistValues,
