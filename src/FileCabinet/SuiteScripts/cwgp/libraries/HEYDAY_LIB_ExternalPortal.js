@@ -187,13 +187,19 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = () => {
         const stBtnCss = 
-        `<button id="custpage_cwgp_scan_button" type="button" class="navbutton">Process<br />UPC Codes</button>
+        `<span>
+            <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Receive<br />Scanned Codes</button>
+            <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Mark as<br />Damaged</button>
+         </span>
         
         <style>
 
-        .navbutton {
+        .scanbutton {
             font-family: 'Roboto', sans-serif;
             font-family: 'Roboto Mono', monospace;
+            font-size: 14px !important;
+            font-weight: 600;
+            padding: 20px 15px;
             color: #105368;
             background-color: transparent;
             transition-duration: 0.4s;
@@ -207,18 +213,10 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             background-clip: border-box;
         }
 
-        .navbutton:hover {
+        .scanbutton:hover {
             background-color: #105368;
             color: white;
         }
-
-        button#custpage_cwgp_scan_button{
-            font-family: 'Roboto Mono', monospace;
-            font-size: 14px !important;
-            font-weight: 600;
-            padding: 20px 15px;
-        }
-
          
         tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
             width: 1%
