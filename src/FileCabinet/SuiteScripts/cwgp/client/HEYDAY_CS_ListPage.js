@@ -66,6 +66,44 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
             window.onbeforeunload = null;
             location.href = stNewURL;
         }
+
+        if (context.fieldId == 'custpage_cwgp_approvalstatus') {
+            const intApprovalStatus = currentRecord.getValue({ fieldId: 'custpage_cwgp_approvalstatus' });
+            console.log('approvalstatus', intApprovalStatus);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_approvalstatus', intApprovalStatus);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
+
+        if (context.fieldId == 'custpage_cwgp_forreceiving') {
+            const blForReceiving = currentRecord.getValue({ fieldId: 'custpage_cwgp_forreceiving' });
+            console.log('forreceiving', blForReceiving);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_forreceiving', blForReceiving);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
     };
 
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
