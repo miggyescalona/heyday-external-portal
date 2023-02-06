@@ -120,7 +120,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 columns:
                 [
                     search.createColumn({ name: 'itemid' }),
-                    search.createColumn({ name: 'custitemheyday_upccode' })
+                    search.createColumn({ name: 'custitemheyday_upccode' }),
+                    search.createColumn({ name: 'created' })
                 ]
             }
             
@@ -151,7 +152,10 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
                 
                 objItemResultSet.each(function (result) {
-                    objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
+                    let stUpcCode = result.getValue({ name: 'custitemheyday_upccode' })
+                    if(!(objUpcMap.hasOwnProperty(stUpcCode))){
+                        objUpcMap[stUpcCode] = result.id;
+                    }
                     
                     return true;
                 });

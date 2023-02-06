@@ -222,7 +222,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
                 throw {
                     name    : 'NO_UPC_CODE_MATCH',
-                    message : 'No item matched the UPC Code entered.'
+                    message : 'No item matched the UPC Code entered. If the item line exists, ensure that there are no items sharing its UPC Code.'
                 }
             }
 
