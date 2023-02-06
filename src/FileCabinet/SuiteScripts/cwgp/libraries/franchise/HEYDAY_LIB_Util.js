@@ -414,7 +414,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 custpage_cwgp_quantitystarting: String(qtyOnhand),
                 custpage_cwgp_quantityfinal: String(qtyOnhand),
                 custpage_cwgp_quantity: '0',
-                custpage_cwgp_quantitydamaged: '0',
+                custpage_cwgp_damagedquantity: '0',
                 custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                 custpage_cwgp_amount: result.getValue({ name: 'amount' }),
                 custpage_cwgp_line: result.getValue({ name: 'lineuniquekey' }),
@@ -484,7 +484,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         		custpage_cwgp_id: result.id,
                 custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_ftl_item' }),
                 custpage_cwgp_quantity: result.getValue({ name: 'custrecord_cwgp_ftl_receivedqty' }),
-                custpage_cwgp_quantitydamaged: result.getValue({ name: 'custrecord_cwgp_ftl_receivedqty' }),
+                custpage_cwgp_damagedquantity: result.getValue({ name: 'custrecord_cwgp_ftl_receivedqty' }),
                 custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
                 custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
             });

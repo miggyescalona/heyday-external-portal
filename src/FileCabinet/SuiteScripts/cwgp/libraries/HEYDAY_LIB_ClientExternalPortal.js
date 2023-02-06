@@ -185,10 +185,10 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         QTY_REMAINING   : 'custpage_cwgp_quantityremaining'
                     }
                 }    
-                if(stScanType == _CONFIG.SCAN_TYPE.RECEIVE){
+                if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
                     UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_quantity'
                 }
-                else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGE){
+                else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
                     UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_damagedquantity'
                 }
                 break;
