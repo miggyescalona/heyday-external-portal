@@ -24,8 +24,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
-            itemreceipt_damaged: 'custpage_itemreceiptdamaged_itemstab',
-            inventoryadjustment_damaged: 'custpage_inventoryadjustment_itemstab'
+            inventoryadjustment: 'custpage_inventoryadjustment_itemstab',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_items',
@@ -81,12 +81,33 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     label: 'Memo',
                     container: 'PRIMARY',
                     displayType: 'inline',
-                    breakType: 'STARTCOL'
                 },
                 APPROVAL_STATUS: {
                     id: 'custpage_cwgp_approvalstatus',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Approval Status',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                AMS_TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_sointercoid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'AMS Tracking Number',
+                    container: 'PRIMARY',
+                    displayType: 'inline',
+                    breakType: 'STARTCOL'
+                },
+                FOR_RECEIVING: {
+                    id: 'custpage_cwgp_forreceiving',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'For Receiving',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
@@ -161,6 +182,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -181,7 +209,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'Damaged Inventory Adjustment',
                     container: 'CLASS',
-                    displayType: 'inline'
+                    displayType: 'hidden'
                 },
             },
             inventoryadjustment:{
@@ -234,6 +262,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
@@ -299,6 +334,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_amount',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount'
+                    },
+                    EXPECTED_RECEIPT_DATE: {
+                        id: 'custpage_cwgp_expectedreceiptdate',
+                        type: serverWidget.FieldType.DATE,
+                        label: 'Expected Receipt Date',
                     }
                 },
                 itemreceipt: {
@@ -330,18 +370,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     TRANSFER_LOCATION: {
                         id: 'custpage_cwgp_transferlocationtext',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Transfer Location',
+                        label: 'Location',
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity'
+                        label: 'Received Quantity'
                     },
-                    RATE: {
+                    /*RATE: {
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
-                    },
+                    },*/
                 },
                 inventoryadjustment: {
                     ITEM: {
@@ -382,7 +422,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Qty. By'
+                        label: 'Adjust Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
@@ -491,6 +531,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         });
 
         let objPO = utilLib.mapPOValues(stPoId);
+        let objPOValues = utilLib.getPOValues(stPoId);
+        log.debug('objPOValuesButton',JSON.stringify({
+            stApprovalStatus: objPOValues.stApprovalStatus,
+            stPairedInterco: objPOValues.stPairedIntercoStatus,
+            stDocumentStatus: objPOValues.stDocumentStatus
+        }));
+        if(objPOValues.stApprovalStatus == 'Approved' && (objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled') && (objPOValues.stDocumentStatus == 'pendingBillPartReceived' || objPOValues.stDocumentStatus == 'pendingReceipt')){
+            objPO.body.custpage_cwgp_forreceiving = 'Yes'
+        }
+        else{
+            objPO.body.custpage_cwgp_forreceiving = 'No'
+        }
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
@@ -576,8 +628,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         utilLib.setSublistValues(sbl, objPO);
 
-        let objPOValues = utilLib.getPOValues(stPoId);
-
         log.debug('objPOValues', JSON.stringify(objPOValues));
 
         if(objPOValues.stApprovalStatus != 'Approved'){
@@ -594,7 +644,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             functionName: `back(${stUserId}, ${stAccessType}, 'intercompanypo')`
         });
 
-        if(objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled'){
+        if(objPOValues.stApprovalStatus == 'Approved' && (objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled') && (objPOValues.stDocumentStatus == 'pendingBillPartReceived' || objPOValues.stDocumentStatus == 'pendingReceipt')){
             form.addButton({
                 id: 'custpage_receive_btn',
                 label: 'Receive',
@@ -767,7 +817,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         form.addButton({
             id: 'custpage_edit_btn',
             label: 'Edit',
-            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType}, ${stTranId}, 'itemreceipt')`
+            functionName: `toEdiTransaction(${stUserId}, ${stPoId}, ${stAccessType},${stTranId},'itemreceipt')`
         });
 
         form.addButton({

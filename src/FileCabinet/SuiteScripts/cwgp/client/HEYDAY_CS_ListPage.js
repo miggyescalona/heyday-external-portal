@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) => {
+define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, dialog, ClientEPLib) => {
     /**
      * Function to be executed after page is initialized.
      *
@@ -66,6 +66,44 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
             window.onbeforeunload = null;
             location.href = stNewURL;
         }
+
+        if (context.fieldId == 'custpage_cwgp_approvalstatus') {
+            const intApprovalStatus = currentRecord.getValue({ fieldId: 'custpage_cwgp_approvalstatus' });
+            console.log('approvalstatus', intApprovalStatus);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_approvalstatus', intApprovalStatus);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
+
+        if (context.fieldId == 'custpage_cwgp_forreceiving') {
+            const blForReceiving = currentRecord.getValue({ fieldId: 'custpage_cwgp_forreceiving' });
+            console.log('forreceiving', blForReceiving);
+
+            let stURL = new URL(location.href);
+
+            let objParams = stURL.searchParams;
+            objParams.set('custparam_cwgp_forreceiving', blForReceiving);
+
+            stURL.search = objParams.toString();
+
+            const stNewURL = stURL.toString();
+            log.debug('stNewURL', stNewURL);
+
+            //bypass the "Leave Changes" alert box
+            window.onbeforeunload = null;
+            location.href = stNewURL;
+        }
     };
 
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
@@ -82,7 +120,7 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
                pageMode    : 'create',
                userId      : stUserId,
                accesstype  : stAccessType,
-               rectype     : stType
+               rectype     : stType,
            }
        });
        window.location = stCreateIntPOUrl;
@@ -110,10 +148,56 @@ define(['N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, Clien
    
     };
 
+    const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
+        var options = {
+            title: 'Create Inventory Adjustment',
+            message: 'Please select what type of inventory adjustment to create:',
+            buttons: [
+                { label: 'Standard', value: 1 },
+                { label: 'Backbar', value: 2 },
+                { label: 'Damage/Tester', value: 3 }
+            ]
+        };
+        function success(result) { 
+
+            const objCreateIntPOUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+            let subType;
+
+            switch(result){
+                case '1':
+                    subType = 'standard';
+                    break;
+                case '2':
+                    subType = 'backbar';
+                break;
+                case '3':
+                    subType = 'damage';
+                break;
+            }
+            
+            let stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+                scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'create',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : stType,
+                    subtype     : subType 
+                }
+            });
+            window.location = stCreateIntPOUrl;
+        }
+        function failure(reason) { console.log('Failure: ' + reason) }
+        dialog.create(options).then(success).catch(failure);
+    }
+
     return {
         pageInit,
         fieldChanged,
         back,
-        toCreateTransaction
+        toCreateTransaction,
+        createInventoryAdjustment
     };
 });

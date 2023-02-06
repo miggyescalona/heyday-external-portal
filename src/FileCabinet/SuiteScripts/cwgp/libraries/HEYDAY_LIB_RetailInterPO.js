@@ -106,12 +106,22 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             else{
                 util.each(objPOBodyFields, (value, fieldId) => {
                     if(arrSkipFields.includes(fieldId) || (fieldId == 'itemreceive' && value == true)){return;}
+                    if(Number.isInteger(value)){
+                            objItemReceipt.setSublistValue({
+                                sublistId: 'item',
+                                fieldId: fieldId,
+                                line: intCurrentLine,
+                                value: value || null
+                            });
+                    }    
+                    else{
                         objItemReceipt.setSublistValue({
                             sublistId: 'item',
                             fieldId: fieldId,
                             line: intCurrentLine,
                             value: value
                         });
+                    }
                 });
             }
             intCurrentLine++;
@@ -201,6 +211,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
         const stBusinessLine = request.parameters.custpage_cwgp_businessline;
+        const stOperator = request.parameters.custpage_cwgp_operator;
 
         const objMapBodyFields = {
             entity: stVendor,
@@ -208,7 +219,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             trandate: new Date(stDate),
             memo: stMemoMain || '',
             location: stLocation,
-            class: stBusinessLine
+            class: stBusinessLine,
+            custbody_cwgp_externalportaloperator: stOperator
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -221,13 +233,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stDate = request.parameters.custpage_cwgp_date;
         const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
         const stAccount = 972;
+        const stOperator = request.parameters.custpage_cwgp_operator;
 
         const objMapBodyFields = {
             entity: stVendor,
             trandate: new Date(stDate),
             memo: stMemoMain || '',
             subsidiary: stSubsidiary,
-            account: stAccount
+            account: stAccount,
+            custbody_cwgp_externalportaloperator: stOperator
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -266,6 +280,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const intLineCount = request.getLineCount({ group: 'custpage_interpo_items' });
 
         for (let i = 0; i < intLineCount; i++) {
+            let objDate = request.getSublistValue({
+                group: 'custpage_interpo_items',
+                name: 'custpage_cwgp_expectedreceiptdate',
+                line: i
+            });
+            if(objDate){
+                objDate = new Date(objDate);
+            }else{
+                objDate = null;
+            }
             arrMapSblFields.push({
                 item: request.getSublistValue({
                     group: 'custpage_interpo_items',
@@ -277,11 +301,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_description',
                     line: i
                 }),
-                quantity: request.getSublistValue({
+                quantity: parseInt(request.getSublistValue({
                     group: 'custpage_interpo_items',
                     name: 'custpage_cwgp_quantity',
                     line: i
-                }),
+                })),
                 rate: request.getSublistValue({
                     group: 'custpage_interpo_items',
                     name: 'custpage_cwgp_rate',
@@ -291,8 +315,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     group: 'custpage_interpo_items',
                     name: 'custpage_cwgp_businessline',
                     line: i
-                })
-            })
+                }),
+                expectedreceiptdate: objDate
+            });
         }
 
         log.debug('arrMapSblFields', arrMapSblFields)
@@ -312,11 +337,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_item',
                     line: i
                 }),
-                quantity: request.getSublistValue({
+                quantity: parseInt(request.getSublistValue({
                     group: 'custpage_itemreceipt_items',
                     name: 'custpage_cwgp_quantity',
                     line: i
-                }),
+                })),
                 rate: request.getSublistValue({
                     group: 'custpage_itemreceipt_items',
                     name: 'custpage_cwgp_rate',
@@ -344,7 +369,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 }) == 'F') ? false : true
             });
 
-            if(request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_damagedquantity',line: i}) && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_receive',line: i}) == 'T'){
+            if(request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_damagedquantity',line: i}) && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_receive',line: i}) == 'T' && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_damagedquantity',line: i}) != 0){
                 arrMapDamagedItems.push({
                     item: request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
@@ -381,6 +406,36 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
         for (let i = 0; i < intLineCount; i++) {
+            let intFinalQuantity = 0;
+
+            const intAdjQtyBy = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_adjustqtyby',
+                line: i
+            }));
+
+            const intEndingInvQty = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_endinginventoryqty',
+                line: i
+            }));
+
+            const intQtyOnHand = parseInt(request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_qtyonhand',
+                line: i
+            }));
+
+            log.debug('intAdjQtyBy | intEndingInvQty | intQtyOnHand', intAdjQtyBy +'|' + intEndingInvQty + '|' + intQtyOnHand);
+
+            if(intAdjQtyBy && intAdjQtyBy !=0){
+                intFinalQuantity = intAdjQtyBy;
+            }
+            else if(intEndingInvQty && intEndingInvQty !=0){
+                intFinalQuantity = intEndingInvQty-intQtyOnHand;
+            }
+            log.debug('intFinalQuantity', intFinalQuantity);
+
             arrMapSblFields.push({
                 item: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
@@ -392,11 +447,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_location',
                     line: i
                 }),
-                adjustqtyby: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_adjustqtyby',
-                    line: i
-                }),
+                adjustqtyby: intFinalQuantity,
                 class: request.getSublistValue({
                     group: 'custpage_inventorayadjustment_items',
                     name: 'custpage_cwgp_businessline',
@@ -487,11 +538,24 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 }
 
                 util.each(objUpdateLines, (value, fieldId) => {
-                    recPO.setCurrentSublistValue({
-                        sublistId: 'item',
+                    log.debug('arrPO', JSON.stringify({
                         fieldId: fieldId,
                         value: value
-                    });
+                    }));
+                    if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
+                        recPO.setCurrentSublistValue({
+                            fieldId: fieldId,
+                            sublistId: 'item',
+                            value: value || null
+                        });
+                    }
+                    else{
+                        recPO.setCurrentSublistValue({
+                            fieldId: fieldId,
+                            sublistId: 'item',
+                            value: value || ''
+                        });
+                    }
                 });
 
                 recPO.commitLine({ sublistId: 'item' });

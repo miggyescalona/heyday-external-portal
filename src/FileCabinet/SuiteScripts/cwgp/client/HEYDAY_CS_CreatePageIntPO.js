@@ -36,6 +36,107 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         ClientEPLib.getAuthenticationScript();
         setScanBtnOnClick();
     };
+
+     const saveRecord = (context) => {
+        const { currentRecord } = context;
+
+
+        const intPoLineCount = currentRecord.getLineCount('custpage_interpo_items');
+        const intIaLineCount = currentRecord.getLineCount('custpage_inventorayadjustment_items');
+        const intIrLineCount = currentRecord.getLineCount('custpage_itemreceipt_items');
+
+        if(intPoLineCount == 0 || intIaLineCount == 0){
+            alert('Please enter a line before saving.')
+            return false;
+        }
+
+        if(intPoLineCount > 0){
+            for(let x = 0; x < intPoLineCount; x++){
+                currentRecord.selectLine({
+                    sublistId: 'custpage_interpo_items',
+                    line: x
+                });
+                let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_interpo_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                }));
+                if(intQuantity < 0){
+                    alert('You have a negative quantity at line number ' + (x+1) + '. Please only enter positive values when entering any quantity.')
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if(intIrLineCount > 0){
+            let blZeroQuantity = true;
+            let pageMode = getParameterFromURL('pageMode')
+
+                function getParameterFromURL(param){
+                    var query = window.location.search.substring(1);
+                    var vars = query.split("&");
+                    for (var i = 0; i < vars.length; i++){
+                        var pair = vars[i].split("=");
+                        if (pair[0] == param){
+                            return decodeURIComponent(pair[1]);
+                        }
+                    }
+                    return (false);
+                }
+           
+            for(let x = 0; x < intIrLineCount; x++){
+                currentRecord.selectLine({
+                    sublistId: 'custpage_itemreceipt_items',
+                    line: x
+                });
+                let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                }));
+
+                if(intQuantity > 0){
+                    blZeroQuantity = false;
+                }
+
+                let intDamagedQuantity = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_damagedquantity'
+                }));
+
+                if(intQuantity < 0 || intDamagedQuantity < 0){
+                    alert('You have a negative quantity at line number ' + (x+1) + '. Please only enter positive values when entering any quantity.')
+                    return false;
+                }
+            }
+            if(blZeroQuantity && pageMode!='edit'){
+                alert('You cannot save a record without setting a received quantity.')
+                return false;
+            }
+            return true;
+        }
+
+       /* if(intIaLineCount > 0){
+            for(let x = 0; x < intPoLineCount; x++){
+                currentRecord.selectLine({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    line: x
+                });
+                let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                }));
+                if(intQuantity < 0){
+                    alert('You have a negative quantity at line number ' + (x+1) + '. Please only enter positive values when entering a quantity.')
+                    return false;
+                }
+            }
+            return true;
+        }*/
+
+
+        return true;
+    };
+    
     
     /**
      * Function to be executed when field is changed.
@@ -72,6 +173,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         //     }
         // }
 
+        ///Interco PO
         if (sublistId === 'custpage_interpo_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -82,7 +184,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 console.log('stItem', stItem);
 
                 const objItem = getItemDetails(stItem);
-                console.log('objItem', objItem);
+                console.log('objItem1', JSON.stringify(objItem));
 
                 util.each(objItem, function (value, fieldId) {
                     currentRecord.setCurrentSublistValue({
@@ -116,6 +218,64 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         }
 
+           ///Item Receipt
+        /*if (sublistId === 'custpage_itemreceipt_items') {
+            //default item details
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_damagedquantity') {
+                const intStartingQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_startingquantity'
+                }));
+                
+                const intReceivedQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                }));
+
+                const intDamagedQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_damagedquantity'
+                }));
+
+                alert(JSON.stringify({
+                    intStartingQty:intStartingQty,
+                    intReceivedQty:intReceivedQty,
+                    intDamagedQty:intDamagedQty
+                }));
+
+                const intFinalQty = intStartingQty+intReceivedQty-intDamagedQty
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_finalquantity',
+                    value: intFinalQty
+                });
+            }
+
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_rate') {
+                const intQty = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_interpo_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                });
+                console.log('intQty', intQty);
+
+                const flRate = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_interpo_items',
+                    fieldId: 'custpage_cwgp_rate'
+                });
+                console.log('flRate', flRate);
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_interpo_items',
+                    fieldId: 'custpage_cwgp_amount',
+                    value: flRate * intQty
+                });
+
+            }
+
+        }*/
+
+        ///Inventory Adjustment
         if (sublistId === 'custpage_inventorayadjustment_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
@@ -152,7 +312,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
             }
 
-            if (fieldId === 'custpage_cwgp_adjustqtyby') {
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+            if (fieldId === 'custpage_cwgp_adjustqtyby'){
                 const stAdjustQtyBy = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustment_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
@@ -170,10 +333,71 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_newquantity',
                     value: stNewQty || 0
                 });
+
+                const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+           
+                if(stAdjQtyBy && stAdjQtyBy != 0){
+                    objEndingInvCol.isDisabled = true;
+                }
+                else{
+                    objEndingInvCol.isDisabled = false;
+                }
+            }
+            if(fieldId === 'custpage_cwgp_endinginventoryqty'){
+                const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+                
+                if(stEndingInvCol && stEndingInvCol != 0){
+                    objAdjQtyByCol.isDisabled = true;
+                }
+                else{
+                    objAdjQtyByCol.isDisabled = false;
+                }
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stEndingInvCol || 0
+                });
             }
             
         }
     };
+
+    const lineInit = (context) => {
+        const { currentRecord, fieldId, sublistId } = context;
+
+        /*var intLineCount = currentRecord.getLineCount("custpage_inventorayadjustment_items");
+        var intCurrentLine = currentRecord.getCurrentSublistIndex({ sublistId: "custpage_inventorayadjustment_items" });
+        var quantity = currentRecord.getCurrentSublistValue({ sublistId: "item", fieldId: "quantity" });*/
+
+        if(sublistId == 'custpage_inventorayadjustment_items'){
+
+            const objSublist = currentRecord.getSublist({sublistId: "custpage_inventorayadjustment_items"});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+
+            const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+            const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+            if(stAdjQtyBy && stAdjQtyBy != 0){
+                objEndingInvCol.isDisabled = true;
+            }
+            else{
+                objEndingInvCol.isDisabled = false;
+            }
+
+               
+            if(stEndingInvCol && stEndingInvCol != 0){
+                objAdjQtyByCol.isDisabled = true;
+            }
+            else{
+                objAdjQtyByCol.isDisabled = false;
+            }
+        }
+    }
+
+
 
     const getItemDetails = (stItem) => {
 
@@ -184,7 +408,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             scriptId            : objCreateIntPOUrl.SCRIPT_ID,
             returnExternalUrl   : true,
             params: {
-                item:   stItem
+                item:   stItem,
+                type: 'retail'
             }
         });
 
@@ -195,12 +420,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const { item } = JSON.parse(objResponse.body);
 
         return {
-            'custpage_cwgp_description': item.itemid,
+            'custpage_cwgp_description': item.purchasedescription,
             'custpage_cwgp_rate': item.cost || 0,
             'custpage_cwgp_quantity': 1,
             'custpage_cwgp_amount': item.cost || 0,
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
-            'custpage_cwgp_upccode': item.custitemheyday_upccode
+            'custpage_cwgp_upccode': item.custitemheyday_upccode,
+            'custpage_cwgp_itemid': item.internalid[0].value
         };
     };
 
@@ -252,7 +478,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
     return {
         pageInit,
+        saveRecord,
         fieldChanged,
+        lineInit,
         back,
         scanInputViaBtn
     };

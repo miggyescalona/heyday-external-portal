@@ -15,7 +15,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page',
-            LOCATION: 'custparam_cwgp_location'
+            LOCATION: 'custparam_cwgp_location',
+            APPROVAL_STATUS: 'custparam_cwgp_approvalstatus',
+            FOR_RECEIVING: 'custparam_cwgp_forreceiving'
         },
         TITLE: {
             intercompanypo: 'Replenishment Purchase Order',
@@ -52,6 +54,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandstatus',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Status'
+                    },
+                    FOR_RECEIVING: {
+                        id: 'custpage_cwgp_forreceiving',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'For Receiving'
+                    },
+                    AMS_TRACKING_NUMBER: {
+                        id: 'custpage_cwgp_sointercoid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'AMS Tracking Number'
                     }
                 },
                 itemreceipt: {
@@ -128,7 +140,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
 
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
-
+        const stApprovalStatus = request.parameters[_CONFIG.PARAMETER.APPROVAL_STATUS] ? request.parameters[_CONFIG.PARAMETER.APPROVAL_STATUS] : '';
+        const blForReceiving = request.parameters[_CONFIG.PARAMETER.FOR_RECEIVING] ? request.parameters[_CONFIG.PARAMETER.FOR_RECEIVING] : '';
+        
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
@@ -143,7 +157,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -153,6 +167,27 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             container: _CONFIG.TAB[stType]
         });
         fldPage.defaultValue = intPage;
+
+        const fldApprovalStatus = form.addField({
+            id: 'custpage_cwgp_approvalstatus',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Status',
+            container: _CONFIG.TAB[stType]
+        });
+        fldApprovalStatus.defaultValue = stApprovalStatus;
+
+        util.addOptionsApprovalStatus(fldApprovalStatus);
+
+        const fldForReceiving = form.addField({
+            id: 'custpage_cwgp_forreceiving',
+            type: serverWidget.FieldType.SELECT,
+            label: 'For Receiving',
+            container: _CONFIG.TAB[stType]
+        });
+        fldForReceiving.defaultValue = blForReceiving;
+
+        util.addOptionsForReceiving(fldForReceiving);
+
 
         //add sublist values
         const sbl = form.addSublist({
@@ -177,6 +212,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             });
         });
 
+        log.debug('stApprovalStatus',stApprovalStatus);
+
         setListValues({
             objSearch,
             fldPage,
@@ -184,7 +221,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             sbl,
             stType,
             stAccessType,
-            stUserId
+            stUserId,
+            stApprovalStatus,
+            blForReceiving
         });
 
         //add buttons
@@ -231,7 +270,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -314,7 +353,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         
         form.addSubtab({
             id: _CONFIG.TAB[stType],
-            label: ' '
+            label: 'Transactions'
         });
 
         const fldPage = form.addField({
@@ -325,15 +364,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldPage.defaultValue = intPage;
 
-        /*const fldLocation = form.addField({
-            id: 'custpage_cwgp_location',
-            type: serverWidget.FieldType.SELECT,
-            label: 'Location',
-            container: _CONFIG.TAB[stType]
-        });
-        util.addOptionsLocationBySubsidiary(fldLocation, stSubsidiary);
-        fldLocation.defaultValue = intLocation;*/
-
         //add sublist values
         const sbl = form.addSublist({
             id: _CONFIG.SUBLIST[stType],
@@ -341,8 +371,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
-
-        //log.debug('renderInventoryAdjustment intLocation',intLocation);*/
 
         const objListCols = _CONFIG.COLUMN.LIST[stType];
 
@@ -369,13 +397,32 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stUserId
         });
 
-        //add buttons
         form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `createInventoryAdjustment(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+    
+       ///add buttons
+       /* form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
             functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
         });
-    
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create Backbar',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','backbar')`
+        });
+
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create Damage/Tester',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','damage')`
+        });*/
+
 
         form.addButton({
             id: 'custpage_back_button',
@@ -467,14 +514,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage, stType) => {
-        /*if(stType == 'inventoryadjustment' && intLocation){
+    const getPageData = (objSearch, fldPage, intPage, stType, stApprovalStatus) => {
+        if(stType == 'intercompanypo' && stApprovalStatus){
             objSearch.filters.push(search.createFilter({
-                name: 'location',
+                name: 'approvalstatus',
                 operator: 'ANYOF',
-                values: intLocation,
+                values: stApprovalStatus,
             }));
-        }*/
+        }
 
         let stPageSize = 20;
         if(stType == 'itemperlocation'){
@@ -482,6 +529,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         }
         
         const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
+        log.debug('objPagedData',objPagedData);
         log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
 
         objPagedData.pageRanges.map((objPageResult) => {
@@ -492,7 +540,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             });
         });
 
-        const objPage = objPagedData.fetch({ index: intPage });
+        let objPage;
+        if(objPagedData.count!=0){
+             objPage = objPagedData.fetch({ index: intPage });
+        }
+        else{
+             objPage = null;
+        }
 
         return objPage;
     };
@@ -505,33 +559,41 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             sbl,
             stType,
             stAccessType,
-            stUserId
+            stUserId,
+            stApprovalStatus,
+            blForReceiving
         } = options;
 
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage, stType);
-        const arrPagedData = objPagedData.data;
-        log.debug('arrPagedData', arrPagedData);
+        const objPagedData = getPageData(objSearch, fldPage, intPage, stType, stApprovalStatus);
+        log.debug('objPagedData',objPagedData)
+        
+        if(objPagedData){
+            const arrPagedData = objPagedData.data;
+            log.debug('arrPagedData', arrPagedData);
 
-        const arrListValues = util.mapValues({
-            stType, 
-            stAccessType, 
-            stUserId,
-            arrPagedData
-        });
-        log.debug('arrListValues', arrListValues);
+            const arrListValues = util.mapValues({
+                stType, 
+                stAccessType, 
+                stUserId,
+                arrPagedData,
+                blForReceiving,
+                stApprovalStatus
+            });
+            log.debug('arrListValues', arrListValues);
 
-        arrListValues.forEach((value, i) => {
-            const arrListValue = Object.keys(value);
+            arrListValues.forEach((value, i) => {
+                const arrListValue = Object.keys(value);
 
-            arrListValue.forEach((fieldId) => {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value[fieldId] || ' '
+                arrListValue.forEach((fieldId) => {
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value[fieldId] || ' '
+                    });
                 });
             });
-        });
+        }
     };
 
     const htmlCss = () => {

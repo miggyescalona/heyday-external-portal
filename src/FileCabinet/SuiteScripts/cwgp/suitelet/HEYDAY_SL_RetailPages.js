@@ -84,6 +84,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
+        const stOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -105,7 +106,8 @@ define([
                     stLocation,
                     stPageMode,
                     stUserId,
-                    stAccessType
+                    stAccessType,
+                    stOperator
                 });
 
                 break;
@@ -150,6 +152,7 @@ define([
         log.debug('ir params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stSubsidiary);
+        const stOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -172,7 +175,8 @@ define([
                     stUserId,
                     stPoId,
                     stTranId,
-                    stAccessType
+                    stAccessType,
+                    stOperator
                 });
 
                 break;
@@ -211,7 +215,8 @@ define([
             userId: stUserId,
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId
+            tranid: stTranId,
+            subtype: stSubType
         } = request.parameters;
 
         log.debug('ia params',request.parameters);
@@ -241,7 +246,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stSubType
                 });
 
                 break;
@@ -377,13 +383,19 @@ define([
 
     const getTranIdSearch = (recId, stRecType) => {
         let stTranId;
+        let stRecSearchType = stRecType;
+
+        log.debug('getTranIdSearch stRecSearchType before eval', stRecSearchType);
 
         stRecType = stRecType == 'intercompanypo' ? 'PurchOrd' : stRecType == 'itemreceipt' ? 'ItemRcpt' : 'InvAdjst'
+        stRecSearchType = stRecSearchType == 'intercompanypo' ? 'purchaseorder' : stRecSearchType == 'itemreceipt' ? 'itemreceipt' : 'inventoryadjustment'
 
+        log.debug('getTranIdSearch recId', recId);
         log.debug('getTranIdSearch stRecType', stRecType);
+        log.debug('getTranIdSearch stRecSearchType', stRecSearchType);
     
         var purchaseorderSearchObj = search.create({
-            type: "purchaseorder",
+            type: stRecSearchType,
             filters:
             [
                ["internalid","anyof", recId], 
@@ -401,6 +413,7 @@ define([
          log.debug("result count",searchResultCount);
          purchaseorderSearchObj.run().each(function(result){
             stTranId = result.getValue({ name: 'tranid' })
+            log.debug('getTranIdSearch recId', recId);
             return true;
          });
 
@@ -508,6 +521,32 @@ define([
             return ssCredentials[0].getValue({ name: 'custrecord_cwgp_location' });
         }
     };
+
+    const getOperator = (stId) => {
+        const ssCredentials = search.create({
+            type: _CONFIG.RECORD.CREDENTIALS,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_username' }),
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' });
+        }
+    };
+
 
     const editInterPO = (request) => {
         const stPoId = request.parameters.custpage_cwgp_poid;
