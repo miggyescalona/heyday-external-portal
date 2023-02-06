@@ -278,8 +278,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + objPO.body.custpage_cwgp_orderno });
-
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
         log.debug('stAction', stAction);
         
