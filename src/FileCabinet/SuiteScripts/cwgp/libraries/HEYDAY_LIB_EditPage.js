@@ -371,19 +371,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -408,8 +408,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_tranid = stTranId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
         //log.debug('objPO', objPO);
 
         //render body fields
@@ -532,19 +532,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -569,8 +569,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_tranid = stTranId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
         
