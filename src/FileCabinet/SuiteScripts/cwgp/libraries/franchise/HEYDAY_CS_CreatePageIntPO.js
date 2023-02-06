@@ -21,11 +21,14 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 	const pageInit = (context) => {
         const setScanBtnOnClick = () => {
             try{
-                var objScanButton = document.getElementById('custpage_cwgp_scan_button');
-                objScanButton.addEventListener('click', function(){
-                    ClientEPLib.scanInputViaBtn()
+                var objScanReceivedButton = document.getElementById('custpage_cwgp_received_scan_btn');
+                objScanReceivedButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.RECEIVED)
                 })
-                console.log(objScanButton)
+                var objScanDamagedButton = document.getElementById('custpage_cwgp_damaged_scan_btn');
+                objScanDamagedButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.DAMAGED)
+                })
             }catch(e){
                 console.warn('Cannot set button click')
             }
@@ -232,7 +235,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         const { currentRecord, fieldId, sublistId, line} = context;
 
         if(sublistId === 'custpage_itemreceipt_items'){
-            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_quantitydamaged'){
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_damagedquantity'){
                 /*const inQtyShipped = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
                     fieldId: 'custpage_cwgp_quantityremaining'
@@ -256,7 +259,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
                 });
                 const inQtyDamaged = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
-                    fieldId: 'custpage_cwgp_quantitydamaged'
+                    fieldId: 'custpage_cwgp_damagedquantity'
                 });
 
                 if(inQtyRecieved > inQtyShipped){

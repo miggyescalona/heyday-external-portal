@@ -96,6 +96,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Memo',
                     container: 'PRIMARY',
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                AMS_TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_sointercoid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'AMS Tracking Number',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -174,6 +188,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Memo',
                     container: 'PRIMARY'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                AMS_TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_sointercoid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'AMS Tracking Number',
+                    container: 'PRIMARY',
+                    displayType:'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -194,7 +222,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.TEXT,
                     label: 'Damaged Inventory Adjustment',
                     container: 'CLASS',
-                    displayType: 'inline'
+                    displayType: 'hidden'
                 },
             }
         },
@@ -246,13 +274,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount',
                         displayType: 'disabled'
+                    },
+                    EXPECTED_RECEIPT_DATE: {
+                        id: 'custpage_cwgp_expectedreceiptdate',
+                        type: serverWidget.FieldType.DATE,
+                        label: 'Expected Receipt Date',
                     }
                 },    
                 itemreceipt: {
                     RECEIVE: {
                         id: 'custpage_cwgp_receive',
                         type: serverWidget.FieldType.CHECKBOX,
-                        label: 'Receive'
+                        label: 'Receive',
+                        displayType: 'inline'
                     },
                     ITEM: {
                         id: 'custpage_cwgp_item',
@@ -289,7 +323,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     TRANSFER_LOCATION: {
                         id: 'custpage_cwgp_transferlocation',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Transfer Location',
+                        label: 'Location',
                         displayType: 'inline'
                     },
                     QUANTITY_REMAINING: {
@@ -300,14 +334,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity',
-                        displayType: 'ENTRY'
+                        label: 'Received Quantity',
+                        displayType: 'inline'
                     },
-                    RATE: {
+                    /*RATE: {
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate'
-                    },      
+                    },*/
                 },
                 inventoryadjustment_damaged:{
                     INVENTORY_ADJUSTMENT: {

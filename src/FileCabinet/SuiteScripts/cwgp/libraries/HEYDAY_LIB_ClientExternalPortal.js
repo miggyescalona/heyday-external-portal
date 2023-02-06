@@ -16,6 +16,11 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
 
     const _CONFIG = ConfEPLib._CONFIG;
 
+    _CONFIG.SCAN_TYPE = {
+        RECEIVED : 'received',
+        DAMAGED  : 'damaged'
+    }
+
     //Calls the authentication suitelet
     const getAuthenticationScript = () => {
 
@@ -151,6 +156,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         const {
             stUpcMap,
             stScannerInput,
+            stScanType,
             stRecType,
             recCurrent
         } = options;
@@ -176,10 +182,15 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     SUBLIST_FIELDS  : {
                         ITEM_ID         : 'custpage_cwgp_itemid',
                         ITEM            : 'custpage_cwgp_item',
-                        QTY             : 'custpage_cwgp_quantity',
                         QTY_REMAINING   : 'custpage_cwgp_quantityremaining'
                     }
                 }    
+                if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_quantity'
+                }
+                else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_damagedquantity'
+                }
                 break;
             case 'inventoryadjustment':   
                 UI_CONFIG = {
@@ -336,7 +347,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     let intQtyToSet;
                     let blOverRcvd = false;
 
-                    if(intQtyRemaining > intRcvdQty){
+                    if(intQtyRemaining >= intRcvdQty){
                         intQtyToSet = intRcvdQty
                     }
                     //If received quantity exceeds quantity remaining
@@ -478,7 +489,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         return stFailedCodes;
     }
 
-    const scanInputViaBtn = () => {
+    const scanInputViaBtn = (stScanType) => {
         console.log('test button')
         let recCurrent = currentRecord.get();
 
@@ -491,6 +502,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             let stFailedCodes = addScannedItemsToLines({
                 stUpcMap,
                 stScannerInput,
+                stScanType,
                 stRecType: urlParams.get('rectype'),
                 recCurrent
             })

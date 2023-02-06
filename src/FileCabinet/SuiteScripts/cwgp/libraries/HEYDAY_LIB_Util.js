@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util,record, url, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal', 'N/file'], (serverWidget, search, util,record, url, EPLib, file) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -60,6 +60,26 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label: 'Committed'
                 },
+                SO_INTERCOID: {
+                    id: 'custpage_cwgp_sointercoid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'SO Interco ID'
+                },
+                SO_INTERCOSTATUS: {
+                    id: 'custpage_cwgp_sointercostatus',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'SO Interco Status'
+                },
+                PO_STATUSREF: {
+                    id: 'custpage_cwgp_postatusref',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'PO Status Ref'
+                },
+                AMS_TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_sointercoid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'SO Interco ID'
+                }
             }
         },
         SCRIPT:{
@@ -73,7 +93,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             stType, 
             stAccessType, 
             stUserId,
-            arrPagedData
+            arrPagedData,
+            blForReceiving,
+            stApprovalStatus
         } = options;
 
         const MAP_VALUES = {
@@ -84,11 +106,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         };
         const mapValues = MAP_VALUES[stType];
 
-        return mapValues(stUserId, stAccessType, arrPagedData);
+        return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus);
     };
 
-    const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData) => {
+    const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus) => {
         let arrMapIntercompanyPO = [];
+        let arrFinalMapIntercoPO = [];
 
         const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
 
@@ -98,23 +121,115 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             returnExternalUrl   : true
         });
 
+        let intPairedIntercoIds = [];
+
         arrPagedData.forEach((result, index) => {
+            const stPairedIntercoId = result.getValue({ name: 'intercotransaction' });
+            if(stPairedIntercoId){
+                intPairedIntercoIds.push(stPairedIntercoId);
+            }
+            const stStatusRef = result.getValue({ name: 'statusref' });
             const stDateCreated = result.getValue({ name: 'datecreated' });
-            const stStatus = result.getText({ name: 'statusref' });
+            const stStatus = result.getText({ name: 'approvalstatus' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
-            const stViewLink = `<a href='${stUrl}'>Replenishment Purchase Order# ${stTranId}</a>`;
+            const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
+                [_CONFIG.COLUMN.LIST.SO_INTERCOID.id]: stPairedIntercoId,
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
-                [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus
-            })
+                [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus,
+                [_CONFIG.COLUMN.LIST.PO_STATUSREF.id]: stStatusRef
+            });
         });
 
-        return arrMapIntercompanyPO;
-    };
+        arrFinalMapIntercoPO = getPairedIntercoStatus(intPairedIntercoIds, arrMapIntercompanyPO, blForReceiving, stApprovalStatus)
+
+        function getPairedIntercoStatus(intPairedIntercoIds, arrMapIntercompanyPO, blForReceiving, stApprovalStatus){
+            let arrPairedSOs = [];
+            const ssPairedIntercoSo = search.load({ id: "600", type: "salesorder" });
+
+
+            if(intPairedIntercoIds.length!=0){;
+                ssPairedIntercoSo.filters.push(search.createFilter({
+                    name: 'internalid',
+                    operator: 'anyof',
+                    values: intPairedIntercoIds,
+                }));
+
+                var searchResultCount = ssPairedIntercoSo.runPaged().count;
+                ssPairedIntercoSo.run().each(function(result){
+                    ///Push into Array
+                    arrPairedSOs.push({
+                        [_CONFIG.COLUMN.LIST.SO_INTERCOID.id]: result.getValue({name: "internalid"}),
+                        [_CONFIG.COLUMN.LIST.SO_INTERCOSTATUS.id]: result.getValue({name: "statusRef"})
+                    });					
+                    return true;
+                });
+                    
+                let arrMerged = []
+                for(let i = 0;i<arrMapIntercompanyPO.length;i++){
+                    arrMerged.push({
+                    ...arrMapIntercompanyPO[i],
+                    ...(arrPairedSOs.find((itmInner)=>itmInner.custpage_cwgp_sointercoid===arrMapIntercompanyPO[i].custpage_cwgp_sointercoid))});
+                    if(arrMerged[i].custpage_cwgp_trandstatus == 'Approved' && (arrMerged[i].custpage_cwgp_sointercostatus == 'pendingBilling' || arrMerged[i].custpage_cwgp_sointercostatus == 'pendingBillingPartFulfilled') && (arrMerged[i].custpage_cwgp_postatusref == 'pendingReceipt' || arrMerged[i].custpage_cwgp_postatusref== 'pendingBillPartReceived')){        
+                        arrMerged[i].custpage_cwgp_forreceiving = 'Yes';
+                    }
+                    else{
+                        arrMerged[i].custpage_cwgp_forreceiving = 'No';
+                    }
+                };
+                for(let i = arrMerged.length-1;i>=0;i--){
+                    log.debug('arrMerged[i]',JSON.stringify({
+                        blForReceiving: blForReceiving,
+                        stApprovalStatus: stApprovalStatus,
+                        custpage_cwgp_forreceiving: arrMerged[i].custpage_cwgp_forreceiving,
+                        custpage_cwgp_postatusref: arrMerged[i].custpage_cwgp_postatusref
+                    }));
+                    if(blForReceiving == '2' && arrMerged[i].custpage_cwgp_forreceiving == 'Yes' && (stApprovalStatus == '1' || stApprovalStatus == '3')){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '2' && arrMerged[i].custpage_cwgp_forreceiving == 'Yes' && stApprovalStatus == '2'){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '1' && arrMerged[i].custpage_cwgp_forreceiving == 'No' && stApprovalStatus == '2'){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '2' && arrMerged[i].custpage_cwgps_forreceiving == 'Yes' && stApprovalStatus == '2'){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '1' && arrMerged[i].custpage_cwgp_forreceiving == '' && stApprovalStatus == '1'){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '1' && arrMerged[i].custpage_cwgp_forreceiving == 'No' && stApprovalStatus == ''){
+                        arrMerged.splice(i,1);
+                    }
+                    else if(blForReceiving == '2' && arrMerged[i].custpage_cwgp_forreceiving == 'Yes' && stApprovalStatus == ''){
+                        arrMerged.splice(i,1);
+                    }       
+                }
+                return arrMerged;
+            }
+            else{
+                for(let i = arrMapIntercompanyPO.length-1;i>=0;i--){
+                    log.debug('arrMapIntercompanyPO[i]',JSON.stringify({
+                        blForReceiving: blForReceiving,
+                        stApprovalStatus: stApprovalStatus,
+                    }));
+                    if(blForReceiving == '1' && stApprovalStatus == '1'){
+                        arrMapIntercompanyPO.splice(i,1);
+                    }
+                    
+                    
+                }
+                return arrMapIntercompanyPO;
+            }
+        }
+
+        return arrFinalMapIntercoPO;
+    }
 
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
 
@@ -135,8 +250,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
-
-            log.debug(stCreatedFrom);
 
             arrMapItemReceipt.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -201,7 +314,48 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
 
-    
+    const addOptionsForReceiving = (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+
+        fld.addSelectOption({
+            value: '1',
+            text: 'Yes'
+        });
+
+        fld.addSelectOption({
+            value: '2',
+            text: 'No'
+        });
+        return true;
+    };
+
+
+    const addOptionsApprovalStatus = (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+
+        fld.addSelectOption({
+            value: '1',
+            text: 'Pending Approval'
+        });
+
+        fld.addSelectOption({
+            value: '2',
+            text: 'Approved'
+        });
+
+        fld.addSelectOption({
+            value: '3',
+            text: 'Rejected'
+        });
+
+        return true;
+    };
 
     const addOptionsUnits = (fld) => {
         fld.addSelectOption({
@@ -312,10 +466,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
     const addOptionsVendorsBySubsidiary = (fld, stSubsidiary) => {
-        log.debug('addOptionsVendorsBySubsidiary', JSON.stringify({
-            'fld': fld,
-            'stSubsidiary': stSubsidiary
-        }));
         fld.addSelectOption({
             value: '',
             text: ''
@@ -496,11 +646,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'amount' }),
                     search.createColumn({ name: 'approvalstatus' }),
                     search.createColumn({ name: 'custitem_heyday_sku', join: 'item' }),
-                    search.createColumn({ name: 'custitemheyday_upccode', join: 'item' })
+                    search.createColumn({ name: 'custitemheyday_upccode', join: 'item' }),
+                    search.createColumn({ name: 'intercotransaction' }),
+                    search.createColumn({ name: 'expectedreceiptdate' }),
+                    search.createColumn({ name: 'purchasedescription', join: 'item' }),
+                    search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
-
             if (stMainLine == '*') {
                 objPO.body.custpage_cwgp_vendor = result.getValue({ name: 'entity' });
                 objPO.body.custpage_cwgp_memomain = result.getValue({ name: 'memomain' });
@@ -509,21 +662,26 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_location = result.getValue({ name: 'location' });
                 objPO.body.custpage_cwgp_approvalstatus= result.getText({ name: 'approvalstatus' });
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
+                objPO.body.custpage_cwgp_sointercoid = result.getValue({ name: 'intercotransaction' });
+                objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
-                    custpage_cwgp_description: result.getValue({ name: 'memo' }),
+                    custpage_cwgp_description: result.getValue({ name: 'purchasedescription', join: 'item'}),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
-                    custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }),
-                    custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }),
+                    custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }) || null,
+                    custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }) || null,
+                    custpage_cwgp_expectedreceiptdate: result.getValue({ name: 'expectedreceiptdate'}) || null
                 });
             }
 
             return true;
         });
+
+        log.debug('objPO2',objPO);
 
         return objPO;
     };
@@ -545,7 +703,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
         objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
         objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+        const intInterco = search.lookupFields({type: search.Type.PURCHASE_ORDER,id: objItemReceipt.getValue('createdfrom'),columns: ['intercotransaction']});
+        objPO.body.custpage_cwgp_sointercoid = intInterco.intercotransaction; 
         objPO.body.custpage_cwgp_damagediaid = objItemReceipt.getValue('custbody_cwgp_damagediaid');
+        objPO.body.custpage_cwgp_operator = objItemReceipt.getValue('custbody_cwgp_externalportaloperator');
 
         const intLineCount = objItemReceipt.getLineCount('item');
 
@@ -561,11 +722,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'sitemname',
                     line: x
                 }),
-                custpage_cwgp_description: objItemReceipt.getSublistValue({
+                custpage_cwgp_description: lookUpItem(objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'item',
                     line: x
-                }),
+                }), 'purchasedescription') || null,
                 custpage_cwgp_transferlocation: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'location',
@@ -614,6 +775,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
+        log.debug('mapItemReceiptValues',objPO)
         return objPO;
     };
 
@@ -629,11 +791,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             toType: 'itemreceipt',
         });
 
+        let objPOQuantity = getPOQuantity(stPoId)
+
         objPO.body.custpage_cwgp_vendor = objItemReceipt.getText('entity');
         objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue('memo');
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue('trandate');
         objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue('subsidiary');
         objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
+        const intInterco = search.lookupFields({type: search.Type.PURCHASE_ORDER,id: objItemReceipt.getValue('createdfrom'),columns: ['intercotransaction']});
+        objPO.body.custpage_cwgp_sointercoid = intInterco.intercotransaction; 
+        objPO.body.custpage_cwgp_sointercoid = objItemReceipt.getValue('createdfrom');
 
         const intLineCount = objItemReceipt.getLineCount('item');
 
@@ -649,11 +816,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'sitemname',
                     line: x
                 }),
-                custpage_cwgp_description: objItemReceipt.getSublistValue({
+                custpage_cwgp_description: lookUpItem(objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'description',
+                    fieldId: 'item',
                     line: x
-                }),
+                }), 'purchasedescription') || null,
+                custpage_cwgp_internalsku: lookUpItem(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: x
+                }), 'sku'),
+                custpage_cwgp_upccode: lookUpItem(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: x
+                }), 'upc'),
                 custpage_cwgp_transferlocation: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'location',
@@ -664,16 +841,18 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'class',
                     line: x
                 }),
-                custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
+                custpage_cwgp_shippedquantity: objItemReceipt.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'quantityremaining',
+                    fieldId: 'custcol_cwgp_shippedquantity',
+                    line: x
+                }),
+                custpage_cwgp_startingquantity: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'onhand',
                     line: x
                 })),
-                custpage_cwgp_quantity: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'quantity',
-                    line: x
-                })),
+                custpage_cwgp_quantity: 0,
+                custpage_cwgp_damagedquantity: 0,
                 custpage_cwgp_rate: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'rate',
@@ -682,7 +861,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
-        return objPO;
+        log.debug('objPO',objPO);
+        log.debug('objPOQuantity',objPOQuantity);
+        let merged = {
+            body: {},
+            item: []
+        };
+        for(let i = 0;i<objPO['item'].length;i++){
+            merged.item.push({
+            ...objPO['item'][i],
+            ...(objPOQuantity.find((itmInner)=>itmInner.custpage_cwgp_itemid===objPO['item'][i].custpage_cwgp_itemid))});
+        };
+
+        Object.assign(merged.body,objPO.body);
+
+        log.debug('merged',merged);
+        return merged;
     };
 
     const mapInventoryAdjustmentValues = (stPoId) => {
@@ -772,23 +966,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 }),
             });
         }
-
-        function lookUpItem(itemId, type){
-            if(itemId){
-                let fieldLookUp = search.lookupFields({
-                    type: search.Type.ITEM,
-                    id: itemId,
-                    columns: ['custitem_heyday_sku','custitemheyday_upccode']
-                });
-                
-                if(type == 'sku'){
-                    return fieldLookUp.custitem_heyday_sku;
-                }
-                else if(type == 'upc'){
-                    return fieldLookUp.custitemheyday_upccode;
-                }
-            }
-        }
         return objPO;
     }
 
@@ -798,17 +975,35 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value || ' '
-                });
+                log.debug('val1 | id', value +'|' + fieldId + '|' + typeof value);
+                if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || null 
+                    });
+                }
+                else if(Number.isInteger(value)){
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: parseInt(value) 
+                    });
+                }
+                else{
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || ' '
+                    });
+                }
             });
         });
     };
 
     const getPOValues = (stPoId) => {
         let stApprovalStatus;
+        let stDocumentStatus;
         let stPairedInterco;
         let stPairedIntercoStatus = null;
         let objPO ={};
@@ -832,10 +1027,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 [
                     search.createColumn({ name: 'approvalstatus' }),
                     search.createColumn({ name: 'intercotransaction' }),
+                    search.createColumn({ name: 'statusRef' }),
                 ]
         }).run().each((result) => {
             stApprovalStatus = result.getText({ name: 'approvalstatus' });
             stPairedInterco = result.getValue({ name: 'intercotransaction' });
+            stDocumentStatus = result.getValue({ name: 'statusRef' });
             return true;
         });
 
@@ -857,9 +1054,68 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         objPO.stApprovalStatus = stApprovalStatus;
         objPO.stPairedIntercoStatus = stPairedIntercoStatus;
+        objPO.stDocumentStatus = stDocumentStatus;
 
         return objPO;
     };
+
+    const getPOQuantity = (stPoId) => {
+        let intId;
+        let intQuantity;
+        let objPO = [];
+
+        search.create({
+            type: search.Type.PURCHASE_ORDER,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: stPoId
+                    }),
+                ],
+            columns:
+                [
+                    search.createColumn({name: "mainline", label: "*"}),
+                    search.createColumn({name: "item", label: "Item"}),
+                    search.createColumn({name: "quantity", label: "Quantity"})
+                ]
+        }).run().each((result) => {
+            if(result.getValue({ name: 'mainline' })!='*'){
+                objPO.push({
+                    custpage_cwgp_itemid: result.getValue({ name: 'item' }),
+                    custpage_cwgp_shippedquantity: result.getValue({ name: 'quantity' })
+                });
+            }
+            return true;
+        });
+
+        objPO.intId = intId;
+        objPO.intQuantity = intQuantity;
+
+        log.debug('getPOQuantity',objPO);
+        return objPO;
+    };
+
+    function lookUpItem(itemId, type){
+        if(itemId){
+            let fieldLookUp = search.lookupFields({
+                type: search.Type.ITEM,
+                id: itemId,
+                columns: ['custitem_heyday_sku','custitemheyday_upccode','purchasedescription']
+            });
+            
+            if(type == 'sku'){
+                return fieldLookUp.custitem_heyday_sku;
+            }
+            else if(type == 'upc'){
+                return fieldLookUp.custitemheyday_upccode;
+            }
+            else if(type == 'purchasedescription'){
+                return fieldLookUp.purchasedescription;
+            }
+        }
+    }
     
 
     return {
@@ -867,6 +1123,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         addOptionsVendorsBySubsidiary,
         addOptionsItemBySubsidiary,
         addOptionsLocationBySubsidiary,
+        addOptionsForReceiving,
+        addOptionsApprovalStatus,
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
@@ -878,6 +1136,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         mapPOtoItemReceiptValues,
         mapInventoryAdjustmentValues,
         setSublistValues,
-        getPOValues
+        getPOValues,
+        lookUpItem
     }
 });

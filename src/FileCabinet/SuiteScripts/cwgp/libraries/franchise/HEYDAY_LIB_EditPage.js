@@ -331,19 +331,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stPoId
         } = options;
       
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
         
         let objPO = utilLib.mapPOValues(stPoId);
         objPO.body.custpage_cwgp_rectype = stType;
@@ -352,8 +353,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + objPO.body.custpage_cwgp_orderno });
 
@@ -480,19 +481,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stTranId
         } = options;
        
-        const {
-            objItemResultSet,
-            objUpcMap,
-        } = EPLib.initScanner({
-            stType,
-            stSubsidiary: '',
-            _CONFIG
-        })
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // } = EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary: '',
+        //     _CONFIG
+        // })
 
-        let stUpcMap = ''
-        if(objUpcMap){
-            stUpcMap = JSON.stringify(objUpcMap)
-        }
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         let objPO = utilLib.mapIRValuesViewEdit(stPoId);
         objPO.body.custpage_cwgp_itemreceiptid = stPoId;
@@ -502,8 +503,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_poid = 'Purchase Order #'+stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
         log.debug('objPO', objPO);
         
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
