@@ -182,7 +182,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     SUBLIST_FIELDS  : {
                         ITEM_ID         : 'custpage_cwgp_itemid',
                         ITEM            : 'custpage_cwgp_item',
-                        QTY_REMAINING   : 'custpage_cwgp_quantityremaining'
+                        SHIPPED_QUANTITY: 'custpage_cwgp_shippedquantity'
                     }
                 }    
                 if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
@@ -212,6 +212,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 objUpcToItemIdMap,
                 stRecType,
                 objCurrItemLine,
+                stScanType,
                 UI_CONFIG
             } = options;
 
@@ -310,7 +311,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     
                     let intQtyRemaining = recCurrent.getSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY_REMAINING,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.SHIPPED_QUANTITY,
                         line        : index
                     });
 
@@ -343,24 +344,24 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                             message : 'Quantity, scanned quantity, and/or quantity remaining is/are invalid.'
                         }
                     }
-                    let intRcvdQty = intScannedQty + intQty;
+                    let intNewQty = intScannedQty + intQty;
                     let intQtyToSet;
                     let blOverRcvd = false;
 
-                    if(intQtyRemaining >= intRcvdQty){
-                        intQtyToSet = intRcvdQty
+                    if(intQtyRemaining >= intNewQty || stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
+                        intQtyToSet = intNewQty
                     }
                     //If received quantity exceeds quantity remaining
                     else{
                         intQtyToSet = intQtyRemaining
-                        objCurrItemLine.qty = intRcvdQty - intQtyRemaining
+                        objCurrItemLine.qty = intNewQty - intQtyRemaining
                         blOverRcvd = true;
                     }
                     // console.table({
                     //     intQtyRemaining,
                     //     intQty,
                     //     intScannedQty,
-                    //     intRcvdQty,
+                    //     intNewQty,
                     //     intQtyToSet
                     // })
 
@@ -415,6 +416,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         objUpcToItemIdMap,
                         stRecType,
                         objCurrItemLine,
+                        stScanType,
                         UI_CONFIG
                     })
                 }
