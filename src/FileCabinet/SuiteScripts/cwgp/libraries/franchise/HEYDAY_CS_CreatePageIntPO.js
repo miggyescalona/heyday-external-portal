@@ -235,7 +235,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         const { currentRecord, fieldId, sublistId, line} = context;
 
         if(sublistId === 'custpage_itemreceipt_items'){
-            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_quantitydamaged'){
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_damagedquantity'){
                 /*const inQtyShipped = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
                     fieldId: 'custpage_cwgp_quantityremaining'
@@ -259,7 +259,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
                 });
                 const inQtyDamaged = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
-                    fieldId: 'custpage_cwgp_quantitydamaged'
+                    fieldId: 'custpage_cwgp_damagedquantity'
                 });
 
                 if(inQtyRecieved > inQtyShipped){
