@@ -19,17 +19,58 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
      */
 	
 	const pageInit = (context) => {
+        const setScanBtnOnClick = () => {
+            try{
+                var objScanButton = document.getElementById('custpage_cwgp_scan_button');
+                objScanButton.addEventListener('click', function(){
+                    ClientEPLib.scanInputViaBtn()
+                })
+                console.log(objScanButton)
+            }catch(e){
+                console.warn('Cannot set button click')
+            }
+        }
+
         ClientEPLib.getAuthenticationScript();
+        setScanBtnOnClick();
     };
 	
     const fieldChanged = (context) => {
-        const { currentRecord, fieldId, sublistId } = context;
+        const { currentRecord, fieldId, sublistId, line} = context;
 
-        if (sublistId === 'custpage_interpo_items') {
+        if(fieldId == 'custpage_cwgp_date'){
+            const dtDate = currentRecord.getValue({fieldId: 'custpage_cwgp_date'});
+            if(dtDate){
+                const dtDeliveryDate = addBusinessDays(dtDate,8);
+                currentRecord.setValue({
+                    fieldId: 'custpage_cwgp_deliverbydate',
+                    value: dtDeliveryDate
+                });
+            }
+        }
+
+        if(fieldId == 'custpage_cwgp_deliverbydate'){
+            const dtDate = currentRecord.getValue({fieldId: 'custpage_cwgp_date'});
+            const dtDeliveryDate = currentRecord.getValue({fieldId: 'custpage_cwgp_deliverbydate'});
+
+            if(dtDate){
+                
+                const dtDeliveryDateTemp = addBusinessDays(dtDate,8);
+                console.log('dtDeliveryDate', dtDeliveryDate);
+                console.log('dtDeliveryDateTemp', dtDeliveryDateTemp);
+                if(dtDeliveryDateTemp.getTime() != dtDeliveryDate.getTime()){
+                    alert("Changing the Deliver by Date will result to changes in Shipping fees.");
+                }
+        
+            }
+            
+        }
+
+        if (sublistId === 'custpage_franchisepo_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
                 const stItem = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_interpo_items',
+                    sublistId: 'custpage_franchisepo_items',
                     fieldId: 'custpage_cwgp_item'
                 });
                 console.log('stItem', stItem);
@@ -39,34 +80,100 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 
                 util.each(objItem, function (value, fieldId) {
                     currentRecord.setCurrentSublistValue({
-                        sublistId: 'custpage_interpo_items',
+                        sublistId: 'custpage_franchisepo_items',
                         fieldId: fieldId,
                         value: value
                     });
+                });
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_franchisepo_items',
+                    fieldId: 'custpage_cwgp_itemid',
+                    value: stItem
                 });
             }
 
             if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_rate') {
                 const intQty = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_interpo_items',
+                    sublistId: 'custpage_franchisepo_items',
                     fieldId: 'custpage_cwgp_quantity'
                 });
                 console.log('intQty', intQty);
+                
 
                 const flRate = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_interpo_items',
+                    sublistId: 'custpage_franchisepo_items',
                     fieldId: 'custpage_cwgp_rate'
                 });
                 console.log('flRate', flRate);
 
                 currentRecord.setCurrentSublistValue({
-                    sublistId: 'custpage_interpo_items',
+                    sublistId: 'custpage_franchisepo_items',
                     fieldId: 'custpage_cwgp_amount',
                     value: flRate * intQty
                 });
 
             }
         }
+
+        
+
+        if(sublistId === 'custpage_inventorayadjustment_items'){
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventorayadjustment_items',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });
+
+                const stCustomer = currentRecord.getValue({fieldId: 'custpage_cwgp_customer'});
+                console.log('stCustomer', stCustomer);
+                const qtyOnHand = getQtyOnHandFranchise(stItem,stCustomer);
+                
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_qtyonhand',
+                    value: qtyOnHand
+                });
+                
+
+            }
+
+            if (fieldId === 'custpage_cwgp_qtyonhand' || fieldId === 'custpage_cwgp_adjustqtyby') {
+
+                
+                const flQtyOnHand = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_qtyonhand'
+                });
+
+                const flAdjustQtyBy = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                });
+
+                const flNewQty = flQtyOnHand + flAdjustQtyBy;
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: flNewQty
+                });
+            }
+
+        }
+
+
     };
 
     const getItemDetails = (stItem) => {
@@ -89,10 +196,12 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         const { item } = JSON.parse(objResponse.body);
 
         return {
-            'custpage_cwgp_description': item.itemid,
-            'custpage_cwgp_rate': item.cost || 0,
+            'custpage_cwgp_description': item.salesdescription,
+            'custpage_cwgp_rate': item.franchiseprice || 0,
             'custpage_cwgp_quantity': 1,
-            'custpage_cwgp_amount': item.cost || 0
+            'custpage_cwgp_amount': item.franchiseprice || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode
         };
     };
 
@@ -115,9 +224,182 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         window.location = stFranchiseUrl;
     };
 
+    function addBusinessDays(d,n) {
+        d = new Date(d.getTime());
+        var day = d.getDay();
+        d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
+        return d;
+    }
+
+    const validateField = (context) => {
+        const { currentRecord, fieldId, sublistId, line} = context;
+
+        if(sublistId === 'custpage_itemreceipt_items'){
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_quantitydamaged'){
+                /*const inQtyShipped = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantityremaining'
+                });*/
+                console.log('context ' + JSON.stringify(context));
+                console.log('line ' + line);
+                
+                const inQtyShipped = currentRecord.getSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantityremaining',
+                    line: line
+                }); 
+                const inQtyStarting = currentRecord.getSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantitystarting',
+                    line: line
+                });
+                const inQtyRecieved = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                });
+                const inQtyDamaged = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantitydamaged'
+                });
+
+                if(inQtyRecieved > inQtyShipped){
+                    alert('Cannot receive more than the Shipped Quantity');
+                    return false;
+
+                }
+                if(inQtyDamaged > inQtyShipped){
+                    alert('Damaged Quantity cannot be more than the Shipped Quantity');
+                    return false;
+
+                }
+
+                if(inQtyRecieved < 0){
+                    alert('Received Quantity must not be negative');
+                    return false;
+                }
+
+                if(inQtyDamaged > inQtyRecieved){
+                    alert('Damaged Quantity must not be greater than Received Quantity');
+                    return false;
+                }
+
+
+                console.log('inQtyShipped ' + inQtyShipped);
+                console.log('inQtyStarting ' + inQtyStarting);
+                console.log('inQtyRecieved ' + inQtyRecieved);
+                console.log('inQtyDamaged ' + inQtyDamaged);
+                //if(inQtyStarting != ''){
+                    let inQtyFinal = parseInt(inQtyStarting) + parseInt(inQtyRecieved) - parseInt(inQtyDamaged);
+                    console.log('inQtyFinal ' + inQtyFinal);
+                    /*currentRecord.setSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: 'custpage_cwgp_quantityfinal',
+                        line: line,
+                        value: parseInt(inQtyFinal)
+                    });*/
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: 'custpage_cwgp_quantityfinal',
+                        value: parseInt(inQtyFinal)
+                    });
+
+                //}
+            }
+        }
+
+        return true;
+    };
+
+    const validateLine = (context) => {
+        const { currentRecord, sublistId } = context;
+
+        let stRecType = getParameterFromURL('rectype');
+        console.log('stRecType '+stRecType);
+
+        if(stRecType == 'franchisepo'){
+            if (sublistId === 'custpage_franchisepo_items'){
+                const intQty = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_franchisepo_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                });
+                console.log('intQty', intQty);
+                if(parseInt(intQty)<1){
+                    alert('Please enter a positive quantity.');
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    const saveRecord = (context) => {
+        const { currentRecord } = context;
+
+        let stRecType = getParameterFromURL('rectype');
+        console.log('stRecType '+stRecType);
+
+        
+        
+        if(stRecType == 'franchisepo'){
+            let numLines = currentRecord.getLineCount({
+                sublistId: 'custpage_franchisepo_items'
+            });
+            if(numLines == 0){
+                alert('Please select at least one item');
+                return false;
+            }
+
+        }
+
+        if(stRecType == 'itemreceipt'){
+            let numLines = currentRecord.getLineCount({
+                sublistId: 'custpage_itemreceipt_items'
+            });
+            console.log('numLines '+numLines);
+            for(let i = 0; i < numLines; i++){
+
+                let intQuantity = currentRecord.getSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantity',
+                    line: i
+                });
+                console.log('intQuantity '+intQuantity);
+                if(intQuantity<1){
+                    
+                    alert('Recieved Quantity must not be zero');
+                    //break;
+                    return false;
+                }
+
+            }
+
+        }
+
+        if(stRecType == 'inventoryadjustment'){
+            let numLines = currentRecord.getLineCount({
+                sublistId: 'custpage_inventorayadjustment_items'
+            });
+            if(numLines == 0){
+                alert('Please select at least one item');
+                return false;
+            }
+
+        }
+
+        return true;
+    };
+
+    const getParameterFromURL = (param) => {
+        if (param = (new RegExp('[?&]' + encodeURIComponent(param) + '=([^&]*)')).exec(location.search))
+            return decodeURIComponent(param[1].replace(/\+/g, ' '));
+    };
+
     return {
     	pageInit,
         fieldChanged,
-        back
+        back,
+        validateField,
+        validateLine,
+        saveRecord
     };
 });

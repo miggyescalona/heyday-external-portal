@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
+            ID: 'customscript_cwgp_sl_franchisepages2',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
         }
     };
     /**
@@ -43,7 +43,7 @@ define([
             } = request.parameters;
             if (request.method === 'GET') {
                 if(rectype == 'franchisepo'){
-                    renderIntercompanyPO(request, response);
+                    renderFranchisePO(request, response);
                 }
                 else if(rectype== 'itemreceipt'){
                     renderItemReceipt(request, response);
@@ -61,7 +61,7 @@ define([
         }
     };
 
-    const renderIntercompanyPO = (request, response) => {
+    const renderFranchisePO = (request, response) => {
         const {
             pageMode: stPageMode,
             userId: stUserId,
@@ -69,23 +69,17 @@ define([
             accesstype: stAccessType
         } = request.parameters;
     	
-    	/*var a ={
-            pageMode: stPageMode,
-            userId: stUserId,
-            poid: stPoId,
-            accesstype: stAccessType
-        } = request.parameters;
-        stPoId = 343153;
-        log.debug('stPoId',stPoId);
-        stPageMode = 'view';
-        stUserId = 3;*/
         log.debug('test','');
         log.debug('stPageMode',stPageMode);
         const stSubsidiary = getSubsidiary(stUserId);
         log.debug('stSubsidiary',stSubsidiary);
         const stCustomer = getCustomer(stUserId);
         //const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
-        const objIntercompanyPOSearch = buildIntercompanyPOSearch(stCustomer);
+        const stStatus = request.parameters['approvalstatus'] ? request.parameters['approvalstatus'] : '';
+        const stReceiving = request.parameters['isreceiving'] ? request.parameters['isreceiving'] : '';
+        log.debug('stStatus',stStatus);
+        log.debug('stReceiving',stReceiving);
+        const objIntercompanyPOSearch = buildIntercompanyPOSearch(stCustomer,stStatus,stReceiving);
         const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
        
         switch (stPageMode) {
@@ -239,8 +233,10 @@ define([
 
         log.debug('ia params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
-        const stLocation = getLocation(stUserId);
-        const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
+        //const stLocation = getLocation(stUserId);
+        const stCustomer = getCustomer(stUserId);
+        log.debug('stCustomer',stCustomer);
+        const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
 
         switch (stPageMode) {
             case 'list':
@@ -260,7 +256,7 @@ define([
                     response,
                     stType: 'inventoryadjustment',
                     stSubsidiary,
-                    stLocation,
+                    stCustomer,
                     stPageMode,
                     stUserId,
                     stPoId,
@@ -297,14 +293,44 @@ define([
         }
     };
 
-    const buildIntercompanyPOSearch = (stCustomer) => {
-        const ssIntercompanyPO = search.load({ id: "570"});
+    const buildIntercompanyPOSearch = (stCustomer,stStatus,stReceiving,) => {
+        const ssIntercompanyPO = search.load({ id: "customsearch_cwgp_franchise_po"});
 
         ssIntercompanyPO.filters.push(search.createFilter({
             name: 'name',
             operator: 'anyof',
             values: stCustomer,
         }));
+
+        if(stStatus){
+            log.debug('stStatus FILTER', stStatus);
+            ssIntercompanyPO.filters.push(search.createFilter({
+                name: 'custbody_cwgp_franchiseapprovalstatus',
+                operator: 'anyof',
+                values: stStatus,
+            }));
+        }
+        if(stReceiving == 'true'){
+            log.debug('stReceiving FILTER', stReceiving);
+            ssIntercompanyPO.filters.push(search.createFilter({
+                name: 'custbody_cwgp_franchiseitemreceipt',
+                operator: 'anyof',
+                values: "@NONE@",
+            }));
+
+            ssIntercompanyPO.filters.push(search.createFilter({
+                name: 'status',
+                operator: 'anyof',
+                values: ["SalesOrd:D","SalesOrd:E","SalesOrd:F"],
+            }));
+
+            ssIntercompanyPO.filters.push(search.createFilter({
+                name: 'custbody_cwgp_franchiseapprovalstatus',
+                operator: 'anyof',
+                values: '3',
+            }));
+
+        }
 
         return ssIntercompanyPO;
     };
@@ -459,32 +485,17 @@ define([
 
         return ssItemReceipt;
     };
-    
-    const editInterPO = (request) => {
-        const stPoId = request.parameters.custpage_cwgp_poid;
-        log.debug('stPoId', stPoId);
 
-        //details sourced from the Edit external page UI
-        const objPOEditDetails = {
-            body: txnLib.mapFranchisePOBodyFields(request),
-            item: txnLib.mapRetailPOSublistFields(request)
-        }
-        log.debug('objPOEditDetails', objPOEditDetails);
+    const buildInventoryAdjustmentSearch = (stCustomer) => {
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invadj", type: "customrecord_cwgp_franchiseinvadjustment" });
 
-        //details sourced from PO Netsuite transaction record 
-        const objPORecordDetails = txnLib.getPOValues(stPoId);
-        log.debug('objPORecordDetails', objPORecordDetails);
+        ssItemReceipt.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_fia_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
 
-        const bAreDetailsTheSame = JSON.stringify(objPOEditDetails) == JSON.stringify(objPORecordDetails);
-        log.debug('bAreDetailsTheSame', bAreDetailsTheSame);
-
-        if (bAreDetailsTheSame) {
-            idPO = stPoId;
-        } else {
-            idPO = txnLib.editFranchisePurchaseOrder(stPoId, objPOEditDetails, objPORecordDetails, request);
-        }
-
-        return idPO;
+        return ssItemReceipt;
     };
     
     const editFranchisePO = (request) => {
@@ -494,7 +505,7 @@ define([
         //details sourced from the Edit external page UI
         const objPOEditDetails = {
             body: txnLib.mapFranchisePOBodyFields(request),
-            item: txnLib.mapRetailPOSublistFields(request)
+            item: txnLib.mapFranchisePOSublistFields(request)
         }
         log.debug('objPOEditDetails', objPOEditDetails);
 
@@ -515,7 +526,7 @@ define([
     };
     
     const editFranchiseIR = (request) => {
-        const stPoId = request.parameters.custpage_cwgp_poid;
+        const stPoId = request.parameters.custpage_cwgp_itemreceiptid;
         log.debug('stPoId', stPoId);
 
         //details sourced from the Edit external page UI
