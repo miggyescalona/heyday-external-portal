@@ -411,11 +411,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     name: 'custpage_cwgp_rate',
                     line: i
                 }),
-                class: request.getSublistValue({
+                /*class: request.getSublistValue({
                     group: 'custpage_interpo_items',
                     name: 'custpage_cwgp_businessline',
                     line: i
-                }),
+                }),*/
+                class:1,
                 expectedreceiptdate: objDate
             });
         }

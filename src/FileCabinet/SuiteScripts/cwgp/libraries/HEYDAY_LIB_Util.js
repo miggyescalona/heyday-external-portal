@@ -805,6 +805,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'intercotransaction' }),
                     search.createColumn({ name: 'expectedreceiptdate' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
+                    search.createColumn({ name: 'class' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -820,6 +821,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             } else {
                 objPO.item.push({
+                    custpage_cwgp_businessline: result.getValue({ name: 'class' }),
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                     custpage_cwgp_description: result.getValue({ name: 'memo'}),
@@ -1163,6 +1165,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     });
                 }
                 else if(Number.isInteger(value)){
+                    log.debug('integer', value +'|'+fieldId)
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,

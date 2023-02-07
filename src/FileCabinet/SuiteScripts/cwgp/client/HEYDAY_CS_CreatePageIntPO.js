@@ -53,6 +53,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
 
         if(intPoLineCount > 0){
+            let blAllZeroQuantity = true;
             for(let x = 0; x < intPoLineCount; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_interpo_items',
@@ -66,6 +67,14 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     alert('You have a negative quantity at line number ' + (x+1) + '. Please only enter positive values when entering any quantity.')
                     return false;
                 }
+
+                if(intQuantity != 0 && intQuantity && intQuantity != ''){
+                    blAllZeroQuantity = false;
+                }
+            }
+            if(blAllZeroQuantity){
+                alert('Please enter only non-zero/positive values for quantity.')
+                return false;
             }
             return true;
         }
@@ -428,6 +437,26 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 }
                 return true;
             }
+            if (fieldId === 'custpage_cwgp_damagedquantity') {
+                const intReceivedQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantity'
+                }));
+
+                                
+                const intDamagedQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_damagedquantity'
+                }));
+                
+
+                if(intDamagedQty > intReceivedQty){
+                    alert('You cannot enter more Damaged Quantity than Received Quantity.')
+                    return false;
+                }
+                return true;
+            }
+            
         return true;
         }
         return true;
