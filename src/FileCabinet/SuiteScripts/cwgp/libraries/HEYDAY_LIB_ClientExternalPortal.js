@@ -221,15 +221,25 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
                 break;
             case 'inventoryadjustment_backbar':   
-            UI_CONFIG = {
-                SUBLIST_ID      : 'custpage_inventorayadjustmentbackbar_items',
-                SUBLIST_FIELDS  : {
-                    ITEM_ID   : 'custpage_cwgp_itemid',
-                    ITEM      : 'custpage_cwgp_item',
-                    QTY       : 'custpage_cwgp_adjustqtyby',
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventorayadjustmentbackbar_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID   : 'custpage_cwgp_itemid',
+                        ITEM      : 'custpage_cwgp_item',
+                        QTY       : 'custpage_cwgp_adjustqtyby',
+                    }
                 }
-            }
-            break;
+                break;
+            case 'inventoryadjustment_damagetestertheft':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventorayadjustmentdtt_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM_ID   : 'custpage_cwgp_itemid',
+                        ITEM      : 'custpage_cwgp_item',
+                        QTY       : 'custpage_cwgp_adjustqtyby',
+                    }
+                }
+                break;
         }
 
         //console.table(UI_CONFIG)
@@ -483,7 +493,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
             }
-            else if(stPageType == 'inventoryadjustment_backbar'){
+            else if(stPageType == 'inventoryadjustment_backbar' || stPageType == 'inventoryadjustment_damagetestertheft'){
 
                 let intScannedQty = 0;
 
@@ -687,7 +697,11 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
             else if(stPageType == 'inventoryadjustment_backbar'){
                 addBtnListener({stBtnAction: 'BACKBAR'})
-                console.log('IA Scan Buttons Set')
+                console.log('Backbar Scan Buttons Set')
+            }
+            else if(stPageType == 'inventoryadjustment_damagetestertheft'){
+                addBtnListener({stBtnAction: 'TESTER'})
+                console.log('Tester Scan Button Set')
             }
         }catch(e){
             console.warn('Cannot Set Scanner Button Functions')
