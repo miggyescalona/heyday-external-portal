@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) => {
+define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, dialog, ClientEPLib) => {
     /**
      * Function to be executed after page is initialized.
      *
@@ -30,7 +30,7 @@ define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) =>
         const { currentRecord } = context;
         
         let stURL = new URL(location.href);
-        const intPage = currentRecord.getValue({ fieldId: 'custpage_cwgp_page' });
+        let intPage = currentRecord.getValue({ fieldId: 'custpage_cwgp_page' });
         let intApprovalStatus = currentRecord.getValue({ fieldId: 'custpage_cwgp_approvalstatus' });
         let intForReceiving = currentRecord.getValue({ fieldId: 'custpage_cwgp_forreceiving' });
         
@@ -39,11 +39,13 @@ define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) =>
         console.log(intForReceiving);
         if (context.fieldId == 'custpage_cwgp_approvalstatus' && intApprovalStatus != '3') {
             console.log('custpage_cwgp_approvalstatus');
+            intPage = '';
             intForReceiving = false;
         }
 
         if (context.fieldId == 'custpage_cwgp_forreceiving' && intForReceiving) {
             console.log('custpage_cwgp_forreceiving');
+            intPage = '';
             intApprovalStatus = '3'
         }
 
@@ -100,10 +102,56 @@ define(['N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, ClientEPLib) =>
         window.location = stRenderUrl;
     };
 
+    const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
+        var options = {
+            title: 'Create Inventory Adjustment',
+            message: 'Please select what type of inventory adjustment to create:',
+            buttons: [
+                { label: 'Standard', value: 1 },
+                { label: 'Backbar', value: 2 },
+                { label: 'Damage/Tester', value: 3 }
+            ]
+        };
+        function success(result) { 
+
+            const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+            let subType;
+
+            switch(result){
+                case '1':
+                    subType = 'standard';
+                    break;
+                case '2':
+                    subType = 'backbar';
+                break;
+                case '3':
+                    subType = 'damage';
+                break;
+            }
+            
+            let stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                scriptId            : objFranchiseUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'create',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : stType,
+                    subtype     : subType 
+                }
+            });
+            window.location = stCreateIntPOUrl;
+        }
+        function failure(reason) { console.log('Failure: ' + reason) }
+        dialog.create(options).then(success).catch(failure);
+    }
+
     return {
         pageInit,
         fieldChanged,
         back,
-        toCreateTransaction
+        toCreateTransaction,
+        createInventoryAdjustment
     };
 });

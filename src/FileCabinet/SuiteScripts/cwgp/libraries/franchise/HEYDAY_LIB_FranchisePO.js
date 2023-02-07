@@ -83,7 +83,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         arrPOSblFields[0].forEach((objPOBodyFields) => {
         	log.debug('objPOBodyFields', objPOBodyFields);
         	lineList.push(objPOBodyFields.custrecord_cwgp_ftl_poline);
-        	qtyList.push(parseInt(objPOBodyFields.custrecord_cwgp_ftl_receivedqty)+parseInt(objPOBodyFields.custrecord_cwgp_ftl_damagedqty));
+        	qtyList.push(parseInt(objPOBodyFields.custrecord_cwgp_ftl_receivedqty));
         	const recIRLine = record.create({
                 type: 'customrecord_cwgp_franchise_tranline'
             });
