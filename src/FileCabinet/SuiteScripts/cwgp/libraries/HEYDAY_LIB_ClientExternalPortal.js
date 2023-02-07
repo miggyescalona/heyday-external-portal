@@ -220,6 +220,16 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_endinginventoryqty'
                 }
                 break;
+            case 'inventoryadjustment_backbar':   
+            UI_CONFIG = {
+                SUBLIST_ID      : 'custpage_inventorayadjustmentbackbar_items',
+                SUBLIST_FIELDS  : {
+                    ITEM_ID   : 'custpage_cwgp_itemid',
+                    ITEM      : 'custpage_cwgp_item',
+                    QTY       : 'custpage_cwgp_adjustqtyby',
+                }
+            }
+            break;
         }
 
         //console.table(UI_CONFIG)
@@ -665,19 +675,19 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
 
             if(stPageType == 'itemreceipt'){
-                console.log('IR Scan Buttons Set')
                 addBtnListener({stBtnAction: 'RECEIVED'})
                 addBtnListener({stBtnAction: 'DAMAGED'})
+                console.log('IR Scan Buttons Set')
             }
 
             else if(stPageType == 'inventoryadjustment_standard'){
-                console.log('IA Scan Buttons Set')
                 addBtnListener({stBtnAction: 'ADJUST'})
                 addBtnListener({stBtnAction: 'ENDING'})
+                console.log('IA Scan Buttons Set')
             }
             else if(stPageType == 'inventoryadjustment_backbar'){
-                console.log('IA Scan Buttons Set')
                 addBtnListener({stBtnAction: 'BACKBAR'})
+                console.log('IA Scan Buttons Set')
             }
         }catch(e){
             console.warn('Cannot Set Scanner Button Functions')
