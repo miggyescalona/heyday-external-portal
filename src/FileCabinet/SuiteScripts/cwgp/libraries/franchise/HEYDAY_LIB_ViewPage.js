@@ -17,20 +17,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-        	franchisepo: 'Franchise - Purchase Order',
+        	franchisepo: 'Purchase Order',
             itemreceipt: 'Item Receipt',
             inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
         	franchisepo: 'custpage_interpo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
-            inventoryadjustment: 'custpage_inventoryadjustment_itemstab'
+            inventoryadjustment: 'custpage_inventoryadjustment_itemstab',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab',
+            inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_itemstab',
         		
         },
         SUBLIST: {
         	franchisepo: 'custpage_interpo_items',
             itemreceipt: 'custpage_itemreceipt_items',
-            inventoryadjustment: 'custpage_inventoryadjustment_items'
+            inventoryadjustment: 'custpage_inventoryadjustment_items',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items',
+            inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_items'
         },
         FIELD: {
         	franchisepo: {
@@ -85,6 +89,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
+                    container: 'PRIMARY',
+                    displayType: 'inline',
+                },
+                FOR_RECEIVING: {
+                    id: 'custpage_cwgp_forreceiving',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'For Receiving',
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
@@ -172,6 +183,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     label: 'Subsidiary',
                     source: 'subsidiary',
                     container: 'CLASS',
+                    displayType: 'inline'
+                },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Location',
+                    source: 'location',
+                    container: 'CLASS',
+                    displayType: 'inline'
+                },
+                DAMAGED_INVENTORY_ID:{
+                    id: 'custpage_cwgp_damagediaid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Damaged Inventory Adjustment',
+                    container: 'CLASS',
+                    displayType: 'hidden'
+                },
+                VARIANCE: {
+                    id: 'custpage_cwgp_variance',
+                    type: serverWidget.FieldType.INTEGER,
+                    label: 'Variance',
                     displayType: 'inline'
                 },
             },
@@ -357,6 +389,62 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'New Quantity'
+                    }
+                },
+                inventoryadjustment_damaged:{
+                    INVENTORY_ADJUSTMENT: {
+                        id: 'custpage_cwgp_inventoryadjustment',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Inventory Adjustment #',
+                    },
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
+                    DAMAGED_QUANTITY:{
+                        id: 'custpage_cwgp_damagedquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Damaged Quantity',
+                    },
+                },
+                inventoryadjustment_variance:{
+                    ITEM_RECEIPT_VARIANCE: {
+                        id: 'custpage_cwgp_itemreceiptvariance',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Receipt Variance #',
+                    },
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Items',
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
+                    QUANTITY:{
+                        id: 'custpage_cwgp_quantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity',
                     }
                 }
             }
@@ -588,9 +676,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
-        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+stPoId;
+        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+objPO.body.custpage_cwgp_poid ;
+        objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         //log.debug('objPO', objPO);
+        let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
+
         
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
@@ -688,6 +779,94 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         });
 
         utilLib.setSublistValues(sbl, objPO);
+        log.debug('stDamageIAid',stDamageIAid);
+        if(stDamageIAid){
+            const stType = 'inventoryadjustment_damaged';
+
+            let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
+            log.debug('objPO',objPO);
+            form.addSubtab({
+                id: _CONFIG.TAB[stType],
+                label: 'Damaged'
+            });
+    
+            const sbl = form.addSublist({
+                id: _CONFIG.SUBLIST[stType],
+                label: ' ',
+                type: serverWidget.SublistType.LIST,
+                tab: _CONFIG.TAB[stType]
+            });
+    
+            const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+    
+            const arrCols = Object.keys(objItemCols);
+            log.debug('arrCols', arrCols);
+    
+            arrCols.forEach((stCol) => {
+                const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
+    
+                let col = sbl.addField({
+                    id,
+                    type,
+                    label,
+                    source,
+                    displayType,
+                    dsiplaySize
+                });
+    
+                if (displayType) {
+                    col.updateDisplayType({ displayType });
+                }
+            });
+    
+            utilLib.setSublistValues(sbl, objPO);
+        }
+        log.debug('stPoId',stPoId)
+        let arrMapItemReceiptVariance = utilLib.mapItemReceiptVariance(stPoId);
+        log.debug('mapItemReceiptVariance',arrMapItemReceiptVariance)
+         log.debug('mapItemReceiptVariance length',arrMapItemReceiptVariance.length)
+        ////render damaged sublist
+        if(arrMapItemReceiptVariance.item.length>0){
+            const stType = 'inventoryadjustment_variance';
+
+            //let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
+
+            form.addSubtab({
+                id: _CONFIG.TAB[stType],
+                label: 'Variance'
+            });
+    
+            const sbl = form.addSublist({
+                id: _CONFIG.SUBLIST[stType],
+                label: ' ',
+                type: serverWidget.SublistType.LIST,
+                tab: _CONFIG.TAB[stType]
+            });
+    
+            const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+    
+            const arrCols = Object.keys(objItemCols);
+            log.debug('arrCols', arrCols);
+    
+            arrCols.forEach((stCol) => {
+                const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
+    
+                let col = sbl.addField({
+                    id,
+                    type,
+                    label,
+                    source,
+                    displayType,
+                    dsiplaySize
+                });
+    
+                if (displayType) {
+                    col.updateDisplayType({ displayType });
+                }
+            });
+    
+            utilLib.setSublistValues(sbl, arrMapItemReceiptVariance);
+        }
 
         form.addButton({
             id: 'custpage_edit_btn',
@@ -889,6 +1068,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         }
 
         div#custpage_inventoryadjustment_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+        div#custpage_inventoryadjustmentdamaged_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+        div#custpage_inventoryadjustmentvariance_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
 
