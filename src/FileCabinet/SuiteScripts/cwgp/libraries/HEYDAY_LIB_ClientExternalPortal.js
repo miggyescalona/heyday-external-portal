@@ -17,10 +17,12 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
     const _CONFIG = ConfEPLib._CONFIG;
 
     _CONFIG.SCAN_TYPE = {
-        RECEIVED : 'received',
-        DAMAGED  : 'damaged',
-        ADJUST   : 'adjust',
-        ENDING   : 'ending',
+        RECEIVED : 'custpage_cwgp_received_scan_btn',
+        DAMAGED  : 'custpage_cwgp_damaged_scan_btn',
+        ADJUST   : 'custpage_cwgp_adjustqty_scan_btn',
+        ENDING   : 'custpage_cwgp_endingqty_scan_btn',
+        BACKBAR  : 'custpage_cwgp_backbar_scan_btn',
+        TESTER   : 'custpage_cwgp_add_scan_btn'
         
     }
 
@@ -632,6 +634,52 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         }
     }
 
+    const setScanBtnOnClick = () => {
+        try{
+            const stQuery = window.location.search;
+            const objParams = new URLSearchParams(stQuery);
+            let stRecType  = objParams.get('rectype')
+            let stSubType  = objParams.get('subtype')
+
+            let stPageType = stRecType;
+            if(stSubType){
+                stPageType += `_${stSubType}`
+            }
+
+            if(stPageType == 'itemreceipt'){
+                console.log('IR Scan Buttons Set')
+                addBtnListener({stBtnAction: 'RECEIVED'})
+                addBtnListener({stBtnAction: 'DAMAGED'})
+            }
+
+            else if(stPageType == 'inventoryadjustment_standard'){
+                console.log('IA Scan Buttons Set')
+                addBtnListener({stBtnAction: 'ADJUST'})
+                addBtnListener({stBtnAction: 'ENDING'})
+            }
+            else if(stPageType == 'inventoryadjustment_backbar'){
+                console.log('IA Scan Buttons Set')
+                addBtnListener({stBtnAction: 'BACKBAR'})
+            }
+        }catch(e){
+            console.warn('Cannot Set Scanner Button Functions')
+        }
+
+        const addBtnListener = (options) => {
+            const {
+                stBtnAction
+            } = options;
+
+            let objScanButton = document.getElementById(_CONFIG.SCAN_TYPE[stBtnAction]);
+            if(objScanButton){
+                objScanButton.addEventListener('click', function(){
+                    scanInputViaBtn(_CONFIG.SCAN_TYPE[stBtnAction])
+                })
+            }
+            return objScanButton;
+        }
+    }
+
     //END SCANNER FUNCTIONS
 
     return {
@@ -639,6 +687,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         getAuthenticationScript,
         addScannedItemsToLines,
         generateScanErrorSummary,
+        setScanBtnOnClick,
         scanInputViaBtn
     }
 });

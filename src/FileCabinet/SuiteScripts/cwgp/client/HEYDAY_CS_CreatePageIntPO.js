@@ -19,53 +19,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      * @param {Object} context
      */
     const pageInit = (context) => {
-
-        const setScanBtnOnClick = () => {
-            try{
-                const stQuery = window.location.search;
-                const objParams = new URLSearchParams(stQuery);
-                let stRecType  = objParams.get('rectype')
-
-                if(stRecType == 'itemreceipt'){
-                    console.log('IR Scan Buttons Set')
-                    let objScanReceivedButton = document.getElementById('custpage_cwgp_received_scan_btn');
-                    if(objScanReceivedButton){
-                        objScanReceivedButton.addEventListener('click', function(){
-                            ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.RECEIVED)
-                        })
-                    }
-                    
-                    let objScanDamagedButton = document.getElementById('custpage_cwgp_damaged_scan_btn');
-                    if(objScanDamagedButton){
-                        objScanDamagedButton.addEventListener('click', function(){
-                            ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.DAMAGED)
-                        })
-                    }
-                }
-
-                else if(stRecType == 'inventoryadjustment'){
-                    console.log('IA Scan Buttons Set')
-                    let objScanAdjustButton = document.getElementById('custpage_cwgp_adjustqty_scan_btn');
-                    if(objScanAdjustButton){
-                        objScanAdjustButton.addEventListener('click', function(){
-                            ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.ADJUST)
-                        })
-                    }
-                    
-                    let objScanEndingButton = document.getElementById('custpage_cwgp_endingqty_scan_btn');
-                    if(objScanEndingButton){
-                        objScanEndingButton.addEventListener('click', function(){
-                            ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.ENDING)
-                        })
-                    }
-                }
-            }catch(e){
-                console.warn('Cannot set button click')
-            }
-        }
-
         ClientEPLib.getAuthenticationScript();
-        setScanBtnOnClick();
+        ClientEPLib.setScanBtnOnClick();
     };
 
      const saveRecord = (context) => {

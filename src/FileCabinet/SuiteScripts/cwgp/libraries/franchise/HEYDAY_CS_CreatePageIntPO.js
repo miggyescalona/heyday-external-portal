@@ -19,23 +19,8 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
      */
 	
 	const pageInit = (context) => {
-        const setScanBtnOnClick = () => {
-            try{
-                var objScanReceivedButton = document.getElementById('custpage_cwgp_received_scan_btn');
-                objScanReceivedButton.addEventListener('click', function(){
-                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.RECEIVED)
-                })
-                var objScanDamagedButton = document.getElementById('custpage_cwgp_damaged_scan_btn');
-                objScanDamagedButton.addEventListener('click', function(){
-                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.DAMAGED)
-                })
-            }catch(e){
-                console.warn('Cannot set button click')
-            }
-        }
-
         ClientEPLib.getAuthenticationScript();
-        setScanBtnOnClick();
+        ClientEPLib.setScanBtnOnClick();
     };
 	
     const fieldChanged = (context) => {
