@@ -1090,6 +1090,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 displayType
             } = objBodyFields[stCol];
 
+
+
             let fld = form.addField({
                 id,
                 type,
@@ -1134,9 +1136,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 stUserId,
                 stAccessType,
                 stType,
-                stSubType,
-                stUpcMap
+                stUpcMap,
+                stSubType
             });
+
 
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
@@ -1157,6 +1160,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             type: serverWidget.SublistType.INLINEEDITOR,
             tab: _CONFIG.TAB[stType+'_'+stSubType]
         });
+
+
 
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType+'_'+stSubType];
 
@@ -1219,7 +1224,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stType,
             stSubType,
             stUpcMap,
-            stOperator
+            stOperator,
         } = options;
 
         return {
