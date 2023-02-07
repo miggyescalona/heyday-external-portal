@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util'], (https, util) => {
+define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], (https, util, url, ClientEPLib) => {
     /**
      * Function to be executed when field is changed.
      *
@@ -177,8 +177,20 @@ define(['N/https', 'N/util'], (https, util) => {
     };
 
     const getItemDetails = (stItem) => {
+
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                item:   stItem
+            }
+        });
+
         const objResponse = https.get({
-            url: `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=689&deploy=1&compid=5530036_SB1&h=2f0abb66a0cbb01e8d05&item=${stItem}`,
+            url: stCreateIntPOBaseUrl,
         });
 
         const { item } = JSON.parse(objResponse.body);

@@ -1025,4 +1025,3 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         getBodyFieldsToUpdateItemReceipt,
     }
 });
-

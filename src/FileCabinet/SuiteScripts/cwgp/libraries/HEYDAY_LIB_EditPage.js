@@ -612,7 +612,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
 
             if (id == 'custpage_cwgp_item') {
-                utilLib.addOptionsItemBySubsidiary(col, stSubsidiary);
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
             }
         });
 
@@ -970,4 +973,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         renderItemReceipt
     }
 });
-

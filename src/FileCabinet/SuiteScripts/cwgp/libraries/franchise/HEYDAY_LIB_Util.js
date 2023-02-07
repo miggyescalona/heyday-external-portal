@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, search, util, record) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -68,6 +68,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, s
 
     const mapFranchisePO = (stUserId, stAccessType, arrPagedData) => {
         let arrMapIntercompanyPO = [];
+
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+        
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stStatus = result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' });
@@ -891,4 +900,3 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record'], (serverWidget, s
         addOptionsForReceiving
     }
 });
-

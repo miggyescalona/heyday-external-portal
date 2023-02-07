@@ -1068,4 +1068,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         renderInventoryAdjustment
     }
 });
-

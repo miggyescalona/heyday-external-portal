@@ -1117,4 +1117,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         renderInventoryAdjustment
     }
 });
-

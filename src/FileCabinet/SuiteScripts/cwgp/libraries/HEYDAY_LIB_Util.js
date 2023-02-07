@@ -133,7 +133,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stStatus = result.getText({ name: 'approvalstatus' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
 
             arrMapIntercompanyPO.push({
@@ -243,14 +243,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         let arrMapItemReceipt= [];
 
-        log.debug('mapItemReceipt')
-
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stCreatedFrom = result.getText({ name: 'createdfrom' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
 
             arrMapItemReceipt.push({
@@ -264,13 +262,23 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
     const mapInventoryAdjustment = (stUserId, stAccessType, arrPagedData) => {
+        
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
+
         let arrMapInventoryAdjustment= [];
 
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
-            const stUrl = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
 
             arrMapInventoryAdjustment.push({
@@ -522,26 +530,20 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
-    const addOptionsItemBySubsidiary = (fld, stSubsidiary) => {
+    const addOptionsItemBySubsidiary = (options) => {   
+
+        const {
+            fld, 
+            objResultSet
+        } = options
         fld.addSelectOption({
             value: '',
             text: ''
         });
-        search.create({
-            type: "item",
-            filters:
-                [
-                    search.createFilter({
-                        name: 'subsidiary',
-                        operator: search.Operator.ANYOF,
-                        values: stSubsidiary
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'itemid' })
-                ]
-        }).run().each(function (result) {
+
+        log.debug('objResultSet', objResultSet)
+
+        objResultSet.each(function (result) {
             fld.addSelectOption({
                 value: result.id,
                 text: result.getValue({ name: 'itemid' })
@@ -1137,6 +1139,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'inventory',
                     fieldId: 'class',
                     line: x
+                }),
                 custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
                     sublistId: 'inventory',
                     fieldId: 'custcol_cwgp_adjustmentreason',

@@ -28,12 +28,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         TAB: {
             intercompanypo: 'custpage_interpo_listtab_retail',
             itemreceipt: 'custpage_ir_listtab_retail',
-            inventoryadjustment: 'custpage_ia_listtab_retail'
+            inventoryadjustment: 'custpage_ia_listtab_retail',
+            itemperlocation: 'custpage_ipl_listtab_retail'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_list_retail',
             itemreceipt: 'custpage_ir_list_retail',
-            inventoryadjustment: 'custpage_ia_list_retail'
+            inventoryadjustment: 'custpage_ia_list_retail',
+            itemperlocation: 'custpage_ipl_list_retail'
         },
         COLUMN: {
             LIST: {
@@ -645,6 +647,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     return {
         render,
         renderItemReceipt,
-        renderInventoryAdjustment
+        renderInventoryAdjustment,
+        renderItemPerLocation
     }
 });
