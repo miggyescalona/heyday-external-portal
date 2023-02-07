@@ -17,16 +17,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            franchisepo: 'Franchise - Purchase Order',
+            franchisepo: 'Purchase Order',
             itemreceipt: 'Item Receipt'
         },
         TAB: {
             franchisepo: 'custpage_franchisepo_itemstab',
-            itemreceipt: 'custpage_itemreceipt_itemstab'
+            itemreceipt: 'custpage_itemreceipt_itemstab',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab'
         },
         SUBLIST: {
             franchisepo: 'custpage_franchisepo_items',
-            itemreceipt: 'custpage_itemreceipt_items'
+            itemreceipt: 'custpage_itemreceipt_items',
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items'
         },
         FIELD: {
             franchisepo: {
@@ -194,6 +196,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Location',
+                    container: 'CLASS',
+                    source: 'location',
+                    displayType: 'inline',
+                    mandatory: true
+                },
+                DAMAGED_INVENTORY_ID:{
+                    id: 'custpage_cwgp_damagediaid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Damaged Inventory Adjustment',
+                    container: 'CLASS',
+                    displayType: 'hidden'
+                },
             },
         },
         COLUMN: {
@@ -283,11 +301,36 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'Damaged Quantity',
                         displayType: 'inline'
                     },
+                    VARIANCE: {
+                        id: 'custpage_cwgp_variance',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Variance',
+                        displayType: 'inline'
+                    },
                     LINE: {
                         id: 'custpage_cwgp_line',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Line',
                         displayType: 'hidden'
+                    }
+                },
+                inventoryadjustment_damaged:{
+                    INVENTORY_ADJUSTMENT: {
+                        id: 'custpage_cwgp_inventoryadjustment',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Inventory Adjustment #',
+                    },
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    DAMAGED_QUANTITY:{
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Damaged Quantity',
                     }
                 }
             }
@@ -501,8 +544,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
-        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+stPoId;
+        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+objPO.body.custpage_cwgp_poid;
+        objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
         // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
         log.debug('objPO', objPO);
@@ -603,6 +648,49 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         });
 
         utilLib.setSublistValues(sbl, objPO);
+
+        log.debug('stDamageIAid',stDamageIAid);
+        if(stDamageIAid){
+            const stType = 'inventoryadjustment_damaged';
+
+            let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
+            log.debug('objPO',objPO);
+            form.addSubtab({
+                id: _CONFIG.TAB[stType],
+                label: 'Damaged'
+            });
+    
+            const sbl = form.addSublist({
+                id: _CONFIG.SUBLIST[stType],
+                label: ' ',
+                type: serverWidget.SublistType.LIST,
+                tab: _CONFIG.TAB[stType]
+            });
+    
+            const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+    
+            const arrCols = Object.keys(objItemCols);
+            log.debug('arrCols', arrCols);
+    
+            arrCols.forEach((stCol) => {
+                const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
+    
+                let col = sbl.addField({
+                    id,
+                    type,
+                    label,
+                    source,
+                    displayType,
+                    dsiplaySize
+                });
+    
+                if (displayType) {
+                    col.updateDisplayType({ displayType });
+                }
+            });
+    
+            utilLib.setSublistValues(sbl, objPO);
+        }
         
         
         form.addSubmitButton({ label: 'Save' });
@@ -663,6 +751,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         }
         
         div#custpage_itemreceipt_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+        div#custpage_inventoryadjustmentdamaged_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
 

@@ -235,14 +235,23 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         const { currentRecord, fieldId, sublistId, line} = context;
 
         if(sublistId === 'custpage_itemreceipt_items'){
-            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_damagedquantity'){
-                /*const inQtyShipped = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_itemreceipt_items',
-                    fieldId: 'custpage_cwgp_quantityremaining'
-                });*/
-                console.log('context ' + JSON.stringify(context));
-                console.log('line ' + line);
+            
+            
+            if (fieldId === 'custpage_cwgp_quantity' || fieldId === 'custpage_cwgp_damagedquantity' || fieldId === 'custpage_cwgp_variance' || fieldId === 'custpage_cwgp_quantityfinal'){
                 
+                const stValue = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: fieldId
+                });
+                if(stValue == ''){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: fieldId,
+                        value: 0,
+                        ignoreFieldChange: true,
+                    });
+                }
+
                 const inQtyShipped = currentRecord.getSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
                     fieldId: 'custpage_cwgp_quantityremaining',
@@ -261,25 +270,58 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
                     sublistId: 'custpage_itemreceipt_items',
                     fieldId: 'custpage_cwgp_damagedquantity'
                 });
+                let inQtyFinal = parseInt(inQtyStarting) + parseInt(inQtyRecieved) - parseInt(inQtyDamaged);
+
+                
+
+
+                console.log('context ' + JSON.stringify(context));
+                console.log('line ' + line);
+                
+                
 
                 if(inQtyRecieved > inQtyShipped){
                     alert('Cannot receive more than the Shipped Quantity');
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: fieldId,
+                        value: 0,
+                        ignoreFieldChange: true,
+                    });
                     return false;
 
                 }
                 if(inQtyDamaged > inQtyShipped){
                     alert('Damaged Quantity cannot be more than the Shipped Quantity');
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: fieldId,
+                        value: 0,
+                        ignoreFieldChange: true,
+                    });
                     return false;
 
                 }
 
                 if(inQtyRecieved < 0){
                     alert('Received Quantity must not be negative');
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: fieldId,
+                        value: 0,
+                        ignoreFieldChange: true,
+                    });
                     return false;
                 }
 
                 if(inQtyDamaged > inQtyRecieved){
                     alert('Damaged Quantity must not be greater than Received Quantity');
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: fieldId,
+                        value: 0,
+                        ignoreFieldChange: true,
+                    });
                     return false;
                 }
 
@@ -289,22 +331,53 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
                 console.log('inQtyRecieved ' + inQtyRecieved);
                 console.log('inQtyDamaged ' + inQtyDamaged);
                 //if(inQtyStarting != ''){
-                    let inQtyFinal = parseInt(inQtyStarting) + parseInt(inQtyRecieved) - parseInt(inQtyDamaged);
+                    //let inQtyFinal = parseInt(inQtyStarting) + parseInt(inQtyRecieved) - parseInt(inQtyDamaged);
                     console.log('inQtyFinal ' + inQtyFinal);
-                    /*currentRecord.setSublistValue({
+                    currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
-                        fieldId: 'custpage_cwgp_quantityfinal',
-                        line: line,
-                        value: parseInt(inQtyFinal)
-                    });*/
+                        fieldId: 'custpage_cwgp_variance',
+                        value: inQtyShipped - inQtyRecieved,
+                        ignoreFieldChange: true
+                    });
+
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_quantityfinal',
-                        value: parseInt(inQtyFinal)
+                        value: inQtyFinal,
+                        ignoreFieldChange: true,
                     });
+                    /*currentRecord.selectLine({
+                        sublistId: 'custpage_itemreceipt_items',
+                        line: line
+                    });
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: 'custpage_cwgp_quantityfinal',
+                        value: inQtyFinal
+                    });
+                    currentRecord.commitLine({sublistId: 'custpage_itemreceipt_items'});*/
 
                 //}
             }
+            /*
+            if (fieldId === 'custpage_cwgp_variance'){
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_variance',
+                    value: inQtyShipped - inQtyRecieved
+                });
+            }
+
+            if (fieldId === 'custpage_cwgp_damagedquantity'){
+                
+                currentRecord.setCurrentSublistValue({
+                    sublistId: 'custpage_itemreceipt_items',
+                    fieldId: 'custpage_cwgp_quantityfinal',
+                    value: inQtyFinal
+                });
+            }*/
+
+            
         }
 
         return true;
@@ -323,7 +396,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
                     fieldId: 'custpage_cwgp_quantity'
                 });
                 console.log('intQty', intQty);
-                if(parseInt(intQty)<1){
+                if(parseInt(intQty)<1 || intQty==''){
                     alert('Please enter a positive quantity.');
                     return false;
                 }
@@ -352,25 +425,44 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
         }
 
         if(stRecType == 'itemreceipt'){
+            let inMarkCount = 0;  
             let numLines = currentRecord.getLineCount({
                 sublistId: 'custpage_itemreceipt_items'
             });
             console.log('numLines '+numLines);
+            
             for(let i = 0; i < numLines; i++){
 
-                let intQuantity = currentRecord.getSublistValue({
+                let stReceive = currentRecord.getSublistValue({
                     sublistId: 'custpage_itemreceipt_items',
-                    fieldId: 'custpage_cwgp_quantity',
+                    fieldId: 'custpage_cwgp_receive',
                     line: i
                 });
-                console.log('intQuantity '+intQuantity);
-                if(intQuantity<1){
-                    
-                    alert('Recieved Quantity must not be zero');
-                    //break;
-                    return false;
+                console.log('stReceive '+stReceive);
+                if(stReceive){
+                    inMarkCount++;
+                    let intQuantity = currentRecord.getSublistValue({
+                        sublistId: 'custpage_itemreceipt_items',
+                        fieldId: 'custpage_cwgp_quantity',
+                        line: i
+                    });
+                    console.log('intQuantity '+intQuantity);
+                    if(intQuantity<1){
+                        
+                        alert('Recieved Quantity must not be zero');
+                        //break;
+                        return false;
+                    }
                 }
 
+                
+
+            } 
+            if(inMarkCount<1){
+                    
+                alert('Please select an Item to receive');
+                //break;
+                return false;
             }
 
         }

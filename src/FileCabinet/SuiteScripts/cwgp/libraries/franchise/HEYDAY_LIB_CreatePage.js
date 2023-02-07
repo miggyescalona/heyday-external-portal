@@ -92,6 +92,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Memo',
                     container: 'PRIMARY',
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -139,6 +146,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     type: serverWidget.FieldType.TEXT,
                     label: 'Created From',
                     container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
+                CREATED_FROM: {
+                    id: 'custpage_cwgp_createdfrom',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Created From',
+                    container: 'PRIMARY',
                     displayType: 'inline'
                 },
                 REC_TYPE: {
@@ -169,6 +183,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Memo',
                     container: 'PRIMARY'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -177,6 +198,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Location',
+                    source: 'location',
+                    container: 'CLASS',
+                    displayType: 'inline'
+                }
             },
             inventoryadjustment:{
                 HTML_CSS: {
@@ -271,7 +300,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
-                        type: serverWidget.FieldType.FLOAT,
+                        type: serverWidget.FieldType.CURRENCY,
                         label: 'Amount',
                         displayType: 'DISABLED'
                     }
@@ -281,7 +310,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         id: 'custpage_cwgp_receive',
                         type: serverWidget.FieldType.CHECKBOX,
                         label: 'Receive',
-                        displayType:'disabled'
+                        //displayType:'disabled'
                     },
                     ITEM_ID: {
                         id: 'custpage_cwgp_itemid',
@@ -342,13 +371,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         id: 'custpage_cwgp_variance',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Variance',
-                        displayType: 'inline'
+                        displayType: 'ENTRY'
                     },
                     QUANTITY_FINAL: {
                         id: 'custpage_cwgp_quantityfinal',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Final Quantity',
-                        displayType: 'disabled'
+                        displayType: 'ENTRY'
                     },
                     LINE: {
                         id: 'custpage_cwgp_line',
@@ -487,7 +516,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stUserId,
             stAccessType,
             stCustomer,
-            stLocation
+            stLocation,
+            stOperator
         } = options;
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
@@ -578,6 +608,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                 stCustomer,
                 stLocation,
                 stType,
+                stOperator
                 //stUpcMap
             });
 
@@ -696,8 +727,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
-        objPO.body.custpage_cwgp_poid = 'Purchase Order #'+stPoId;
+        objPO.body.custpage_cwgp_poid = stPoId;
+        objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stPoId;
         objPO.body.custpage_cwgp_accesstype = stAccessType;
+        objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
@@ -928,7 +961,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stCustomer,
             stLocation,
             stType,
-            stUpcMap
+            stUpcMap,
+            stOperator
         } = options;
 
         return {
@@ -942,7 +976,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             custpage_cwgp_dat           : new Date(),
             custpage_cwgp_customer      : stCustomer,
             custpage_cwgp_location      : stLocation,
-            custpage_cwgp_rectype       : stType
+            custpage_cwgp_rectype       : stType,
+            custpage_cwgp_operator      : stOperator
         }
     };
 

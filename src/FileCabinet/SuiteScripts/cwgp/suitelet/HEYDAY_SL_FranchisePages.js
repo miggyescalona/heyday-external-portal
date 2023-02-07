@@ -81,6 +81,7 @@ define([
         log.debug('stReceiving',stReceiving);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stCustomer,stStatus,stReceiving);
         const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
        
         switch (stPageMode) {
             case 'list':
@@ -103,7 +104,8 @@ define([
                     stUserId,
                     stAccessType,
                     stCustomer,
-                    stLocation
+                    stLocation,
+                    stOperator
                 });
 
                 break;
@@ -313,12 +315,6 @@ define([
         if(stReceiving == 'true'){
             log.debug('stReceiving FILTER', stReceiving);
             ssIntercompanyPO.filters.push(search.createFilter({
-                name: 'custbody_cwgp_franchiseitemreceipt',
-                operator: 'anyof',
-                values: "@NONE@",
-            }));
-
-            ssIntercompanyPO.filters.push(search.createFilter({
                 name: 'status',
                 operator: 'anyof',
                 values: ["SalesOrd:D","SalesOrd:E","SalesOrd:F"],
@@ -329,6 +325,12 @@ define([
                 operator: 'anyof',
                 values: '3',
             }));
+            ssIntercompanyPO.filters.push(search.createFilter({
+                name: 'custbody_cwgp_canreceive',
+                operator: search.Operator.IS,
+                values: 'T'
+            }));
+
 
         }
 
