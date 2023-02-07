@@ -635,6 +635,21 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
     }
 
     const setScanBtnOnClick = () => {
+
+        const addBtnListener = (options) => {
+            const {
+                stBtnAction
+            } = options;
+
+            let objScanButton = document.getElementById(_CONFIG.SCAN_TYPE[stBtnAction]);
+            if(objScanButton){
+                objScanButton.addEventListener('click', function(){
+                    scanInputViaBtn(_CONFIG.SCAN_TYPE[stBtnAction])
+                })
+            }
+            return objScanButton;
+        }
+
         try{
             const stQuery = window.location.search;
             const objParams = new URLSearchParams(stQuery);
@@ -642,7 +657,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             let stSubType  = objParams.get('subtype')
 
             console.log('stRecType', stRecType)
-            console.log('stSubType', subtype)
+            console.log('stSubType', stSubType)
 
             let stPageType = stRecType;
             if(stSubType){
@@ -665,21 +680,8 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 addBtnListener({stBtnAction: 'BACKBAR'})
             }
         }catch(e){
-            console.warn('Cannot Set Scanner Button Functions', e)
-        }
-
-        const addBtnListener = (options) => {
-            const {
-                stBtnAction
-            } = options;
-
-            let objScanButton = document.getElementById(_CONFIG.SCAN_TYPE[stBtnAction]);
-            if(objScanButton){
-                objScanButton.addEventListener('click', function(){
-                    scanInputViaBtn(_CONFIG.SCAN_TYPE[stBtnAction])
-                })
-            }
-            return objScanButton;
+            console.warn('Cannot Set Scanner Button Functions')
+            console.warn(e)
         }
     }
 

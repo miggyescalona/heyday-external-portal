@@ -185,7 +185,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 stType       
             })
            
-            log.debug('_CONFIG', _CONFIG.FIELD[stPageType])
+            log.debug('_CONFIG', _CONFIG.FIELD)
             
             return  {
                 objItemResultSet,
@@ -204,7 +204,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         let stBtnDefCss = ''
         let stBtnCss    = '';
         
-        try{
+        try{    
             switch(stPageType){
                 case 'itemreceipt': 
                     stBtnDefCss = `
