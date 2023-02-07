@@ -517,7 +517,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'New Quantity',
+                        label: 'Final Quantity',
                         displayType: 'disabled'
                     },
                     BUSINESS_LINE: {
