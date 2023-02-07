@@ -207,13 +207,13 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     break;
                 case 'inventoryadjustment':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_adjustqty_scan_btn" type="button" class="scanbutton">Adjust<br />Quantity</button>
+                        <button id="custpage_cwgp_adjustqty_scan_btn" type="button" class="scanbutton">Add to<br />Adjusted Quantity</button>
                         <button id="custpage_cwgp_endingqty_scan_btn" type="button" class="scanbutton">Add to<br />Ending Quantity</button>
                     `
                     break;
                 case 'damaged':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_scan_btn" type="button" class="scanbutton">Add as<br /> Tester</button>
+                        <button id="custpage_cwgp_add_scan_btn" type="button" class="scanbutton">Add as<br /> Tester</button>
                     `
             }
 

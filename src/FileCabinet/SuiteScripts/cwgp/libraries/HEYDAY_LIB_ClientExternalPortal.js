@@ -465,6 +465,42 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
             }
+            else if(stRecType == 'inventoryadjustment'){
+
+                let intScannedQty = 0;
+
+                try{
+                    intScannedQty   = parseInt(objCurrItemLine.qty)
+                }
+                catch(e){
+                    console.error(e)
+                    throw {
+                        name    : 'CANNOT_PROCESS_QTY',
+                        message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                    }
+                }
+
+                for(var ii = 0; ii < intScannedQty; ii++){
+                    recCurrent.selectNewLine({ 
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                    })
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    });
+    
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        value       : -1
+                    });
+                    recCurrent.commitLine({
+                        sublistId   : UI_CONFIG.SUBLIST_ID
+                    })
+                }
+                
+            }
         }
 
         let stFailedCodes = ''
