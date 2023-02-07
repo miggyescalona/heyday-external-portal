@@ -55,15 +55,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         const {
             objConfig,
             objConfProperty,
-            stType,
-            stSubType
+            stPageType
         } = options;
         try{
-            let stPageType = stType;
-            if(stSubType){
-                stPageType += `_${stSubType}`
-            }
-            objConfig[objConfProperty][stType] = {
+
+            objConfig[objConfProperty][stPageType] = {
                 ...objConfig[objConfProperty][stPageType],
                 ...SCANNER_UI[objConfProperty]
             }
@@ -170,22 +166,25 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             }catch(e){
                 log.error('getUpcMap - Error', e)
             }
+
+            let stPageType = stType;
+            if(stSubType){
+                stPageType += `_${stSubType}`
+            }
             
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD_GROUP',
-                stType,
-                stSubType     
+                stPageType  
             })
             
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD',
-                stType,
-                stSubType         
+                stPageType       
             })
            
-            log.debug('_CONFIG', _CONFIG.FIELD[stType].SCAN_UPC_CODES)
+            log.debug('_CONFIG', _CONFIG.FIELD[stPageType].SCAN_UPC_CODES)
             
             return  {
                 objItemResultSet,

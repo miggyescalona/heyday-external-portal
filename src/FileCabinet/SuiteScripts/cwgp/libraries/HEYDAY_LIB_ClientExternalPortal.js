@@ -600,7 +600,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
         }
         catch(e){
-            log.error('generateScanErrorSummary - Error', e)
+            console.error('generateScanErrorSummary - Error', e)
         }
         return stFailedCodes;
     }
@@ -640,6 +640,9 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             const objParams = new URLSearchParams(stQuery);
             let stRecType  = objParams.get('rectype')
             let stSubType  = objParams.get('subtype')
+
+            console.log('stRecType', stRecType)
+            console.log('stSubType', subtype)
 
             let stPageType = stRecType;
             if(stSubType){
