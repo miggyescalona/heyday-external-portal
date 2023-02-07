@@ -474,6 +474,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
                     },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,

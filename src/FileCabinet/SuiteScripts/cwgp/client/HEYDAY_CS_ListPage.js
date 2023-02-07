@@ -175,7 +175,6 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                 break;
             }
             
-            alert(subType);
             let stCreateIntPOUrl = url.resolveScript({
                 deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
                 scriptId            : objCreateIntPOUrl.SCRIPT_ID,
