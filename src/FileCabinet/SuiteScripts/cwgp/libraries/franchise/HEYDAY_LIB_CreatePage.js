@@ -997,7 +997,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             custpage_cwgp_userid        : stUserId,
             custpage_cwgp_accesstype    : stAccessType,
             custpage_cwgp_htmlcss       : htmlCss(),
-            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss({stPageType: 'inventoryadjustment'}),
+            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss({stPageType: 'inventoryadjustment_standard'}),
             custpage_cwgp_upccodemap    : stUpcMap,
             custpage_cwgp_dat           : new Date(),
             custpage_cwgp_customer      : stCustomer,

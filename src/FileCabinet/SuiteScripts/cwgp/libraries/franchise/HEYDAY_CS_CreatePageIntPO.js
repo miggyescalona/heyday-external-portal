@@ -20,7 +20,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 	
 	const pageInit = (context) => {
         ClientEPLib.getAuthenticationScript();
-        ClientEPLib.setScanBtnOnClick();
+        //ClientEPLib.setScanBtnOnClick();
     };
 	
     const fieldChanged = (context) => {

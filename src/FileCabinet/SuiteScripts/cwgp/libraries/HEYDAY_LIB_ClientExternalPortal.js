@@ -665,7 +665,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 addBtnListener({stBtnAction: 'BACKBAR'})
             }
         }catch(e){
-            console.warn('Cannot Set Scanner Button Functions')
+            console.warn('Cannot Set Scanner Button Functions', e)
         }
 
         const addBtnListener = (options) => {
