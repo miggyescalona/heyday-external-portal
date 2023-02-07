@@ -56,11 +56,15 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             objConfig,
             objConfProperty,
             stType,
+            stSubType
         } = options;
         try{
-            
+            let stPageType = stType;
+            if(stSubType){
+                stPageType += `_${stSubType}`
+            }
             objConfig[objConfProperty][stType] = {
-                ...objConfig[objConfProperty][stType],
+                ...objConfig[objConfProperty][stPageType],
                 ...SCANNER_UI[objConfProperty]
             }
 
@@ -136,6 +140,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const initScanner = (options) => {
         const {
             stType,
+            stSubType,
             stSubsidiary,
             _CONFIG
         } = options
@@ -169,13 +174,15 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD_GROUP',
-                stType         
+                stType,
+                stSubType     
             })
             
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD',
-                stType         
+                stType,
+                stSubType         
             })
            
             log.debug('_CONFIG', _CONFIG.FIELD[stType].SCAN_UPC_CODES)
@@ -205,17 +212,23 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
                     `
                     break;
-                case 'inventoryadjustment':
+                case 'inventoryadjustment_standard':
                     stBtnDefCss = `
                         <button id="custpage_cwgp_adjustqty_scan_btn" type="button" class="scanbutton">Add to<br />Adjusted Quantity</button>
                         <button id="custpage_cwgp_endingqty_scan_btn" type="button" class="scanbutton">Add to<br />Ending Quantity</button>
                     `
                     break;
-                case 'damaged':
+                case 'inventoryadjustment_backbar':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_add_scan_btn" type="button" class="scanbutton">Add as<br /> Tester</button>
+                        <button id="custpage_cwgp_backbar_scan_btn" type="button" class="scanbutton">Add as<br /> Backbar</button>
                     `
-            }
+                    break;
+                case 'inventoryadjustment_damagetestertheft':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_add_scan_btn" type="button" class="scanbutton">Add as<br /> New Line</button>
+                    `
+                    break;
+        }
 
             stBtnCss = `
                 

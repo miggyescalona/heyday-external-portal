@@ -159,13 +159,19 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             stScannerInput,
             stScanType,
             stRecType,
+            stSubType,
             recCurrent
         } = options;
+
+        let stPageType = stRecType;
+        if(stSubType){
+            stPageType += `_${stSubType}`
+        }
 
         let UI_CONFIG = {}
 
         //Map sublist fields based on record type
-        switch(stRecType){
+        switch(stPageType){
             case 'intercompanypo'   :   
             case 'franchisepo'      :
                 UI_CONFIG = {
@@ -195,7 +201,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     UI_CONFIG.SUBLIST_FIELDS['MAX_QTY'] = 'custpage_cwgp_quantity'
                 }
                 break;
-            case 'inventoryadjustment':   
+            case 'inventoryadjustment_standard':   
                 UI_CONFIG = {
                     SUBLIST_ID      : 'custpage_inventorayadjustment_items',
                     SUBLIST_FIELDS  : {
@@ -220,7 +226,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             const {
                 recCurrent,
                 objUpcToItemIdMap,
-                stRecType,
+                stPageType,
                 objCurrItemLine,
                 stScanType,
                 UI_CONFIG
@@ -236,7 +242,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
             }
 
-            if(stRecType == 'intercompanypo' || stRecType == 'franchisepo'){
+            if(stPageType == 'intercompanypo' || stPageType == 'franchisepo'){
 
                 let index = recCurrent.findSublistLineWithValue({
                     sublistId   : UI_CONFIG.SUBLIST_ID,
@@ -298,7 +304,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 })
 
             }
-            else if(stRecType == 'itemreceipt'){
+            else if(stPageType == 'itemreceipt'){
                 let index = recCurrent.findSublistLineWithValue({
                     sublistId   : UI_CONFIG.SUBLIST_ID,
                     fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
@@ -405,7 +411,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     }
                 }
             }
-            else if(stRecType == 'inventoryadjustment'){
+            else if(stPageType == 'inventoryadjustment_standard'){
                 let index = recCurrent.findSublistLineWithValue({
                     sublistId   : UI_CONFIG.SUBLIST_ID,
                     fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
@@ -465,7 +471,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
             }
-            else if(stRecType == 'inventoryadjustment'){
+            else if(stPageType == 'inventoryadjustment_backbar'){
 
                 let intScannedQty = 0;
 
@@ -523,7 +529,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     addItemLine({
                         recCurrent,
                         objUpcToItemIdMap,
-                        stRecType,
+                        stPageType,
                         objCurrItemLine,
                         stScanType,
                         UI_CONFIG
@@ -611,6 +617,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 stScannerInput,
                 stScanType,
                 stRecType: urlParams.get('rectype'),
+                stSubType: urlParams.get('subtype'),
                 recCurrent
             })
 
