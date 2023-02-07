@@ -90,7 +90,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 const stQuery = window.location.search;
                 const objParams = new URLSearchParams(stQuery);
                 const stAccessTypeURL = objParams.get('accesstype');
-                console.log('stAccessTypeURL', stAccessTypeURL);
 
                 const bIsAccessTypeMismatched = (stAccessTypeURL != accessType);
 
@@ -146,7 +145,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             //     objItemLines[intItemUpcCode]?.qty++;
             // }
         }
-        console.log(arrItemLines)
 
         return arrItemLines;
     }
@@ -237,7 +235,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 })
                 let intQty = 0;
                 let intScannedQty = 0;
-                console.log('index', index);
 
                 //If line already exists, just update it
                 if(index > -1){
@@ -263,7 +260,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
 
                 try{
-                    console.log(intQty + ' + ' + intScannedQty, intQty + intScannedQty)
                     intQty          = parseInt(intQty)
                     intScannedQty   = parseInt(objCurrItemLine.qty)
                     
@@ -316,8 +312,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         fieldId     : UI_CONFIG.SUBLIST_FIELDS.MAX_QTY,
                         line        : index
                     });
-
-                    console.log('intMaxQty', intMaxQty)
                     
                     let intQty = recCurrent.getSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
@@ -430,7 +424,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     })
                 }
                 catch(e){
-                    console.log(e)
                     objFailedIndices[ii] = e
                 }
 
@@ -444,8 +437,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }
             })
             let arrRemainingLines = arrItemLines.filter((element, index) => objFailedIndices.hasOwnProperty(index))
-            console.log('arrRemainingLines', arrRemainingLines)
-            console.log('objFailedIndices', objFailedIndices)
 
             if(arrRemainingLines.length > 0){
                 stFailedCodes = generateScanErrorSummary({arrRemainingLines})
@@ -501,7 +492,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
     }
 
     const scanInputViaBtn = (stScanType) => {
-        console.log('test button')
         let recCurrent = currentRecord.get();
 
         let stScannerInput = recCurrent.getValue({fieldId: 'custpage_cwgp_scanupccodes'})
