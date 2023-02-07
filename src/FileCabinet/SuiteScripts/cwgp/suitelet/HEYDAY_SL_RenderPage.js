@@ -215,11 +215,13 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                     </div>
                     <div class="buttonsdiv">
                         <br>
-                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Intercompany P.O.</button>
+                        <button type="button" id="cwgp_intpo_btn" class="navbutton">Replenishment Purchase Order</button>
                         <br>
-                        <button type="button" id="cwgp_ir_btn" class="navbutton">Item Receipt</button>
+                        <button type="button" id="cwgp_ir_btn" class="navbutton">Receive Items</button>
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
+                        <br>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                     </div>
                 </div>
 
@@ -258,7 +260,17 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
+                    const btnItemPerLocation = document.getElementById('cwgp_ipl_btn');
+                    btnItemPerLocation.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
                 </script>
@@ -314,8 +326,18 @@ define(['N/ui/serverWidget'], (serverWidget) => {
                         const stUserId = objParams.get('userId');
                         const stAccessType = objParams.get('accesstype');
 
-                        window.location = 'https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=690&deploy=1&compid=5530036_SB1&h=57cb2060b899d3e1ff54&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemreceipt';
                     });
+                    const btnInvAdjFranchise = document.getElementById('cwgp_ia_franchise_btn');
+                    btnInvAdjFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+
                     
                 </script>
             </div>`;

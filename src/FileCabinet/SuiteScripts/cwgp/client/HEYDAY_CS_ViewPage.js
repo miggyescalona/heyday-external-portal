@@ -17,10 +17,25 @@ define([], () => {
         getAuthenticationScript();
     };
 
-    const toReceive = (stUserId, stPoId, stAccessType, stType) => {
-        //redirect to create transaction page
-        log.debug('toReceive', stUserId +'|' +stPoId + '|'+ stAccessType+'|'+stType)
-        window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=create&userId=${stUserId}&itemreceiptid=${stPoId}&accesstype=${stAccessType}&rectype=${stType}`;
+    const toReceive = (stUserId, stPoId, stAccessType, stTranId, stType) => {
+        
+        const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+        let stReceiveRetailUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                pageMode    : 'create',
+                userId      : stUserId,
+                itemreceiptid : stPoId,
+                accesstype  : stAccessType,
+                tranid: stTranId,
+                rectype     : stType //Retail PO or IR
+            }
+        })
+        window.location = stReceiveRetailUrl
+    
     };
 
     const toEdiTransaction = (stUserId, stPoId, stAccessType,stTranId,stType) => {

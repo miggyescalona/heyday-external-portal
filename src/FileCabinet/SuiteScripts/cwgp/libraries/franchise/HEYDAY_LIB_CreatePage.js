@@ -11,22 +11,26 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            franchisepo: 'Franchise - Purchase Order',
-            itemreceipt: 'Item Receipt'
+
+            franchisepo: 'Purchase Order',
+            itemreceipt: 'Item Receipt',
+            inventoryadjustment: 'Inventory Adjustment'
         },
         TAB: {
-            franchisepo: 'custpage_interpo_itemstab',
-            itemreceipt: 'custpage_itemreceipt_itemstab'
+            franchisepo: 'custpage_franchisepo_itemstab',
+            itemreceipt: 'custpage_itemreceipt_itemstab',
+            inventoryadjustment: 'custpage_inventoryadjustment_itemstab'
         },
         SUBLIST: {
-            franchisepo: 'custpage_interpo_items',
-            itemreceipt: 'custpage_itemreceipt_items'
+            franchisepo: 'custpage_franchisepo_items',
+            itemreceipt: 'custpage_itemreceipt_items',
+            inventoryadjustment: 'custpage_inventorayadjustment_items'
         },
         FIELD: {
             franchisepo: {
@@ -75,11 +79,25 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'PRIMARY',
                     mandatory: true
                 },
+                DELIVERY_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver by Date',
+                    container: 'PRIMARY',
+                    mandatory: true
+                },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
                     container: 'PRIMARY',
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -126,8 +144,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 PO_ID: {
                     id: 'custpage_cwgp_poid',
                     type: serverWidget.FieldType.TEXT,
-                    label: 'poId',
-                    //displayType: 'hidden'
+                    label: 'Created From',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
+                CREATED_FROM: {
+                    id: 'custpage_cwgp_createdfrom',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Created From',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
                 },
                 REC_TYPE: {
                     id: 'custpage_cwgp_rectype',
@@ -157,6 +183,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     label: 'Memo',
                     container: 'PRIMARY'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -165,11 +198,72 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'CLASS',
                     displayType: 'inline'
                 },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Location',
+                    source: 'location',
+                    container: 'CLASS',
+                    displayType: 'inline'
+                }
+            },
+            inventoryadjustment:{
+                HTML_CSS: {
+                    id: 'custpage_cwgp_htmlcss',
+                    type: serverWidget.FieldType.INLINEHTML,
+                    label: 'Html Css',
+                },
+                PAGE_MODE: {
+                    id: 'custpage_cwgp_pagemode',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'pageMode',
+                    displayType: 'hidden'
+                },
+                USER_ID: {
+                    id: 'custpage_cwgp_userid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'pageMode',
+                    displayType: 'hidden'
+                },
+                ACCESS_TYPE: {
+                    id: 'custpage_cwgp_accesstype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'accessType',
+                    displayType: 'hidden'
+                }, 
+                CUSTOMER: {
+                    id: 'custpage_cwgp_customer',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Customer',
+                    container: 'PRIMARY',
+                    source: 'customer',
+                    mandatory: true,
+                    displayType: 'inline'
+                },
+                DATE: {
+                    id: 'custpage_cwgp_date',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Date',
+                    container: 'PRIMARY',
+                    mandatory: true
+                },
+                MEMO: {
+                    id: 'custpage_cwgp_memomain',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Memo',
+                    container: 'PRIMARY'
+                }
             }
         },
         COLUMN: {
             ITEMS: {
                 franchisepo:{
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item ID',
+                        displayType:'hidden'
+                    },
                     ITEM: {
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
@@ -178,7 +272,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Description'
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -189,51 +296,177 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_rate',
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Rate',
-                        displayType: 'inline'
+                        displayType: 'DISABLED'
                     },
                     AMOUNT: {
                         id: 'custpage_cwgp_amount',
-                        type: serverWidget.FieldType.FLOAT,
+                        type: serverWidget.FieldType.CURRENCY,
                         label: 'Amount',
-                        displayType: 'inline'
+                        displayType: 'DISABLED'
                     }
                 },    
                 itemreceipt: {
                     RECEIVE: {
                         id: 'custpage_cwgp_receive',
                         type: serverWidget.FieldType.CHECKBOX,
-                        label: 'Receive'
+                        label: 'Receive',
+                        //displayType:'disabled'
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item ID',
+                        displayType:'hidden'
                     },
                     ITEM: {
                         id: 'custpage_cwgp_item',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.SELECT,
                         label: 'Items',
+                        source: 'item',
+                        displayType: 'inline'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'inline'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    QUANTITY_STARTING: {
+                        id: 'custpage_cwgp_quantitystarting',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity',
+                        displayType:'disabled'
+                    },
+                    QUANTITY_REMAINING: {
+                        id: 'custpage_cwgp_shippedquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Shipped Quantity',
+                        displayType:'inline'
+                    },
+                    QUANTITY: {
+                        id: 'custpage_cwgp_quantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Received Quantity',
+                        displayType: 'ENTRY'
+                    },
+                    DAMAGED: {
+                        id: 'custpage_cwgp_damagedquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Damaged Quantity',
+                        displayType: 'ENTRY'
+                    },
+                    VARIANCE: {
+                        id: 'custpage_cwgp_variance',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Variance',
+                        displayType: 'ENTRY'
+                    },
+                    QUANTITY_FINAL: {
+                        id: 'custpage_cwgp_quantityfinal',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Final Quantity',
+                        displayType: 'ENTRY'
+                    },
+                    LINE: {
+                        id: 'custpage_cwgp_line',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Line',
+                        displayType: 'hidden'
+                    },
+                    RATE: {
+                        id: 'custpage_cwgp_rate',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Rate',
+                        displayType: 'hidden'
+                    }
+                },
+                inventoryadjustment: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        source: 'item',
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'inline'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Quantity On Hand',
+                        displayType: 'disabled'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Adjust Qty. By'
+                    },
+                    ENDING_QTY: {
+                        id: 'custpage_cwgp_endingqty',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Ending Inventory Balance'
+                    },
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'New Quantity',
+                        displayType: 'DISABLED'
+                    }
+                },
+                inventoryadjustment: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
                     },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
                     },
-                    QUANTITY_REMAINING: {
-                        id: 'custpage_cwgp_quantityremaining',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Remaining'
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity On Hand'
                     },
-                    QUANTITY: {
-                        id: 'custpage_cwgp_quantity',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Quantity',
-                        displayType: 'ENTRY'
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjust Qty. By'
                     },
-                    LINE: {
-                        id: 'custpage_cwgp_line',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Line'
-                    },
-                    RATE: {
-                        id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'New Quantity'
                     }
                 }
             }
@@ -241,11 +474,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         FIELD_GROUP: {
             franchisepo: {
                 PRIMARY: {
-                    id: 'custpage_interpo_pi_grp',
+                    id: 'custpage_franchisepo_pi_grp',
                     label: 'Primary Infromation'
                 },
                 CLASS: {
-                    id: 'custpage_interpo_class_grp',
+                    id: 'custpage_franchisepo_class_grp',
                     label: 'Classification'
                 }
             },
@@ -258,12 +491,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_itemreceipt_class_grp',
                     label: 'Classification'
                 }
+            },
+            inventoryadjustment:{
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustment_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustment_class_grp',
+                    label: 'Classification'
+                }
             }
         },
-        CLIENT_SCRIPT: {
-            franchisepo: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
-            itemreceipt: '../franchise/HEYDAY_CS_CreatePageIntPO.js',
-        }
+        CLIENT_SCRIPT: '../franchise/HEYDAY_CS_CreatePageIntPO.js'
+        
     }
 
     const render = (options) => {
@@ -275,12 +516,29 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stUserId,
             stAccessType,
             stCustomer,
-            stLocation
+            stLocation,
+            stOperator
         } = options;
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+        
+        //Initialize Add Scanner Field Group and Fields
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        // const {
+        //     objItemResultSet,
+        //     objUpcMap,
+        // }= EPLib.initScanner({
+        //     stType,
+        //     stSubsidiary,
+        //     _CONFIG
+        // })
+
+        // let stUpcMap = ''
+        // if(objUpcMap){
+        //     stUpcMap = JSON.stringify(objUpcMap)
+        // }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -296,19 +554,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 label
             });
         });
-
-        //get inventory items and map UPC codes for scanning
-        let objItemResultSet = utilLib.getInvItemsBySubsidiary(stSubsidiary);
-
-        let objUpcMap = {};
-
-        objItemResultSet.each(function (result) {
-            objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
-            
-            return true;
-        });
-
-        log.debug('objUpcMap', objUpcMap)
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -326,7 +571,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 mandatory,
                 displayType
             } = objBodyFields[stCol];
-            log.debug('mandatory', mandatory);
 
             let fld = form.addField({
                 id,
@@ -347,6 +591,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (id == 'custpage_cwgp_vendor') {
                 utilLib.addOptionsVendorsBySubsidiary(fld, stSubsidiary);
             }
+            if (id == 'custpage_cwgp_scanupccodes' || id == 'custpage_cwgp_upccodemap') {
+               // fld.updateDisplayType('hidden');
+            }
+            
 
             /*if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(fld, stSubsidiary);
@@ -359,7 +607,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 stAccessType,
                 stCustomer,
                 stLocation,
-                stType
+                stType,
+                stOperator
+                //stUpcMap
             });
 
             if (objDefaultValues[fld.id] != 'undefined') {
@@ -386,13 +636,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
-            const { id, type, label } = objItemCols[stCol];
+            const { id, type, label, displayType } = objItemCols[stCol];
 
             let col = sbl.addField({
                 id,
                 type,
-                label
+                label,
+                displayType
             });
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
 
             if (id == 'custpage_cwgp_item') {
                 utilLib.addOptionsItemBySubsidiary({
@@ -407,14 +662,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
-            functionName: `back(${stUserId}, ${stAccessType})`
+            functionName: `back(${stUserId}, ${stAccessType}, 'franchisepo')`
         });
 
         response.writePage(form);
     };
     
     const renderItemReceipt = (options) => {
-        log.debug('===Create===','===Create Item Receipt===');
         const {
             response,
             stType,
@@ -429,7 +683,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
-        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT[stType];
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -459,8 +728,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_poid = stPoId;
+        objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stPoId;
         objPO.body.custpage_cwgp_accesstype = stAccessType;
+        objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -536,13 +809,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
-            if (id == 'custpage_cwgp_businessline') {
-                //utilLib.addOptionsBusinessLine(col);
-            }
-            
-            if (id == 'custpage_cwgp_transferlocation') {
-                //utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
-            }
 
             if(id == 'custpage_cwgp_receive'){
                 col.defaultValue ='T';
@@ -563,6 +829,129 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         response.writePage(form);
     };
 
+    const renderInventoryAdjustment = (options) => {
+        const {
+            response,
+            stType,
+            stSubsidiary,
+            stPageMode,
+            stUserId,
+            stAccessType,
+            stCustomer,
+            stLocation
+        } = options;
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //Initialize Add Scanner Field Group and Fields
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
+        //add field group
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+        const arrFldGrp = Object.keys(objFldGrp);
+        log.debug('arrFldGrp', arrFldGrp);
+        arrFldGrp.forEach((stCol) => {
+            const { id, label } = objFldGrp[stCol];
+            form.addFieldGroup({
+                id,
+                label
+            });
+        });
+        
+        //render body fields
+        const objBodyFields = _CONFIG.FIELD[stType];
+        const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
+        arrFlds.forEach((stCol) => {
+            const {
+                id,
+                type,
+                label,
+                source,
+                container,
+                mandatory,
+                displayType
+            } = objBodyFields[stCol];
+            let fld = form.addField({
+                id,
+                type,
+                label,
+                source,
+                container: _CONFIG.FIELD_GROUP[stType][container]?.id
+            });
+            if (mandatory) {
+                fld.isMandatory = true;
+            }
+            if (displayType) {
+                fld.updateDisplayType({ displayType });
+            }
+            const objDefaultValues = mapDefaultValues({
+                stSubsidiary, 
+                stPageMode, 
+                stUserId,
+                stAccessType,
+                stCustomer,
+                stLocation,
+                stType
+            });
+            if (objDefaultValues[fld.id] != 'undefined') {
+                fld.defaultValue = objDefaultValues[fld.id]
+            }
+        });
+        //render sublist
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.INLINEEDITOR,
+            tab: _CONFIG.TAB[stType]
+        });
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+        const arrCols = Object.keys(objItemCols);
+        log.debug('arrCols', arrCols);
+        arrCols.forEach((stCol) => {
+            const { id, type, label, displayType} = objItemCols[stCol];
+            let col = sbl.addField({
+                id,
+                type,
+                label,
+                displayType
+            });
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
+            if (id == 'custpage_cwgp_item') {
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
+            }
+        });
+        form.addSubmitButton({ label: 'Save' });
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+        response.writePage(form);
+    };
+
     const mapDefaultValues = (options) => {
         const {
             stSubsidiary, 
@@ -571,19 +960,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stAccessType,
             stCustomer,
             stLocation,
-            stType
+            stType,
+            stUpcMap,
+            stOperator
         } = options;
 
         return {
-            custpage_cwgp_subsidiary: stSubsidiary,
-            custpage_cwgp_pagemode: stPageMode,
-            custpage_cwgp_userid: stUserId,
-            custpage_cwgp_accesstype: stAccessType,
-            custpage_cwgp_htmlcss: htmlCss(),
-            custpage_cwgp_date: new Date(),
-            custpage_cwgp_customer: stCustomer,
-            custpage_cwgp_location: stLocation,
-            custpage_cwgp_rectype: stType
+            custpage_cwgp_subsidiary    : stSubsidiary,
+            custpage_cwgp_pagemode      : stPageMode,
+            custpage_cwgp_userid        : stUserId,
+            custpage_cwgp_accesstype    : stAccessType,
+            custpage_cwgp_htmlcss       : htmlCss(),
+            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss(),
+            custpage_cwgp_upccodemap    : stUpcMap,
+            custpage_cwgp_dat           : new Date(),
+            custpage_cwgp_customer      : stCustomer,
+            custpage_cwgp_location      : stLocation,
+            custpage_cwgp_rectype       : stType,
+            custpage_cwgp_operator      : stOperator
         }
     };
 
@@ -612,27 +1006,31 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             font-weight: 200 !important;
         }
     
-        input#submitter, input#secondarysubmitter, input#custpage_interpo_items_addedit {
+        input#submitter, input#secondarysubmitter, input#custpage_franchisepo_items_addedit {
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;
         }
     
-        input#custpage_back_button, input#secondarycustpage_back_button, input#custpage_interpo_items_clear {
+        input#custpage_back_button, input#secondarycustpage_back_button, input#custpage_franchisepo_items_clear {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;
         }
 
-        input#custpage_interpo_items_remove{
+        input#custpage_franchisepo_items_remove{
             font-family: 'Roboto Mono', monospace;
         }
         
-        div#custpage_interpo_itemstab_pane_hd {
+        div#custpage_franchisepo_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
         
         div#custpage_itemreceipt_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+
+        div#custpage_inventoryadjustment_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
 
@@ -666,7 +1064,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
     return {
         render,
-        renderItemReceipt
+        renderItemReceipt,
+        renderInventoryAdjustment
     }
 });
 
