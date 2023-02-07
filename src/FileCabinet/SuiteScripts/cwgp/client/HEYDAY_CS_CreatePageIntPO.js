@@ -22,14 +22,33 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         const setScanBtnOnClick = () => {
             try{
-                var objScanReceivedButton = document.getElementById('custpage_cwgp_received_scan_btn');
-                objScanReceivedButton.addEventListener('click', function(){
-                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.RECEIVED)
-                })
-                var objScanDamagedButton = document.getElementById('custpage_cwgp_damaged_scan_btn');
-                objScanDamagedButton.addEventListener('click', function(){
-                    ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.DAMAGED)
-                })
+                let objScanReceivedButton = document.getElementById('custpage_cwgp_received_scan_btn');
+                if(objScanDamagedButton){
+                    objScanReceivedButton.addEventListener('click', function(){
+                        ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.RECEIVED)
+                    })
+                }
+
+                let objScanDamagedButton = document.getElementById('custpage_cwgp_damaged_scan_btn');
+                if(objScanDamagedButton){
+                    objScanDamagedButton.addEventListener('click', function(){
+                        ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.DAMAGED)
+                    })
+                }
+
+                let objScanAdjustButton = document.getElementById('custpage_cwgp_adjustqty_scan_btn');
+                if(objScanAdjustButton){
+                    objScanAdjustButton.addEventListener('click', function(){
+                        ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.ADJUST)
+                    })
+                }
+
+                let objScanEndingButton = document.getElementById('custpage_cwgp_endingqty_scan_btn');
+                if(objScanEndingButton){
+                    objScanEndingButton.addEventListener('click', function(){
+                        ClientEPLib.scanInputViaBtn(ClientEPLib._CONFIG.SCAN_TYPE.ENDING)
+                    })
+                }
             }catch(e){
                 console.warn('Cannot set button click')
             }

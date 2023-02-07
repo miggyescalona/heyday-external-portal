@@ -18,7 +18,10 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
 
     _CONFIG.SCAN_TYPE = {
         RECEIVED : 'received',
-        DAMAGED  : 'damaged'
+        DAMAGED  : 'damaged',
+        ADJUST   : 'adjust',
+        ENDING   : 'ending',
+        
     }
 
     //Calls the authentication suitelet
@@ -196,11 +199,18 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 UI_CONFIG = {
                     SUBLIST_ID      : 'custpage_inventorayadjustment_items',
                     SUBLIST_FIELDS  : {
-                        ITEM_ID : 'custpage_cwgp_itemid',
-                        ITEM    : 'custpage_cwgp_item',
-                        QTY     : 'custpage_cwgp_quantity'
+                        ITEM_ID     : 'custpage_cwgp_itemid',
+                        ITEM        : 'custpage_cwgp_item',
+                        ADJUST_QTY  : 'custpage_cwgp_adjustqtyby',
+                        ENDING_QTY  : 'custpage_cwgp_endinginventoryqty'
                     }
-                }    
+                }
+                if(stScanType == _CONFIG.SCAN_TYPE.ADJUST){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_adjustqtyby'
+                }
+                else if(stScanType == _CONFIG.SCAN_TYPE.ENDING){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_endinginventoryqty'
+                }
                 break;
         }
 
@@ -394,6 +404,66 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'The scanned code does not match any item to be received. Otherwise, verify that the UPC Code is not shared by other items.'
                     }
                 }
+            }
+            else if(stRecType == 'inventoryadjustment'){
+                let index = recCurrent.findSublistLineWithValue({
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
+                    value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                })
+                let intQty = 0;
+                let intScannedQty = 0;
+
+                //If line already exists, just update it
+                if(index > -1){
+                    recCurrent.selectLine({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        line        : index
+
+                    })
+                    intQty = recCurrent.getCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                    });
+                }
+                else{
+                    recCurrent.selectNewLine({ 
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                    })
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    });
+                }
+
+                try{
+                    intQty          = parseInt(intQty)
+                    intScannedQty   = parseInt(objCurrItemLine.qty)
+                    
+                    //Default all falsy values to 0
+                    if(!intScannedQty){
+                        intScannedQty = 0;
+                    }
+                    if(!intQty){
+                        intQty = 0;
+                    }
+                }
+                catch(e){
+                    console.error(e)
+                    throw {
+                        name    : 'CANNOT_PROCESS_QTY',
+                        message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                    }
+                }
+                recCurrent.setCurrentSublistValue({
+                    sublistId   : UI_CONFIG.SUBLIST_ID,
+                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                    value       : intQty + intScannedQty
+                });
+                recCurrent.commitLine({
+                    sublistId   : UI_CONFIG.SUBLIST_ID
+                })
             }
         }
 
