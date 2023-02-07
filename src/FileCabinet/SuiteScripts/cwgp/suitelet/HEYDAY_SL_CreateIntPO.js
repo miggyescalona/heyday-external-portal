@@ -65,9 +65,8 @@ define(['N/search'], (search) => {
             columns: ['itemid', 'salesdescription','purchasedescription','cost', 'custitem_heyday_sku', 'custitemheyday_upccode', 'internalid']
         });
 
-        if(stType != 'retail'){
-            objLookup['franchiseprice'] = getFranchisePrice(stItem);
-        }
+        objLookup['franchiseprice'] = getFranchisePrice(stItem);
+
 
         log.debug('objLookup', objLookup);
 

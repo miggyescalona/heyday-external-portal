@@ -17,7 +17,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             PAGE: 'custparam_cwgp_page'
         },
         TITLE: {
-            intercompanypo: 'Replenishment Purchase Order',
+            intercompanypo: 'Purchase Order',
             itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment'
         },
@@ -108,7 +108,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.SELECT,
                     label: 'Business Line',
                     container: 'CLASS',
-                    displayType: 'inline'
+                    displayType: 'hidden'
                 },
                 LOCATION: {
                     id: 'custpage_cwgp_location',
@@ -395,7 +395,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
-                        displayType: 'hidden',
+                        displayType: 'hidden'
                     },
                     TRANSFER_LOCATION: {
                         id: 'custpage_cwgp_transferlocation',
@@ -408,10 +408,33 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Starting Quantity',
                     },
+                    STARTING_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_startingquantityhidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity Hidden',
+                        displayType: 'hidden'
+                    },
                     SHIPPED_QUANTITY: {
                         id: 'custpage_cwgp_shippedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Shipped Quantity'
+                    },
+                    SHIPPED_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_shippedquantityhidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Shipped Quantity Hidden',
+                        displayType: 'hidden'
+                    },
+                    REMAINING_QUANTITY: {
+                        id: 'custpage_cwgp_quantityremaining',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Remaining Quantity'
+                    },
+                    REMAINING_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_quantityremaininghidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Remaining Quantity',
+                        displayType:'hidden'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -425,17 +448,25 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Damaged Quantity',
                         displayType: 'ENTRY'
                     },
-                    /*FINAL_QUANTITY: {
+                    DAMAGED_ADJUSTING_ACCOUNT: {
+                        id: 'custpage_cwgp_damagedadjustingaccount',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Damaged Adjusting Account',
+                        displayType: 'ENTRY'
+                    },
+                    VARIANCE: {
+                        id: 'custpage_cwgp_variance',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Variance',
+                        displayType: 'ENTRY'
+                    },
+                    FINAL_QUANTITY: {
                         id: 'custpage_cwgp_finalquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Final Quantity',
                         displayType: 'ENTRY'
-                    },*/
-                    /*RATE: {
-                        id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
-                        label: 'Rate'
-                    }*/
+                    },
+
                 },
                 inventoryadjustment: {
                     ITEM: {
@@ -844,6 +875,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             
             if (id == 'custpage_cwgp_transferlocation') {
                 utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+            }
+
+            if(id == 'custpage_cwgp_damagedadjustingaccount'){
+                utilLib.addDamagedAdjustingAccount(col);
             }
 
             if(id == 'custpage_cwgp_receive'){
