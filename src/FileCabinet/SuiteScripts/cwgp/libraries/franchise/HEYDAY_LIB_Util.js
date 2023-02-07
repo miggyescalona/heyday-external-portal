@@ -873,6 +873,29 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         });
     };
 
+    const addOptionsAdjusmentReason= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "customlist_cwgp_adjustmentreason",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'name' })
+            });
+            return true;
+        });
+    };
+
     
 
     
@@ -897,6 +920,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         mapInvAdjValues,
         setSublistValues,
         addOptionsFranchiseApprovalStatus,
-        addOptionsForReceiving
+        addOptionsForReceiving,
+        addOptionsAdjusmentReason
     }
 });

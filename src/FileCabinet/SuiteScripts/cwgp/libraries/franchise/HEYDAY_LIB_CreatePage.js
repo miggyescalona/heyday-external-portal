@@ -445,28 +445,51 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
-                        displayType: 'inline',
-                        source: 'item',
                     },
                     DESCRIPTION: {
                         id: 'custpage_cwgp_description',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
                     },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Quantity On Hand'
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Quantity On Hand',
+                        displayType: 'disabled'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Qty. By'
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Adjust Inventory Quantity'
+                    },
+                    ENDING_INVENTORY_QUANTITY: {
+                        id: 'custpage_cwgp_endinginventoryqty',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Ending Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'New Quantity'
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'New Quantity',
+                        displayType: 'disabled'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Reason'
                     }
                 }
             }
@@ -941,6 +964,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     fld: col, 
                     objResultSet: objItemResultSet
                 });
+            }
+            if(id == 'custpage_cwgp_adjustmentreason'){
+                utilLib.addOptionsAdjusmentReason(col);
             }
         });
         form.addSubmitButton({ label: 'Save' });
