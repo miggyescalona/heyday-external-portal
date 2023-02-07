@@ -223,6 +223,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
+        const stOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -247,7 +248,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stSubType
+                    stSubType,
+                    stOperator
                 });
 
                 break;
