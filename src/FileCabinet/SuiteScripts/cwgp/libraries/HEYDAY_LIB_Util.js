@@ -477,13 +477,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
-    const addOptionsAdjusmentReason= (fld) => {
+    const addOptionsAdjusmentType = (fld) => {
         fld.addSelectOption({
             value: '',
             text: ''
         });
         search.create({
-            type: "customlist_cwgp_adjustmentreason",
+            type: "customlist_cwgp_adjustmenttype",
             filters:
                 [
                 ],
@@ -1315,7 +1315,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
-        addOptionsAdjusmentReason,
+        addOptionsAdjusmentType,
         addOptionsDepartmentBySubsidiary,
         addOptionsAccountsBySubsidiary,
         mapPOValues,

@@ -526,9 +526,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Business Line',
                         displayType: 'disabled'
                     },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Type'
+                    },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
-                        type: serverWidget.FieldType.SELECT,
+                        type: serverWidget.FieldType.TEXTAREA,
                         label: 'Adjustment Reason'
                     }
                 }
@@ -1058,8 +1063,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 utilLib.addOptionsBusinessLine(col);
                 col.defaultValue = 1;
             }
-            if(id == 'custpage_cwgp_adjustmentreason'){
-                utilLib.addOptionsAdjusmentReason(col);
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentType(col);
             }
 
             if (displayType) {
