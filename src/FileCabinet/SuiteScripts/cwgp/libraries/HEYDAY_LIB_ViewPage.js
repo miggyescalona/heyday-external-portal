@@ -447,9 +447,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.TEXT,
                         label: 'Business Line'
                     },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjustment Type'
+                    },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.TEXTAREA,
                         label: 'Adjustment Reason'
                     }
                 },

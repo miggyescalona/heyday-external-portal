@@ -1140,6 +1140,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'class',
                     line: x
                 }),
+                custpage_cwgp_adjustmenttype: objInventoryAdjustment.getSublistText({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmenttype',
+                    line: x
+                }),
                 custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
                     sublistId: 'inventory',
                     fieldId: 'custcol_cwgp_adjustmentreason',
