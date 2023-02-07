@@ -546,7 +546,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Adjustment Type'
+                        label: 'Adjustment Type',
+                        displayType:'disabled'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
@@ -1194,6 +1195,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             if(id == 'custpage_cwgp_adjustmenttype'){
                 utilLib.addOptionsAdjusmentType(col,stSubType);
+                if(stSubType == 'standard'){
+                    col.defaultValue = 6;
+                }
             }
 
             if (displayType) {
