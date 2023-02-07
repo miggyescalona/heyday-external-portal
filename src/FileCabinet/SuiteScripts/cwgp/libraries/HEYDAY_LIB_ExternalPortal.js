@@ -189,11 +189,31 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         }
     }
 
-    const getScanButtonCss = () => {
+    const getScanButtonCss = (options) => {
+        const {
+            stPageType
+        } = options;
+
+        const stBtnDefCss = ''
+
+
+        switch(stPageType){
+            case 'itemreceipt': 
+                stBtnDefCss = `
+                    <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
+                    <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
+                `
+                break;
+            case 'inventoryadjustment':
+                stBtnDefCss = `
+                    <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
+                    <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
+                `
+        }
+
         const stBtnCss = 
         `<span>
-            <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
-            <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
+            ${stBtnDefCss}
          </span>
         
         <style>

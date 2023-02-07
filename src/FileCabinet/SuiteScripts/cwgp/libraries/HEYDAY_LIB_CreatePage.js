@@ -787,7 +787,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stTranId;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
+        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: 'itemreceipt'});
         objPO.body.custpage_cwgp_operator = stOperator;
 
         //render body fields
@@ -1099,7 +1099,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_userid            : stUserId,
             custpage_cwgp_accesstype        : stAccessType,
             custpage_cwgp_htmlcss           : htmlCss(),
-            custpage_cwgp_scanbtnhtml       : EPLib.getScanButtonCss(),
+            custpage_cwgp_scanbtnhtml       : EPLib.getScanButtonCss({stPageType: 'inventoryadjustment'}),
             custpage_cwgp_upccodemap        : stUpcMap,
             custpage_cwgp_date              : new Date(),
             custpage_cwgp_rectype           : stType,
