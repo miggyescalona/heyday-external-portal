@@ -519,7 +519,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
                     }
                 }
-                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST){
+                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST || stScanType == _CONFIG.SCAN_TYPE.ENDING){
                     recCurrent.setCurrentSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
                         fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
@@ -532,7 +532,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     recCurrent.setCurrentSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
                         fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        value       : intQtyToSet
+                        value       : intQty - intScannedQty
                     });
                 }
                 recCurrent.commitLine({
