@@ -269,7 +269,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     id: 'custpage_cwgp_postingperiod',
                     type: serverWidget.FieldType.SELECT,
                     label: 'Posting Period',
-                    container: 'PRIMARY'
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
                 },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
