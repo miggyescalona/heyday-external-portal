@@ -641,14 +641,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Starting Quantity',
-                        displayType: 'disabled'
+                        displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
                     },
-                    ROOM_NUMBER: {
+                    DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.DATETIMETZ,
+                        label: 'Date/Time (M/D/YYYY hhmm)',
+                    },
+                    /*ROOM_NUMBER: {
                         id: 'custpage_cwgp_roomnumber',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Room # Assignment',
@@ -658,7 +663,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'St Assignment',
                     },
-                    /*ENDING_INVENTORY_QUANTITY: {
+                    ENDING_INVENTORY_QUANTITY: {
                         id: 'custpage_cwgp_endinginventoryqty',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Ending Inventory Quantity'

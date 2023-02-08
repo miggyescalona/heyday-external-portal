@@ -653,6 +653,18 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     custcol_cwgp_datetime: dtDateTime,
                 })
             }
+            else if(stSubType == 'damagetestertheft'){
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: -Math.abs(intAdjQtyBy),
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                    custcol_cwgp_datetime: dtDateTime,
+                })
+            }
+            
         }
 
         log.debug('arrMapSblFields', arrMapSblFields)

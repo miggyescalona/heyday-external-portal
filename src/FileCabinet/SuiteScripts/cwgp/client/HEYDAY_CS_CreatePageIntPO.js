@@ -32,8 +32,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const intIrLineCount = currentRecord.getLineCount('custpage_itemreceipt_items');
         const intIaLineCountStandard= currentRecord.getLineCount('custpage_inventorayadjustment_items');
         const intIaLineCountBackbar= currentRecord.getLineCount('custpage_inventorayadjustmentbackbar_items');
+        const intIaLineCountDamageTesterTheft = currentRecord.getLineCount('custpage_inventorayadjustmentdamagetestertheft_items');
 
-        if(intPoLineCount == 0 || intIaLineCountStandard == 0 || intIaLineCountBackbar == 0){
+        if(intPoLineCount == 0 || intIaLineCountStandard == 0 || intIaLineCountBackbar == 0 || intIaLineCountDamageTesterTheft){
             alert('Please enter a line before saving.')
             return false;
         }
@@ -430,8 +431,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         }
 
-        ///Inventory Adjustment Standard/Backbar
-        if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items') {
+        ///Inventory Adjustment Standard/Backbar/DamageTesterTheft
+        if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId === 'custpage_inventorayadjustmentdamagetestertheft_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
                 const stItem = currentRecord.getCurrentSublistValue({

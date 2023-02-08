@@ -699,15 +699,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Starting Quantity',
+                        label: 'Starting Quantity in Saleable Inventory',
                         displayType: 'disabled'
+                    },
+                    DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.DATETIMETZ,
+                        label: 'Date/Time (M/D/YYYY hhmm)',
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
                     },
-                    ROOM_NUMBER: {
+                    /*ROOM_NUMBER: {
                         id: 'custpage_cwgp_roomnumber',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Room # Assignment',
