@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages2',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
+            ID: 'customscript_cwgp_sl_franchisepages',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
         }
     };
     /**
@@ -230,7 +230,8 @@ define([
             userId: stUserId,
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId
+            tranid: stTranId,
+            subtype: stSubType
         } = request.parameters;
 
         log.debug('ia params',request.parameters);
@@ -262,7 +263,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stSubType
                 });
 
                 break;
@@ -433,6 +435,9 @@ define([
             }else if(stRecType == 'itemreceipt'){
                 idRec = txnLib.createFranchiseIR(request);
             }
+            else if(stRecType == 'inventoryadjustment'){
+                idRec = txnLib.createFranchiseIA(request);
+            }
         }
 
         if (stPageMode == 'edit') {
@@ -474,6 +479,21 @@ define([
                 }
             });
         }
+        else if(stRecType == 'inventoryadjustment'){
+            redirect.toSuitelet({
+                scriptId: _CONFIG.SCRIPT.ID,
+                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    tranid: idRec
+                }
+            });
+        }
+        
     };
     
     const buildItemReceiptSearch = (stCustomer) => {

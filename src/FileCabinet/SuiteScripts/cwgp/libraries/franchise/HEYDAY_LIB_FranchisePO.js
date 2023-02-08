@@ -222,6 +222,46 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return idIR;
     };
 
+    const createFranchiseIA = (request) => {
+        const recIA = record.create({
+            type: 'customrecord_cwgp_franchiseinvadjustment'
+        });
+
+        const objIABodyFields = mapFranchiseIABodyFields(request);
+        util.each(objIABodyFields, (value, fieldId) => {
+            recIA.setValue({
+                fieldId: fieldId,
+                value: value
+            });
+        });
+        const idIA = recIA.save();
+        //const idIA = 123;
+        log.debug('objIABodyFields', objIABodyFields);
+        const arrPOSblFields = mapFranchiseIASublistFields(idIA,objIABodyFields.custrecord_cwgp_fia_customer,request);
+        log.debug('mapFranchiseIASublistFields', mapFranchiseIASublistFields);
+        arrPOSblFields.forEach((objPOBodyFields) => {
+            log.debug('objPOBodyFields', objPOBodyFields);
+            const recIALine = record.create({
+                type: 'customrecord_cwgp_franchise_tranline'
+            });
+            recIALine.setValue({
+                fieldId: 'custrecord_cwgp_ftl_parentia',
+                value: idIA
+            });
+            
+            util.each(objPOBodyFields, (value,fieldId) => {
+                recIALine.setValue({
+                    fieldId: fieldId,
+                    value: value
+                });
+            });
+            let recIALineID = recIALine.save();
+            //log.debug('recIALineID', recIALineID);
+        });
+        return idIA;
+    }
+    
+
     
     const mapFranchisePOBodyFields = (request) => {
         const stCustomer = request.parameters.custpage_cwgp_customer;
@@ -259,6 +299,21 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         	'custrecord_cwgp_fr_location': stLocation,
         	'custrecord_cwgp_fr_date': new Date(stDate),
             'custrecord_cwgp_fr_memo': stMemoMain
+        };
+        log.debug('objMapBodyFields', objMapBodyFields);
+
+        return objMapBodyFields;
+    };
+
+    const mapFranchiseIABodyFields = (request) => {
+        const stCustomer = request.parameters.custpage_cwgp_customer;
+        const stMemoMain = request.parameters.custpage_cwgp_memomain;
+        const stDate = request.parameters.custpage_cwgp_date;
+        log.debug(' mapFranchiseIABodyFields', request.parameters);
+        const objMapBodyFields = {
+        	'custrecord_cwgp_fia_customer': stCustomer,
+        	'custrecord_cwgp_fia_date': new Date(stDate),
+            'custrecord_cwgp_fia_memo': stMemoMain
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -428,6 +483,72 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
         return [arrMapSblFields,arrMapDamagedItems,arrMapVariance];
     };
+
+    const mapFranchiseIASublistFields = (id,stCustomer,request) => {
+        let arrMapSblFields = [];
+
+        const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
+
+        for (let i = 0; i < intLineCount; i++) {
+            let inStartingQty = request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_qtyonhand',
+                line: i
+            });
+            let inAdjustQty = request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_adjustqtyby',
+                line: i
+            });
+            let inEndingQty = request.getSublistValue({
+                group: 'custpage_inventorayadjustment_items',
+                name: 'custpage_cwgp_endinginventoryqty',
+                line: i
+            });
+            let inActualQty = 0;
+            if(inAdjustQty){
+                inActualQty = inAdjustQty;
+                log.debug('inAdjustQty', inAdjustQty);
+            }
+            if(inEndingQty){
+                inActualQty = inEndingQty - inStartingQty;
+                log.debug('inEndingQty', inEndingQty);
+            }
+            log.debug('inActualQty', inActualQty);
+            arrMapSblFields.push({
+                'custrecord_cwgp_ftl_parentia': id,
+                'custrecord_cwgp_ftl_customer': stCustomer,
+                'custrecord_cwgp_ftl_item': request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_item',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_description': request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_description',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_actualqty': inActualQty,
+                'custrecord_cwgp_ftl_displayqty': inAdjustQty,
+                'custrecord_cwgp_ftl_endingqty': inEndingQty,
+                'custrecord_cwgp_ftl_type' : 2,
+                'custrecord_cwgp_ftl_adjustmenttype':request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_adjustmenttype',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_adjustmentreason':request.getSublistValue({
+                    group: 'custpage_inventorayadjustment_items',
+                    name: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }),
+            })
+        }
+
+        log.debug('arrMapSblFields', arrMapSblFields)
+        return arrMapSblFields;
+    };
+
 
     const mapFranchiseIRDamagedSublistFields = (idIR,stCustomer,request) => {
         let arrMapSblFields = [];
@@ -836,6 +957,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         editFranchiseIR,
         getPOValues,
         createFranchiseIR,
+        createFranchiseIA,
         mapFranchiseIRBodyFields,
         mapFranchiseIRSublistFields,
         mapFranchiseIRDamagedSublistFields,

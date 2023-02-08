@@ -173,6 +173,87 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
 
         }
 
+        ///Inventory Adjustment Standard/Backbar
+        if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items') {
+            //default item details
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });       
+
+                const stLocation = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_location'
+                });
+                console.log('stItem', stItem);
+            }
+
+            const objSublist = currentRecord.getSublist({sublistId: sublistId});
+            const objAdjQtyByCol = objSublist.getColumn({ fieldId: "custpage_cwgp_adjustqtyby" });
+            const objEndingInvCol = objSublist.getColumn({ fieldId: "custpage_cwgp_endinginventoryqty" });
+            if (fieldId === 'custpage_cwgp_adjustqtyby'){
+                const stAdjustQtyBy = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                });
+
+                const stQtyOnHand = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_qtyonhand'
+                });
+
+                const stNewQty = stAdjustQtyBy + stQtyOnHand;
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stNewQty || 0
+                });
+
+                if(sublistId === 'custpage_inventorayadjustment_items'){
+                    const stAdjQtyBy = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_adjustqtyby" });
+            
+                    if(stAdjQtyBy && stAdjQtyBy != 0){
+                        objEndingInvCol.isDisabled = true;
+                    }
+                    else{
+                        objEndingInvCol.isDisabled = false;
+                    }
+                }
+            }
+            if(fieldId === 'custpage_cwgp_endinginventoryqty' && sublistId === 'custpage_inventorayadjustment_items'){
+                const stEndingInvCol = currentRecord.getCurrentSublistValue({ sublistId: sublistId, fieldId: "custpage_cwgp_endinginventoryqty" });
+        
+                
+                if(stEndingInvCol && stEndingInvCol != 0){
+                    objAdjQtyByCol.isDisabled = true;
+                }
+                else{
+                    objAdjQtyByCol.isDisabled = false;
+                }
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_newquantity',
+                    value: stEndingInvCol || 0
+                });
+            }
+            
+        }
+
 
     };
 
@@ -203,6 +284,39 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js'], 
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
             'custpage_cwgp_upccode': item.custitemheyday_upccode
         };
+    };
+
+    const getQtyOnHandFranchise = (stItem,stCustomer) => {
+
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                item:   stItem,
+                customer: stCustomer
+            }
+        });
+
+        const objResponse = https.get({
+            url: stCreateIntPOBaseUrl,
+        });
+
+        const { stQtyOnHand } = JSON.parse(objResponse.body);
+        console.log('qtyOnHandFranchise '+stQtyOnHand);
+
+        return stQtyOnHand;
+
+        /*return {
+            'custpage_cwgp_description': item.salesdescription,
+            'custpage_cwgp_rate': item.franchiseprice || 0,
+            'custpage_cwgp_quantity': 1,
+            'custpage_cwgp_amount': item.franchiseprice || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode
+        };*/
     };
 
     const back = (stUserId, stAccessType, stRecType) =>{

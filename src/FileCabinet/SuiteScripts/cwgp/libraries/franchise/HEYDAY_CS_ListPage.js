@@ -118,13 +118,13 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
             let subType;
 
             switch(result){
-                case '1':
+                case 1:
                     subType = 'standard';
                     break;
-                case '2':
+                case 2:
                     subType = 'backbar';
                 break;
-                case '3':
+                case 3:
                     subType = 'damage';
                 break;
             }
@@ -141,6 +141,7 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
                     subtype     : subType 
                 }
             });
+            //console.log('stCreateIntPOUrl '+ stCreateIntPOUrl);
             window.location = stCreateIntPOUrl;
         }
         function failure(reason) { console.log('Failure: ' + reason) }

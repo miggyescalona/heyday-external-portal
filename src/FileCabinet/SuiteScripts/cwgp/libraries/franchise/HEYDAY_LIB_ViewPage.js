@@ -331,7 +331,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         label: 'Received Quantity',
                         displayType: 'inline'
                     },
-                    DAMAGED: {
+                    /*DAMAGED: {
                         id: 'custpage_cwgp_damagedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Damaged Quantity',
@@ -342,7 +342,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Variance',
                         displayType: 'inline'
-                    },
+                    },*/
                     LINE: {
                         id: 'custpage_cwgp_line',
                         type: serverWidget.FieldType.INTEGER,
@@ -366,29 +366,43 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     INTERNAL_SKU: {
                         id: 'custpage_cwgp_internalsku',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Internal SKU',
-                        displayType:'disabled'
+                        label: 'Internal SKU'
                     },
                     UPC_CODE: {
                         id: 'custpage_cwgp_upccode',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'UPC Code',
-                        displayType:'disabled'
+                        label: 'UPC Code'
+                    },
+                    /*LOCATION: {
+                        id: 'custpage_cwgp_location',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Location',
+                    },
+                    UNITS: {
+                        id: 'custpage_cwgp_units',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Units',
                     },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Quantity On Hand'
-                    },
+                    },*/
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Qty. By'
+                        label: 'Adjust Inventory Quantity'
                     },
-                    NEW_QUANTITY: {
-                        id: 'custpage_cwgp_newquantity',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'New Quantity'
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Type',
+                        displayType: 'inline'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: 'Adjustment Reason'
                     }
                 },
                 inventoryadjustment_damaged:{
@@ -822,6 +836,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             utilLib.setSublistValues(sbl, objPO);
         }
         log.debug('stPoId',stPoId)
+
         let arrMapItemReceiptVariance = utilLib.mapItemReceiptVariance(stPoId);
         log.debug('mapItemReceiptVariance',arrMapItemReceiptVariance)
          log.debug('mapItemReceiptVariance length',arrMapItemReceiptVariance.length)
@@ -920,6 +935,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
+        objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         //log.debug('objPO', objPO);
 
@@ -956,6 +972,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
+            
 
             if (objPO.body[fld.id] != 'undefined') {
                 fld.defaultValue = objPO.body[fld.id]
@@ -974,10 +991,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             type: serverWidget.SublistType.LIST,
             tab: _CONFIG.TAB[stType]
         });
-
+        log.debug('stType', stType);
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
-
+        log.debug('objItemCols', objItemCols);
         const arrCols = Object.keys(objItemCols);
+        
         log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
@@ -993,6 +1011,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
             if (displayType) {
                 col.updateDisplayType({ displayType });
+            }
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentReason(col);
             }
         });
 
