@@ -302,7 +302,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 ADJUSTMENT_LOCATION: {
                     id: 'custpage_cwgp_adjustmentlocation',
                     type: serverWidget.FieldType.SELECT,
-                    label: 'Adjustment Location',
+                    label: 'Location',
                     container: 'CLASS',
                     source: 'location',
                     displayType: 'inline'
