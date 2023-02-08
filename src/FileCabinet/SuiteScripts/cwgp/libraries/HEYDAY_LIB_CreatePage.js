@@ -35,7 +35,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             itemreceipt: 'custpage_itemreceipt_items',
             inventoryadjustment_standard: 'custpage_inventorayadjustment_items',
             inventoryadjustment_backbar: 'custpage_inventorayadjustmentbackbar_items',
-            inventoryadjustment_damagetestertheft: 'custpage_inventorayadjustmentdamagetestertheft_items'
+            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_items'
         },
         FIELD: {
             intercompanypo: {

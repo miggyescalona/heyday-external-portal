@@ -535,7 +535,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         log.debug('mapInventoryAdjustmentSublistFields', '==mapInventoryAdjustmentSublistFields==');
         log.debug('mapInventoryAdjustmentSublistFields stSubType', stSubType);
         let arrMapSblFields = [];
-        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_itemstab';
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
         
         const intLineCount = request.getLineCount({ group: subTypeSublist});
 
