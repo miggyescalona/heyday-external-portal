@@ -17,12 +17,13 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
     const _CONFIG = ConfEPLib._CONFIG;
 
     _CONFIG.SCAN_TYPE = {
-        RECEIVED : 'custpage_cwgp_received_scan_btn',
-        DAMAGED  : 'custpage_cwgp_damaged_scan_btn',
-        ADJUST   : 'custpage_cwgp_adjustqty_scan_btn',
-        ENDING   : 'custpage_cwgp_endingqty_scan_btn',
-        BACKBAR  : 'custpage_cwgp_backbar_scan_btn',
-        TESTER   : 'custpage_cwgp_tester_scan_btn'
+        RECEIVED        : 'custpage_cwgp_received_scan_btn',
+        DAMAGED         : 'custpage_cwgp_damaged_scan_btn',
+        ADD_ADJUST      : 'custpage_cwgp_add_adjustqty_scan_btn',
+        SUBTRACT_ADJUST : 'custpage_cwgp_subtract_adjustqty_scan_btn',
+        ENDING          : 'custpage_cwgp_endingqty_scan_btn',
+        BACKBAR         : 'custpage_cwgp_backbar_scan_btn',
+        TESTER          : 'custpage_cwgp_tester_scan_btn'
         
     }
 
@@ -213,11 +214,13 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         ENDING_QTY  : 'custpage_cwgp_endinginventoryqty'
                     }
                 }
-                if(stScanType == _CONFIG.SCAN_TYPE.ADJUST){
-                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_adjustqtyby'
+                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST || stScanType == _CONFIG.SCAN_TYPE.SUBTRACT_ADJUST){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']         = 'custpage_cwgp_adjustqtyby'
+                    UI_CONFIG.SUBLIST_FIELDS['OTHER_QTY']   = 'custpage_cwgp_endinginventoryqty'
                 }
                 else if(stScanType == _CONFIG.SCAN_TYPE.ENDING){
-                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_endinginventoryqty'
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']         = 'custpage_cwgp_endinginventoryqty'
+                    UI_CONFIG.SUBLIST_FIELDS['OTHER_QTY']   = 'custpage_cwgp_adjustqtyby'
                 }
                 break;
             case 'inventoryadjustment_backbar':   
@@ -449,6 +452,10 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 })
                 let intQty = 0;
                 let intScannedQty = 0;
+                let blOverRcvd = false;
+
+                //Validate if the adjusted or ending qty also exists
+                let intOtherQty = 0;
 
                 //If line already exists, just update it
                 if(index > -1){
@@ -457,10 +464,30 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         line        : index
 
                     })
-                    intQty = recCurrent.getCurrentSublistValue({
+                    intOtherQty = recCurrent.getCurrentSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.OTHER_QTY,
                     });
+                    if(intOtherQty){
+                        let objError = {
+                            name    : 'CANNOT_UPDATE_QUANTITY',
+                            message : ''
+                        }
+                        if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST || stScanType == _CONFIG.SCAN_TYPE.SUBTRACT_ADJUST){
+                            objError['message'] = 'Cannot update Adjusted Inventory Quantity because Ending Inventory Quantity has been set.'
+                        }
+                        else if(stScanType == _CONFIG.SCAN_TYPE.ENDING){
+                            objError['message'] = 'Cannot add to Ending Quantity because Adjust Inventory Quantity has been set.'
+                        }
+                        throw objError;
+
+                    }
+                    else{
+                        intQty = recCurrent.getCurrentSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        });
+                    }
                 }
                 else{
                     recCurrent.selectNewLine({ 
@@ -484,6 +511,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     if(!intQty){
                         intQty = 0;
                     }
+                    
                 }
                 catch(e){
                     console.error(e)
@@ -492,14 +520,43 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
                     }
                 }
-                recCurrent.setCurrentSublistValue({
-                    sublistId   : UI_CONFIG.SUBLIST_ID,
-                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                    value       : intQty + intScannedQty
-                });
+                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST){
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        value       : intQty + intScannedQty
+                    });
+                }
+                else if(stScanType == _CONFIG.SCAN_TYPE.SUBTRACT_ADJUST){
+                    let intQtyToSet = 0;
+                    
+
+                    if(intQty >= intScannedQty){
+                        intQtyToSet = intQty - intScannedQty
+                    }
+                    //If received quantity exceeds quantity remaining
+                    else{
+                        intScannedQty = 0
+                        blOverRcvd = true;
+                        objCurrItemLine.qty = intScannedQty - intQty
+                    }
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        value       : intQtyToSet
+                    });
+                }
                 recCurrent.commitLine({
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
+                if(blOverRcvd){
+                    let objError = {
+                        name    : 'EXCESS_SCANNED_QTY',
+                        message : ''
+                    }
+                    objError['message'] = 'Total quantity to subtract exceeds current quantity. Only the maximum allowed quantity was deducted.'
+                    throw objError;
+                }
             }
             else if(stPageType == 'inventoryadjustment_backbar' || stPageType == 'inventoryadjustment_damagetestertheft'){
 
@@ -701,7 +758,8 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
 
             else if(stPageType == 'inventoryadjustment_standard'){
-                addBtnListener({stBtnAction: 'ADJUST'})
+                addBtnListener({stBtnAction: 'ADD_ADJUST'})
+                addBtnListener({stBtnAction: 'SUBTRACT_ADJUST'})
                 addBtnListener({stBtnAction: 'ENDING'})
                 console.log('IA Scan Buttons Set')
             }
