@@ -426,7 +426,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                             message : ''
                         }
                         if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
-                            objError['message'] = 'Total received quantity exceeds shipped quantity. Only the maximum allowed receivable quantity was set.'
+                            objError['message'] = 'Total received quantity exceeds remaining quantity. Only the maximum allowed receivable quantity was set.'
                         }
                         else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
                             objError['message'] = 'Total damaged quantity exceeds received quantity. Only the maximum allowed damaged quantity was set.'
