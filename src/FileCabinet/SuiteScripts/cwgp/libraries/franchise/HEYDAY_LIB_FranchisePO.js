@@ -965,4 +965,3 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         mapFranchiseIRSublistFieldsEdit,
     }
 });
-

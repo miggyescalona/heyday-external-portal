@@ -362,7 +362,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         displayType:'disabled'
                     },
                     QUANTITY_REMAINING: {
-                        id: 'custpage_cwgp_quantityremaining',
+                        id: 'custpage_cwgp_shippedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Shipped Quantity',
                         displayType:'inline'
@@ -966,7 +966,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: 'itemreceipt'})
+        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: 'itemreceipt'});
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -1316,4 +1316,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         renderInventoryAdjustment
     }
 });
-

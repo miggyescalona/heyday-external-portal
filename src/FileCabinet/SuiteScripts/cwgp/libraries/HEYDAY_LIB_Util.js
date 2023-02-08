@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal', 'N/file'], (serverWidget, search, util,record, url, EPLib, file) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal', 'N/file', 'N/format'], (serverWidget, search, util,record, url, EPLib, file, format) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -376,6 +376,41 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return true;
     };
 
+      const addDamagedAdjustingAccount= (fld) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "account",
+            filters:
+            [
+                search.createFilter({
+                    name: 'custrecord_cwgp_account_extretail',
+                    operator: search.Operator.IS,
+                    values: "T"
+                }),
+            ],
+            columns:
+                [
+                    search.createColumn({ name: 'internalid' }),
+                    search.createColumn({
+                        name: "name",
+                        sort: search.Sort.ASC,
+                        label: "Name"
+                     }),
+                     search.createColumn({ name: 'displayname' }),
+                ]
+        }).run().each(function (result) {
+            fld.addSelectOption({
+                value: result.id,
+                text: result.getValue({ name: 'displayname' })
+            });
+            return true;
+        });
+    };
+
+
     const addOptionsBusinessLine = (fld) => {
         fld.addSelectOption({
             value: '',
@@ -442,15 +477,31 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
-    const addOptionsAdjusmentReason= (fld) => {
+    const addOptionsAdjusmentType = (fld,stSubType) => {
         fld.addSelectOption({
             value: '',
             text: ''
         });
+
+        let stTypes;
+        if(stSubType == 'damagetestertheft'){
+            stTypes = [3,4,5];
+        }
+        else if(stSubType =='standard'){
+            stTypes = [6];
+        }
+        else{
+            stTypes = [2];
+        }
         search.create({
-            type: "customlist_cwgp_adjustmentreason",
+            type: "customlist_cwgp_adjustmenttype",
             filters:
                 [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: stTypes
+                    })
                 ],
             columns:
                 [
@@ -615,6 +666,126 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
     };
 
+    
+    const mapDamagedInventoryAdjustment = (stPoId) => {
+        let objIA = {
+            item: []
+        };
+        let stDamagedAccount;
+        search.create({
+            type: search.Type.INVENTORY_ADJUSTMENT,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'custbody_cwgp_createdfromir',
+                        operator: search.Operator.ANYOF,
+                        values: stPoId
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({name: "mainline", label: "*"}),
+                    search.createColumn({name: "tranid", label: "Document Number"}),
+                    search.createColumn({name: "item", label: "Item"}),
+                    search.createColumn({
+                        name: "custitem_heyday_sku",
+                        join: "item",
+                        label: "Internal SKU"
+                     }),
+                     search.createColumn({
+                        name: "custitemheyday_upccode",
+                        join: "item",
+                        label: "UPC Code"
+                     }),
+                    search.createColumn({name: "quantity", label: "Quantity"}),
+                    search.createColumn({name: "account", label: "Account"})
+                ]
+        }).run().each((result) => {
+            let stMainLine = result.getValue({ name: 'mainline' });
+                if (stMainLine == '*') {
+                    stDamagedAccount = result.getText({ name: 'account' });      
+                } 
+                else{
+                    objIA.item.push({
+                        custpage_cwgp_item: result.getText({ name: 'item' }),
+                        custpage_cwgp_damagedadjustingaccount: stDamagedAccount,   
+                        custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join:'item' }),
+                        custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item'}),
+                        custpage_cwgp_adjustqtyby: Math.abs(result.getValue({ name: 'quantity' })),
+                        custpage_cwgp_inventoryadjustment: 'IA# ' + result.getValue({ name: 'tranid' }),
+                    });
+                }
+            return true;
+        });
+
+        log.debug('objDamagedIA',objIA);
+
+        return objIA;
+    };
+
+    const mapItemReceiptVariance = (stPoId) => {
+        let objIA = {
+            item: []
+        };
+        let stDamagedAccount;
+        search.create({
+            type: 'customrecord_cwgp_ext_irvar',
+            filters:
+                [
+                    search.createFilter({
+                        name: 'custrecord_cwgp_ext_irvar_retailtxn',
+                        operator: search.Operator.ANYOF,
+                        values: stPoId
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({
+                        name: "id",
+                        sort: search.Sort.ASC,
+                        label: "ID"
+                     }),
+                     search.createColumn({name: "custrecord_cwgp_ext_irvar_item", label: "Item"}),
+                     search.createColumn({name: "custrecord_cwgp_ext_irvar_qty", label: "Quantity"}),
+                     search.createColumn({
+                        name: "custitem_heyday_sku",
+                        join: "CUSTRECORD_CWGP_EXT_IRVAR_ITEM",
+                        label: "Internal SKU"
+                     }),
+                     search.createColumn({
+                        name: "custitemheyday_upccode",
+                        join: "CUSTRECORD_CWGP_EXT_IRVAR_ITEM",
+                        label: "UPC Code"
+                     }),
+                     search.createColumn({
+                        name: "custrecord_cwgp_username",
+                        join: "CUSTRECORD_CWGP_EXT_IRVAR_OPERATOR",
+                        label: "Username"
+                     })
+                ]
+        }).run().each((result) => {
+            let stMainLine = result.getValue({ name: 'mainline' });
+                if (stMainLine == '*') {
+                    stDamagedAccount = result.getText({ name: 'account' });      
+                } 
+                else{
+                    objIA.item.push({
+                        custpage_cwgp_itemreceiptvariance: result.getValue({ name: 'id' }),
+                        custpage_cwgp_item: result.getText({ name: 'custrecord_cwgp_ext_irvar_item' }),   
+                        custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join:'CUSTRECORD_CWGP_EXT_IRVAR_ITEM' }),
+                        custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_EXT_IRVAR_ITEM'}),
+                        custpage_cwgp_quantity: result.getValue({ name: 'custrecord_cwgp_ext_irvar_qty' }),
+                        custpage_cwgp_operator: result.getValue({ name: 'custrecord_cwgp_username', join:'CUSTRECORD_CWGP_EXT_IRVAR_OPERATOR' }),
+                    });
+                }
+            return true;
+        });
+
+        log.debug('objDamagedIA',objIA);
+
+        return objIA;
+    };
+
     const mapPOValues = (stPoId) => {
         let objPO = {
             body: {},
@@ -649,8 +820,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'custitemheyday_upccode', join: 'item' }),
                     search.createColumn({ name: 'intercotransaction' }),
                     search.createColumn({ name: 'expectedreceiptdate' }),
-                    search.createColumn({ name: 'purchasedescription', join: 'item' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
+                    search.createColumn({ name: 'class' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -666,9 +837,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             } else {
                 objPO.item.push({
+                    custpage_cwgp_businessline: result.getValue({ name: 'class' }),
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
-                    custpage_cwgp_description: result.getValue({ name: 'purchasedescription', join: 'item'}),
+                    custpage_cwgp_description: result.getValue({ name: 'memo'}),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
@@ -800,7 +972,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getText('createdfrom');
         const intInterco = search.lookupFields({type: search.Type.PURCHASE_ORDER,id: objItemReceipt.getValue('createdfrom'),columns: ['intercotransaction']});
         objPO.body.custpage_cwgp_sointercoid = intInterco.intercotransaction; 
-        objPO.body.custpage_cwgp_sointercoid = objItemReceipt.getValue('createdfrom');
+        objPO.body.custpage_cwgp_createdfrom = objItemReceipt.getValue('createdfrom');
 
         const intLineCount = objItemReceipt.getLineCount('item');
 
@@ -841,14 +1013,39 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'class',
                     line: x
                 }),
-                custpage_cwgp_shippedquantity: objItemReceipt.getSublistValue({
+                custpage_cwgp_shippedquantity: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_shippedquantity',
                     line: x
-                }),
+                })),
+                custpage_cwgp_shippedquantityhidden: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_shippedquantity',
+                    line: x
+                })),
                 custpage_cwgp_startingquantity: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'onhand',
+                    line: x
+                })),
+                custpage_cwgp_startingquantityhidden: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'onhand',
+                    line: x
+                })),
+                custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantityremaining',
+                    line: x
+                })),
+                custpage_cwgp_quantityremaininghidden: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantityremaining',
+                    line: x
+                })),
+                custpage_cwgp_variance: parseInt(objItemReceipt.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_cwgp_shippedquantity',
                     line: x
                 })),
                 custpage_cwgp_quantity: 0,
@@ -898,10 +1095,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_subsidiary = objInventoryAdjustment.getText('subsidiary');
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
+        objPO.body.custpage_cwgp_operator = objInventoryAdjustment.getText('custbody_cwgp_externalportaloperator');
 
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
 
         for(var x = 0; x < intLineCount; x++){
+            let stDateTime = objInventoryAdjustment.getSublistValue({
+                sublistId: 'inventory',
+                fieldId: 'custcol_cwgp_datetime',
+                line: x
+            });
+            if(stDateTime){
+                stDateTime = format.format({value: new Date(stDateTime), type: format.Type.DATETIMETZ})
+            }
             objPO.item.push({
                 custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
@@ -939,11 +1145,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'quantityonhand',
                     line: x
                 })) || '0',
-                custpage_cwgp_adjustqtyby: parseInt(objInventoryAdjustment.getSublistValue({
+                custpage_cwgp_adjustqtyby: Math.abs(parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'adjustqtyby',
                     line: x
-                })) || 0,
+                }))) || 0,
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
@@ -959,13 +1165,31 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'class',
                     line: x
                 }),
-                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
+                custpage_cwgp_adjustmenttype: objInventoryAdjustment.getSublistText({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmenttype',
+                    line: x
+                }),
+                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'custcol_cwgp_adjustmentreason',
                     line: x
                 }),
+                custpage_cwgp_roomnumber: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_roomnumber',
+                    line: x
+                }),
+                custpage_cwgp_stassignment: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_stassignment',
+                    line: x
+                }),
+                custpage_cwgp_datetime: stDateTime,
             });
         }
+
+        log.debug('mapInventoryAdjustmentValues',objPO);
         return objPO;
     }
 
@@ -975,7 +1199,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                log.debug('val1 | id', value +'|' + fieldId + '|' + typeof value);
+                log.debug(value, fieldId);
                 if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
                     sbl.setSublistValue({
                         id: fieldId,
@@ -984,6 +1208,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     });
                 }
                 else if(Number.isInteger(value)){
+                    log.debug('integer', value +'|'+fieldId)
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
@@ -1084,7 +1309,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             if(result.getValue({ name: 'mainline' })!='*'){
                 objPO.push({
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
-                    custpage_cwgp_shippedquantity: result.getValue({ name: 'quantity' })
+                    custpage_cwgp_shippedquantity: result.getValue({ name: 'quantity' }),
+                    custpage_cwgp_shippedquantityhidden: result.getValue({ name: 'quantity' }),
+                    custpage_cwgp_variance:  result.getValue({ name: 'quantity' }),
                 });
             }
             return true;
@@ -1120,6 +1347,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
     return {
         mapValues,
+        mapDamagedInventoryAdjustment,
+        mapItemReceiptVariance,
+        addDamagedAdjustingAccount,
         addOptionsVendorsBySubsidiary,
         addOptionsItemBySubsidiary,
         addOptionsLocationBySubsidiary,
@@ -1128,7 +1358,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         addOptionsUnits,
         addOptionsBusinessLine,
         addOptionsPostingPeriod,
-        addOptionsAdjusmentReason,
+        addOptionsAdjusmentType,
         addOptionsDepartmentBySubsidiary,
         addOptionsAccountsBySubsidiary,
         mapPOValues,
