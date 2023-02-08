@@ -349,7 +349,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 objPO.item.push({
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
-                    custpage_cwgp_description: result.getValue({ name: 'salesdescription', join: 'item' }),
+                    custpage_cwgp_description: result.getValue({ name: 'memo' }),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
@@ -423,8 +423,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 
                 custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                 custpage_cwgp_item: result.getValue({ name: 'item' }),
-                custpage_cwgp_description: result.getValue({ name: 'salesdescription', join: 'item' }),
-                custpage_cwgp_shippedquantity: result.getValue({ name: 'custcol_cwgp_remaining' }),
+                custpage_cwgp_description: result.getValue({ name: 'memo' }),
+                custpage_cwgp_quantityremaining: result.getValue({ name: 'custcol_cwgp_remaining' }),
                 custpage_cwgp_quantitystarting: String(qtyOnhand),
                 custpage_cwgp_quantityfinal: String(qtyOnhand),
                 custpage_cwgp_quantity: '0',
@@ -591,12 +591,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         
         objPO.body.custpage_cwgp_customer = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_customer' });
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_date' });
+        objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_memo' });
         
         var franchiseIRLineSearch = search.create({
-        	   type: "customrecord_cwgp_franchiseinvadjline",
+        	   type: "customrecord_cwgp_franchise_tranline",
         	   filters:
         	   [
-        	      ["custrecord_cwgp_fial_invadj","anyof",stPoId]
+        	      ["custrecord_cwgp_ftl_parentia","anyof",stPoId]
         	   ],
         	   columns:
         	   [
@@ -605,15 +606,37 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         	         sort: search.Sort.ASC,
         	         label: "ID"
         	      }),
-        	      search.createColumn({name: "custrecord_cwgp_fial_item"}),
-        	      search.createColumn({name: "custrecord_cwgp_fial_adjqty"})
+        	      search.createColumn({name: "custrecord_cwgp_ftl_item"}),
+                  search.createColumn({
+                    name: "custitemheyday_upccode",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "UPC Code"
+                 }),
+                 search.createColumn({
+                    name: "custitem_heyday_sku",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "Internal SKU"
+                 }),
+                 search.createColumn({name: "custrecord_cwgp_ftl_actualqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmentreason"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmenttype"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_description"}),
+
         	   ]
         	});
         franchiseIRLineSearch.run().each(function(result){
         	objPO.item.push({
         		custpage_cwgp_id: result.id,
-                custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_fial_item' }),
-                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_fial_adjqty' })
+                custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_ftl_item' }),
+                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_actualqty' }),
+                //custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
+                custpage_cwgp_description: result.getValue({ name: 'custrecord_cwgp_ftl_description' }),
+                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_actualqty' }),
+                custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_adjustmentreason: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmentreason' }),
+                custpage_cwgp_adjustmenttype: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmenttype' }),
             });
         	   // .run().each has a limit of 4,000 results
     	   return true;
@@ -879,7 +902,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
             text: ''
         });
         search.create({
-            type: "customlist_cwgp_adjustmentreason",
+            type: "customlist_cwgp_adjustmenttype",
             filters:
                 [
                 ],

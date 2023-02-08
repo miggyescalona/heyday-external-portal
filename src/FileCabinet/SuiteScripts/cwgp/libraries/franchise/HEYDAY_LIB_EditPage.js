@@ -23,12 +23,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         TAB: {
             franchisepo: 'custpage_franchisepo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
-            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab'
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab',
+            inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_itemstab',
         },
         SUBLIST: {
             franchisepo: 'custpage_franchisepo_items',
             itemreceipt: 'custpage_itemreceipt_items',
-            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items'
+            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items',
+            inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_items'
         },
         FIELD: {
             franchisepo: {
@@ -212,6 +214,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
+                VARIANCE: {
+                    id: 'custpage_cwgp_variance',
+                    type: serverWidget.FieldType.INTEGER,
+                    label: 'Variance',
+                    displayType: 'inline'
+                },
             },
         },
         COLUMN: {
@@ -295,7 +303,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'Received Quantity',
                         displayType: 'inline'
                     },
-                    DAMAGED: {
+                    /*DAMAGED: {
                         id: 'custpage_cwgp_damagedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Damaged Quantity',
@@ -312,7 +320,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Line',
                         displayType: 'hidden'
-                    }
+                    }*/
                 },
                 inventoryadjustment_damaged:{
                     INVENTORY_ADJUSTMENT: {
@@ -331,6 +339,33 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damaged Quantity',
+                    }
+                },
+                inventoryadjustment_variance:{
+                    ITEM_RECEIPT_VARIANCE: {
+                        id: 'custpage_cwgp_itemreceiptvariance',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Receipt Variance #',
+                    },
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Items',
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
+                    QUANTITY:{
+                        id: 'custpage_cwgp_quantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity',
                     }
                 }
             }
@@ -691,6 +726,52 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
     
             utilLib.setSublistValues(sbl, objPO);
         }
+
+        let arrMapItemReceiptVariance = utilLib.mapItemReceiptVariance(stPoId);
+        log.debug('mapItemReceiptVariance',arrMapItemReceiptVariance)
+         log.debug('mapItemReceiptVariance length',arrMapItemReceiptVariance.length)
+        ////render damaged sublist
+        if(arrMapItemReceiptVariance.item.length>0){
+            const stType = 'inventoryadjustment_variance';
+
+            //let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
+
+            form.addSubtab({
+                id: _CONFIG.TAB[stType],
+                label: 'Variance'
+            });
+    
+            const sbl = form.addSublist({
+                id: _CONFIG.SUBLIST[stType],
+                label: ' ',
+                type: serverWidget.SublistType.LIST,
+                tab: _CONFIG.TAB[stType]
+            });
+    
+            const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+    
+            const arrCols = Object.keys(objItemCols);
+            log.debug('arrCols', arrCols);
+    
+            arrCols.forEach((stCol) => {
+                const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
+    
+                let col = sbl.addField({
+                    id,
+                    type,
+                    label,
+                    source,
+                    displayType,
+                    dsiplaySize
+                });
+    
+                if (displayType) {
+                    col.updateDisplayType({ displayType });
+                }
+            });
+    
+            utilLib.setSublistValues(sbl, arrMapItemReceiptVariance);
+        }
         
         
         form.addSubmitButton({ label: 'Save' });
@@ -754,6 +835,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             background-color: #dbc8b6 !important;
         }
         div#custpage_inventoryadjustmentdamaged_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
+        div#custpage_inventoryadjustmentvariance_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
 
