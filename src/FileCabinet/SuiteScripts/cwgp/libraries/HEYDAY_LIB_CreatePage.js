@@ -315,6 +315,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
+                TOTAL_ADJUSTMENT_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
+                    type: serverWidget.FieldType.INLINEHTML,
+                    label: 'Total Adjustment',
+                    container: 'TOTAL_ADJUSTMENT',
+                },
+                ITEM_SUMMARY_HTML: {
+                    id: 'custpage_cwgp_itemsummary',
+                    type: serverWidget.FieldType.INLINEHTML,
+                    label: 'Item Summary',
+                    container: 'ITEM_SUMMARY',
+                },
             }
         },
         COLUMN: {
@@ -808,6 +820,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 CLASS: {
                     id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
                     label: 'Classification'
+                },
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
+                ITEM_SUMMARY: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
+                    label: 'Item Summary'
                 }
             }
         },
@@ -1342,6 +1362,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         });
 
         form.addSubmitButton({ label: 'Save' });
+
+        if(stSubType == 'damagetestertheft'){
+            form.addButton({
+                id: 'custpage_back_calculatesummary',
+                label: 'Calculate Summary',
+                functionName: 'calculateSummary()'
+            });
+        }
 
         form.addButton({
             id: 'custpage_back_button',

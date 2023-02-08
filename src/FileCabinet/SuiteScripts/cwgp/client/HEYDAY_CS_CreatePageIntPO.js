@@ -21,6 +21,25 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     const pageInit = (context) => {
         ClientEPLib.getAuthenticationScript();
         ClientEPLib.setScanBtnOnClick();
+
+        function getParameterFromURL(param){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++){
+                var pair = vars[i].split("=");
+                if (pair[0] == param){
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+            return (false);
+        }
+
+        let stSubType = getParameterFromURL('subType');
+
+        if(stSubType == 'damagetestertheft'){
+            jQuery('#fg_custpage_inventoryadjustmentdamagetestertheft_total_grp').hide();
+            jQuery('#fg_custpage_inventoryadjustmentdamagetestertheft_itemsum_grp').hide();
+        }
     };
 
      const saveRecord = (context) => {
@@ -681,6 +700,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
+    const calculateSummary = () =>{
+   
+        alert('test');
+   
+    };
+
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
 
@@ -691,6 +716,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         fieldChanged,
         lineInit,
         back,
+        calculateSummary,
         scanInputViaBtn
     };
 });

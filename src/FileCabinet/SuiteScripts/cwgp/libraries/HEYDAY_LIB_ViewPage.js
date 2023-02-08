@@ -688,7 +688,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     },*/
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
-                        type: serverWidget.FieldType.SELECT,
+                        type: serverWidget.FieldType.TEXT,
                         label: 'Adjustment Type',
                     },
                     ADJUSTMENT_REASON: {
