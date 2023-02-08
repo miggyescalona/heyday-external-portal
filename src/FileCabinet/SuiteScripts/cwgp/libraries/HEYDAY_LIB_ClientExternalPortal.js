@@ -536,7 +536,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     }
                     //If received quantity exceeds quantity remaining
                     else{
-                        intScannedQty = 0
+                        intQtyToSet = 0
                         blOverRcvd = true;
                         objCurrItemLine.qty = intScannedQty - intQty
                     }
