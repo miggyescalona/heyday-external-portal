@@ -22,7 +22,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         ADJUST   : 'custpage_cwgp_adjustqty_scan_btn',
         ENDING   : 'custpage_cwgp_endingqty_scan_btn',
         BACKBAR  : 'custpage_cwgp_backbar_scan_btn',
-        TESTER   : 'custpage_cwgp_add_scan_btn'
+        TESTER   : 'custpage_cwgp_tester_scan_btn'
         
     }
 
@@ -195,7 +195,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 }    
                 if(stScanType == _CONFIG.SCAN_TYPE.RECEIVED){
                     UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_quantity'
-                    UI_CONFIG.SUBLIST_FIELDS['MAX_QTY'] = 'custpage_cwgp_shippedquantity'
+                    UI_CONFIG.SUBLIST_FIELDS['MAX_QTY'] = 'custpage_cwgp_quantityremaining'
                     
                 }
                 else if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
@@ -236,8 +236,16 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     SUBLIST_FIELDS  : {
                         ITEM_ID   : 'custpage_cwgp_itemid',
                         ITEM      : 'custpage_cwgp_item',
-                        QTY       : 'custpage_cwgp_adjustqtyby',
                     }
+                }
+                if(stScanType == _CONFIG.SCAN_TYPE.DAMAGED){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_adjustqtyby'
+                }
+                else if(stScanType == _CONFIG.SCAN_TYPE.TESTER){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_endinginventoryqty'
+                }
+                else if(stScanType == _CONFIG.SCAN_TYPE.THEFT){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY']     = 'custpage_cwgp_endinginventoryqty'
                 }
                 break;
         }
@@ -518,11 +526,11 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
                     });
     
-                    recCurrent.setCurrentSublistValue({
-                        sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        value       : -1
-                    });
+                    // recCurrent.setCurrentSublistValue({
+                    //     sublistId   : UI_CONFIG.SUBLIST_ID,
+                    //     fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                    //     value       : 1
+                    // });
                     recCurrent.commitLine({
                         sublistId   : UI_CONFIG.SUBLIST_ID
                     })
@@ -625,6 +633,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         return stFailedCodes;
     }
 
+    //Function for scanner buttons. Processes scanned codes and updates sublist
     const scanInputViaBtn = (stScanType) => {
         let recCurrent = currentRecord.get();
 
@@ -654,6 +663,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         }
     }
 
+    //Adds Functions To Scanner buttons
     const setScanBtnOnClick = () => {
 
         const addBtnListener = (options) => {
@@ -700,8 +710,10 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 console.log('Backbar Scan Buttons Set')
             }
             else if(stPageType == 'inventoryadjustment_damagetestertheft'){
+                addBtnListener({stBtnAction: 'DAMAGED'})
                 addBtnListener({stBtnAction: 'TESTER'})
-                console.log('Tester Scan Button Set')
+                addBtnListener({stBtnAction: 'THEFT'})
+                console.log('Tester Scan Buttons Set')
             }
         }catch(e){
             console.warn('Cannot Set Scanner Button Functions')
