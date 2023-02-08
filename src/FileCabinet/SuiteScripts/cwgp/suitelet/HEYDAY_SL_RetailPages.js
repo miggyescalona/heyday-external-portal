@@ -261,7 +261,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stTranId,
+                    stSubType
                 });
 
                 break;
@@ -304,13 +305,22 @@ define([
 
 
     const handleIntercompanyPOTxn = (request) => {
-        log.debug('params handleIntercompanyPOTxn', JSON.stringify(request.parameters))
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
+            custpage_cwgp_adjustmentsubtype: stSubType
+
         } = request.parameters;
+
+        log.debug('params handleIntercompanyPOTxn',JSON.stringify({
+            custpage_cwgp_pagemode: stPageMode,
+            custpage_cwgp_userid: stUserId,
+            custpage_cwgp_accesstype: stAccessType,
+            custpage_cwgp_rectype: stRecType,
+            custpage_cwgp_adjustmentsubtype: stSubType
+        }));
 
         let idRec = null;
 
@@ -320,7 +330,7 @@ define([
             }else if(stRecType == 'itemreceipt'){
                 idRec = txnLib.createRetailItemReceipt(request);
             }else if(stRecType == 'inventoryadjustment'){
-                idRec = txnLib.createRetailInventoryAdjustment(request);
+                idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
             }
         }
 

@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal', 'N/file'], (serverWidget, search, util,record, url, EPLib, file) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY_LIB_ExternalPortal', 'N/file', 'N/format'], (serverWidget, search, util,record, url, EPLib, file, format) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -477,15 +477,31 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         });
     };
 
-    const addOptionsAdjusmentType = (fld) => {
+    const addOptionsAdjusmentType = (fld,stSubType) => {
         fld.addSelectOption({
             value: '',
             text: ''
         });
+
+        let stTypes;
+        if(stSubType == 'damagetestertheft'){
+            stTypes = [3,4,5];
+        }
+        else if(stSubType =='standard'){
+            stTypes = [6];
+        }
+        else{
+            stTypes = [2];
+        }
         search.create({
             type: "customlist_cwgp_adjustmenttype",
             filters:
                 [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: stTypes
+                    })
                 ],
             columns:
                 [
@@ -1079,10 +1095,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_subsidiary = objInventoryAdjustment.getText('subsidiary');
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
+        objPO.body.custpage_cwgp_operator = objInventoryAdjustment.getText('custbody_cwgp_externalportaloperator');
 
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
 
         for(var x = 0; x < intLineCount; x++){
+            let stDateTime = objInventoryAdjustment.getSublistValue({
+                sublistId: 'inventory',
+                fieldId: 'custcol_cwgp_datetime',
+                line: x
+            });
+            if(stDateTime){
+                stDateTime = format.format({value: new Date(stDateTime), type: format.Type.DATETIMETZ})
+            }
             objPO.item.push({
                 custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
@@ -1120,11 +1145,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'quantityonhand',
                     line: x
                 })) || '0',
-                custpage_cwgp_adjustqtyby: parseInt(objInventoryAdjustment.getSublistValue({
+                custpage_cwgp_adjustqtyby: Math.abs(parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'adjustqtyby',
                     line: x
-                })) || 0,
+                }))) || 0,
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
@@ -1145,13 +1170,26 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'custcol_cwgp_adjustmenttype',
                     line: x
                 }),
-                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistText({
+                custpage_cwgp_adjustmentreason: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'custcol_cwgp_adjustmentreason',
                     line: x
                 }),
+                custpage_cwgp_roomnumber: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_roomnumber',
+                    line: x
+                }),
+                custpage_cwgp_stassignment: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_stassignment',
+                    line: x
+                }),
+                custpage_cwgp_datetime: stDateTime,
             });
         }
+
+        log.debug('mapInventoryAdjustmentValues',objPO);
         return objPO;
     }
 
