@@ -120,8 +120,12 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             stScannerInput
         } = options;
 
-        //Split scanner input string by any whitespace (from space, tab, enter), and filter only elements that are not empty 
-        let arrItemUpcCodes = stScannerInput.split(/\s+/).filter(el => el)
+        /*
+            Split scanner input string by a combination of any whitespace, 
+            linefeed, tab, carriage return, semi-colon, vertical bar, comma, 
+            and filter only elements that are not empty 
+        */
+        let arrItemUpcCodes = stScannerInput.split(/[\s\n\t\r\;\|\,]+/).filter(el => el)
         let arrItemLines = [];
         for(var ii = 0; ii < arrItemUpcCodes.length; ii++){ 
             let intItemUpcCode = arrItemUpcCodes[ii];
