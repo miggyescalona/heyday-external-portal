@@ -109,6 +109,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 fieldId: 'custrecord_cwgp_fia_itemreceipt',
                 value: idIR
             });
+            recIA.setValue({
+                fieldId: 'custrecord_cwgp_fia_subtype',
+                value: 'standard'
+            });
+            recIA.setValue({
+                fieldId: 'custrecord_cwgp_fia_customer',
+                value: objPOBodyFields.custrecord_cwgp_fr_customer
+            });
+            
 
             const objIABodyFields = mapFranchiseIRBodyFields(request,idIR);
             util.each(objIABodyFields, (value, fieldId) => {
@@ -137,6 +146,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                     fieldId: 'custrecord_cwgp_ftl_parentia',
                     value: idIA
                 });
+
+                recIRLineDamaged.setValue({
+                    fieldId: 'custrecord_cwgp_ftl_adjustmentreason',
+                    value: 'Item Receipt #'+idIR
+                });
+                recIRLineDamaged.setValue({
+                    fieldId: 'custrecord_cwgp_ftl_adjustmenttype',
+                    value: 3
+                });
+                
                 
                 util.each(objPOBodyFields, (value,fieldId) => {
                     recIRLineDamaged.setValue({
@@ -222,7 +241,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return idIR;
     };
 
-    const createFranchiseIA = (request) => {
+    const createFranchiseIA = (request,) => {
         const recIA = record.create({
             type: 'customrecord_cwgp_franchiseinvadjustment'
         });
@@ -234,9 +253,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 value: value
             });
         });
+        log.debug('objIABodyFields', objIABodyFields);
         const idIA = recIA.save();
         //const idIA = 123;
-        log.debug('objIABodyFields', objIABodyFields);
+        
         const arrPOSblFields = mapFranchiseIASublistFields(idIA,objIABodyFields.custrecord_cwgp_fia_customer,request);
         log.debug('mapFranchiseIASublistFields', mapFranchiseIASublistFields);
         arrPOSblFields.forEach((objPOBodyFields) => {
@@ -269,6 +289,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
         const stDeliveryDate = request.parameters.custpage_cwgp_deliverbydate;
+        const stOperator = request.parameters.custpage_cwgp_operator;
 
         const objMapBodyFields = {
             entity: stCustomer,
@@ -278,6 +299,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             subsidiary: 15,
             class: 6,
             location: 230,
+            'custbody_cwgp_externalportaloperator':stOperator
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -291,6 +313,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stLocation = request.parameters.custpage_cwgp_location;
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
+        const stOperator = request.parameters.custpage_cwgp_operator;
         log.debug(' mapFranchiseIRBodyFields', request.parameters);
         const objMapBodyFields = {
         	'recid': recid,
@@ -298,7 +321,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         	'custrecord_cwgp_fr_customer': stCustomer,
         	'custrecord_cwgp_fr_location': stLocation,
         	'custrecord_cwgp_fr_date': new Date(stDate),
-            'custrecord_cwgp_fr_memo': stMemoMain
+            'custrecord_cwgp_fr_memo': stMemoMain,
+            'custrecord_cwgp_fr_operator':stOperator
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -309,11 +333,18 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stCustomer = request.parameters.custpage_cwgp_customer;
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
+        const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+        const stOperator = request.parameters.custpage_cwgp_operator;
+        const stItemSummary = request.parameters.custpage_cwgp_itemsummaryhidden;
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fia_customer': stCustomer,
         	'custrecord_cwgp_fia_date': new Date(stDate),
-            'custrecord_cwgp_fia_memo': stMemoMain
+            'custrecord_cwgp_fia_memo': stMemoMain,
+            'custrecord_cwgp_fia_operator': stMemoMain,
+            'custrecord_cwgp_fia_subtype': stAdjustmentSubType,
+            'custrecord_cwgp_fia_operator': stOperator,
+            'custrecord_cwgp_fia_itemsummary': stItemSummary
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -384,6 +415,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         log.debug('mapFranchiseIRSublistFields', '');
         log.debug('request', request);
         const intLineCount = request.getLineCount({ group: 'custpage_itemreceipt_items' });
+
+        
 
         for (let i = 0; i < intLineCount; i++) {
         	let recieve = request.getSublistValue({
@@ -485,11 +518,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
     };
 
     const mapFranchiseIASublistFields = (id,stCustomer,request) => {
+        const stSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         let arrMapSblFields = [];
+        const intLineCountStandard = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
-        const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        log.debug('stSubType', stSubType);
+        log.debug('subTypeSublist', subTypeSublist);
 
-        for (let i = 0; i < intLineCount; i++) {
+        for (let i = 0; i < intLineCountStandard; i++) {
             let inStartingQty = request.getSublistValue({
                 group: 'custpage_inventorayadjustment_items',
                 name: 'custpage_cwgp_qtyonhand',
@@ -545,6 +582,63 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             })
         }
 
+        if(stSubType == 'backbar' || stSubType == 'damagetestertheft'){
+            const intLineCountBackbar = request.getLineCount({ group: subTypeSublist });
+            for (let i = 0; i < intLineCountBackbar; i++) {
+                let inAdjustQty = request.getSublistValue({
+                    group: subTypeSublist,
+                    name: 'custpage_cwgp_adjustqtyby',
+                    line: i
+                });
+                let dtDateTime = new Date(request.getSublistValue({
+                    group: subTypeSublist,
+                    name: 'custpage_cwgp_datetime',
+                    line: i
+                }));
+                //log.debug('inActualQty', inActualQty);
+                //dtDateTime = format.format({ value: dtDateTime, type: format.Type.DATETIMETZ });
+                log.debug('dtDateTime', dtDateTime);
+                arrMapSblFields.push({
+                    'custrecord_cwgp_ftl_parentia': id,
+                    'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_item': request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_item',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_description': request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_description',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_actualqty': inAdjustQty * -1,
+                    'custrecord_cwgp_ftl_displayqty': inAdjustQty,
+                    'custrecord_cwgp_ftl_type' : 2,
+                    'custrecord_cwgp_ftl_adjustmenttype':request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_adjustmenttype',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_adjustmentreason':request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_adjustmentreason',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_roomno': request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_roomnumber',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_st': request.getSublistValue({
+                        group: subTypeSublist,
+                        name: 'custpage_cwgp_stassignment',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_datetime': dtDateTime
+                })
+    
+            }
+        }
         log.debug('arrMapSblFields', arrMapSblFields)
         return arrMapSblFields;
     };
@@ -863,14 +957,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stEntity = objPORecordDetails.entity;
         const stMemoMain = objPORecordDetails.memo;
         const stLocation = objPORecordDetails.location;
+        
         log.debug('recPO details', `{
             date: ${stDate},
             vendor: ${stEntity},
             memo: ${stMemoMain},
-            location: ${stLocation}
+            //location: ${stLocation}
         }`);
 
-        const { entity, memo, location } = objPOBodyFields;
+        //const { entity, memo, location } = objPOBodyFields;
+        const { entity, memo } = objPOBodyFields;
         let trandate = objPOBodyFields.trandate;
         trandate = format.format({ value: trandate, type: format.Type.DATETIMETZ });
 
@@ -886,9 +982,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             objBodyFldsToUpdate.memo = memo;
         }
 
-        if (stLocation != location) {
+        /*if (stLocation != location) {
             objBodyFldsToUpdate.location = location;
-        }
+        }*/
 
         log.debug('PO Body Fields to update', objBodyFldsToUpdate);
 
