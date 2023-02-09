@@ -1029,4 +1029,3 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         addOptionsAdjusmentReason
     }
 });
-

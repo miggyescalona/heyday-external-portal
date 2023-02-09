@@ -56,11 +56,16 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             objConfig,
             objConfProperty,
             stType,
+            stSubType
         } = options;
         try{
-            
-            objConfig[objConfProperty][stType] = {
-                ...objConfig[objConfProperty][stType],
+            let stPageType = stType;
+            if(stSubType){
+                stPageType += `_${stSubType}`
+            }
+
+            objConfig[objConfProperty][stPageType] = {
+                ...objConfig[objConfProperty][stPageType],
                 ...SCANNER_UI[objConfProperty]
             }
 
@@ -120,7 +125,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 columns:
                 [
                     search.createColumn({ name: 'itemid' }),
-                    search.createColumn({ name: 'custitemheyday_upccode' })
+                    search.createColumn({ name: 'custitemheyday_upccode' }),
+                    search.createColumn({ name: 'created' })
                 ]
             }
             
@@ -135,6 +141,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
     const initScanner = (options) => {
         const {
             stType,
+            stSubType,
             stSubsidiary,
             _CONFIG
         } = options
@@ -151,7 +158,10 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
                 
                 objItemResultSet.each(function (result) {
-                    objUpcMap[result.getValue({ name: 'custitemheyday_upccode' })] = result.id;
+                    let stUpcCode = result.getValue({ name: 'custitemheyday_upccode' })
+                    if(!(objUpcMap.hasOwnProperty(stUpcCode))){
+                        objUpcMap[stUpcCode] = result.id;
+                    }
                     
                     return true;
                 });
@@ -165,16 +175,17 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD_GROUP',
-                stType         
+                stType,
+                stSubType
             })
             
             appendScannerUiToConfig({
                 objConfig       : _CONFIG,
                 objConfProperty : 'FIELD',
-                stType         
+                stType       
             })
            
-            log.debug('_CONFIG', _CONFIG.FIELD[stType].SCAN_UPC_CODES)
+            log.debug('_CONFIG', _CONFIG.FIELD)
             
             return  {
                 objItemResultSet,
@@ -185,52 +196,90 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
         }
     }
 
-    const getScanButtonCss = () => {
-        const stBtnCss = 
-        `<span>
-            <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
-            <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
-         </span>
+    const getScanButtonCss = (options) => {
+        const {
+            stPageType
+        } = options;
         
-        <style>
-
-        .scanbutton {
-            font-family: 'Roboto', sans-serif;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 14px !important;
-            font-weight: 600;
-            padding: 20px 15px;
-            margin: 20px 5px;
-            color: #105368;
-            background-color: transparent;
-            transition-duration: 0.4s;
-            background-position-x: 0%;
-            background-position-y: 0%;
-            background-repeat: repeat;
-            background-attachment: scroll;
-            background-image: none;
-            background-size: auto;
-            background-origin: padding-box;
-            background-clip: border-box;
+        let stBtnDefCss = ''
+        let stBtnCss    = '';
+        
+        try{    
+            switch(stPageType){
+                case 'itemreceipt': 
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_received_scan_btn" type="button" class="scanbutton">Add as<br />Received</button>
+                        <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br />Damaged</button>
+                    `
+                    break;
+                case 'inventoryadjustment_standard':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_adjustqty_scan_btn" type="button" class="scanbutton">Add to<br />Adjusted Quantity</button>
+                        <button id="custpage_cwgp_endingqty_scan_btn" type="button" class="scanbutton">Add to<br />Ending Quantity</button>
+                    `
+                    break;
+                case 'inventoryadjustment_backbar':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_backbar_scan_btn" type="button" class="scanbutton">Add as<br /> Backbar</button>
+                    `
+                    break;
+                case 'inventoryadjustment_damagetestertheft':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br /> Damaged</button>
+                        <button id="custpage_cwgp_tester_scan_btn" type="button" class="scanbutton">Add as<br /> Tester</button>
+                        <button id="custpage_cwgp_theft_scan_btn" type="button" class="scanbutton">Add as<br /> Theft</button>
+                    `
+                    break;
         }
 
-        .scanbutton:hover {
-            background-color: #105368;
-            color: white;
-        }
-         
-        tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
-            width: 1%
-        }
+            stBtnCss = `
+                
+                <span>
+                    ${stBtnDefCss}
+                </span>
+                
+                <style>
+
+                .scanbutton {
+                    font-family: 'Roboto', sans-serif;
+                    font-family: 'Roboto Mono', monospace;
+                    font-size: 14px !important;
+                    font-weight: 600;
+                    padding: 20px 15px;
+                    margin: 20px 5px;
+                    color: #105368;
+                    background-color: transparent;
+                    transition-duration: 0.4s;
+                    background-position-x: 0%;
+                    background-position-y: 0%;
+                    background-repeat: repeat;
+                    background-attachment: scroll;
+                    background-image: none;
+                    background-size: auto;
+                    background-origin: padding-box;
+                    background-clip: border-box;
+                }
+
+                .scanbutton:hover {
+                    background-color: #105368;
+                    color: white;
+                }
+                
+                tr#tr_fg_custpage_interpo_scan_grp > td:first-child {
+                    width: 1%
+                }
 
 
-        tr#tr_fg_custpage_interpo_scan_grp > td:nth-child(2) > table.table_fields>tbody{
-            display: grid;
-            height: 165px;
-            align-items: center;
-        }
+                tr#tr_fg_custpage_interpo_scan_grp > td:nth-child(2) > table.table_fields>tbody{
+                    display: grid;
+                    height: 165px;
+                    align-items: center;
+                }
 
-        </style>`;
+                </style>`;
+        }catch(e){
+            log.error('getScanButtonCss - Error', e)
+        }
 
         return stBtnCss;
     };

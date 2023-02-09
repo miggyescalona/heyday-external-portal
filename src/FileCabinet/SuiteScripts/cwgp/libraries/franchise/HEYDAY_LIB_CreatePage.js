@@ -400,7 +400,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         displayType:'disabled'
                     },
                     QUANTITY_REMAINING: {
-                        id: 'custpage_cwgp_quantityremaining',
+                        id: 'custpage_cwgp_shippedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Shipped Quantity',
                         displayType:'inline'
@@ -1480,4 +1480,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         renderInventoryAdjustment
     }
 });
-

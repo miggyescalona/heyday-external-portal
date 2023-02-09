@@ -155,7 +155,8 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
             buttons: [
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
-                { label: 'Damage/Tester', value: 3 }
+                { label: 'Damage/Tester/Theft', value: 3 },
+                { label: 'Cancel', value: 0 },
             ]
         };
         function success(result) { 
@@ -164,14 +165,16 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
             let subType;
 
             switch(result){
-                case '1':
+                case 0:
+                    return;
+                case 1:
                     subType = 'standard';
                     break;
-                case '2':
+                case 2:
                     subType = 'backbar';
                 break;
-                case '3':
-                    subType = 'damage';
+                case 3:
+                    subType = 'damagetestertheft';
                 break;
             }
             

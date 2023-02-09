@@ -567,4 +567,3 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         renderInventoryAdjustment
     }
 });
-

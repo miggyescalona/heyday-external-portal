@@ -53,7 +53,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     STATUS: {
                         id: 'custpage_cwgp_trandstatus',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Status'
+                        label: 'Approval Status'
                     },
                     FOR_RECEIVING: {
                         id: 'custpage_cwgp_forreceiving',
