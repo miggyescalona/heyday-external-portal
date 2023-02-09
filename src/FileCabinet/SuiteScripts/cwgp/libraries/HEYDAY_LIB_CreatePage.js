@@ -318,23 +318,23 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 TOTAL_ADJUSTMENT_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: 'Total Adjustment',
+                    label: '   ',
                     container: 'TOTAL_ADJUSTMENT',
                     displayType:'inline'
+                },
+                TOTAL_ADJUSTMENT_HTMLHIDDEN: {
+                    id: 'custpage_cwgp_totaladjustmenthidden',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Total Adjustment Hidden',
+                    container: 'TOTAL_ADJUSTMENT',
+                    displayType: 'hidden'
                 },
                 ITEM_SUMMARY_HTML: {
                     id: 'custpage_cwgp_itemsummary',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: 'Item Summary',
+                    label: '   ',
                     container: 'ITEM_SUMMARY',
                     displayType: 'inline'
-                },
-                ITEM_SUMMARY_HTMLHIDDEN: {
-                    id: 'custpage_cwgp_itemsummaryhidden',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'Item Summary',
-                    container: 'ITEM_SUMMARY',
-                    displayType: 'hidden'
                 },
                 
             }

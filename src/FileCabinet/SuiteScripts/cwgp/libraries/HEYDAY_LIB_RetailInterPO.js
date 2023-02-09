@@ -414,7 +414,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stDepartment = request.parameters.custpage_cwgp_department;
         const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = request.parameters.custpage_cwgp_operator;
-        const stItemSummary = request.parameters.custpage_cwgp_itemsummaryhidden;
+        const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
 
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
@@ -427,7 +427,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             department: stDepartment,
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
-            custbody_cwgp_itemsummary: stItemSummary
+            custbody_cwgp_itemsummary: stTotalAdjustment
 
         };
         log.debug('objMapBodyFields', objMapBodyFields);

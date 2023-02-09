@@ -1117,23 +1117,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         if(objItemSummary.length > 0){
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2">Starting Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold">Type</td><td style="font-weight: bold">Quantity</tr>';
             for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intQtyOnHand+'</tr>';
-            }
-            stTextAreaVal += '</div></table><br></br>'
-
-            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2">Final Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
-            for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intFinalOnHand+'</tr>';
+                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].Id+'</td><td>'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
-            objPO.body.custpage_cwgp_itemsummary = stTextAreaVal;
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
         }
 
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
