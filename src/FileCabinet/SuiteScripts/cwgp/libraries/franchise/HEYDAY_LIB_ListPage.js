@@ -90,6 +90,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Date'
+                    },
+                    TYPE: {
+                        id: 'custpage_cwgp_type',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Type'
                     }
                 }
             }

@@ -452,7 +452,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 })
                 let intQty = 0;
                 let intScannedQty = 0;
-                let blOverRcvd = false;
 
                 //Validate if the adjusted or ending qty also exists
                 let intOtherQty = 0;
@@ -520,7 +519,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
                     }
                 }
-                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST){
+                if(stScanType == _CONFIG.SCAN_TYPE.ADD_ADJUST || stScanType == _CONFIG.SCAN_TYPE.ENDING){
                     recCurrent.setCurrentSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
                         fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
@@ -528,35 +527,17 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     });
                 }
                 else if(stScanType == _CONFIG.SCAN_TYPE.SUBTRACT_ADJUST){
-                    let intQtyToSet = 0;
+                    let intQtyToSet = intQty - intScannedQty
                     
-
-                    if(intQty >= intScannedQty){
-                        intQtyToSet = intQty - intScannedQty
-                    }
-                    //If received quantity exceeds quantity remaining
-                    else{
-                        intScannedQty = 0
-                        blOverRcvd = true;
-                        objCurrItemLine.qty = intScannedQty - intQty
-                    }
                     recCurrent.setCurrentSublistValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
                         fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        value       : intQtyToSet
+                        value       : intQty - intScannedQty
                     });
                 }
                 recCurrent.commitLine({
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
-                if(blOverRcvd){
-                    let objError = {
-                        name    : 'EXCESS_SCANNED_QTY',
-                        message : ''
-                    }
-                    objError['message'] = 'Total quantity to subtract exceeds current quantity. Only the maximum allowed quantity was deducted.'
-                    throw objError;
-                }
             }
             else if(stPageType == 'inventoryadjustment_backbar' || stPageType == 'inventoryadjustment_damagetestertheft'){
 

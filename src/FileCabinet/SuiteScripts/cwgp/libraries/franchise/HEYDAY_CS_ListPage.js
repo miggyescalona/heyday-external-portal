@@ -109,6 +109,54 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
             buttons: [
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
+                { label: 'Damage/Tester/Theft', value: 3 },
+                { label: 'Cancel', value: 0 },
+            ]
+        };
+        function success(result) { 
+
+            const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
+            let subType;
+
+            switch(result){
+                case 0:
+                    return;
+                case 1:
+                    subType = 'standard';
+                    break;
+                case 2:
+                    subType = 'backbar';
+                break;
+                case 3:
+                    subType = 'damagetestertheft';
+                break;
+            }
+            
+            let stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                scriptId            : objFranchiseUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'create',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : stType,
+                    subtype     : subType 
+                }
+            });
+            window.location = stCreateIntPOUrl;
+        }
+        function failure(reason) { console.log('Failure: ' + reason) }
+        dialog.create(options).then(success).catch(failure);
+    }
+
+    /*const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
+        var options = {
+            title: 'Create Inventory Adjustment',
+            message: 'Please select what type of inventory adjustment to create:',
+            buttons: [
+                { label: 'Standard', value: 1 },
+                { label: 'Backbar', value: 2 },
                 { label: 'Damage/Tester', value: 3 }
             ]
         };
@@ -146,7 +194,7 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
         }
         function failure(reason) { console.log('Failure: ' + reason) }
         dialog.create(options).then(success).catch(failure);
-    }
+    }*/
 
     return {
         pageInit,
