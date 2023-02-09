@@ -93,7 +93,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getInvItemsBySubsidiary = (options) => {
         const {
-            stSubsidiary
+            stSubsidiary,
+            stSubType
         } = options
         
 
@@ -108,7 +109,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     name: 'isinactive',
                     operator: search.Operator.IS,
                     values: 'F'
-                })
+                }),
             ]
 
             if(stSubsidiary){
@@ -118,6 +119,15 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     values: stSubsidiary
                 }))
             }
+
+            if(stSubType == 'backbar'){
+                filters.push(search.createFilter({
+                    name: 'name',
+                    operator: search.Operator.HASKEYWORDS,
+                    values: 'Backbar'
+                }))
+            }
+ 
 
             let objItemSearchProps = {
                 type: search.Type.INVENTORY_ITEM,
@@ -154,7 +164,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             //Get UPC Mapping
             try{
 
-                objItemResultSet = getInvItemsBySubsidiary({stSubsidiary});
+                objItemResultSet = getInvItemsBySubsidiary({stSubsidiary,stSubType});
 
                 
                 objItemResultSet.each(function (result) {

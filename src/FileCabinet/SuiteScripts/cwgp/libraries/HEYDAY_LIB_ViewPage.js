@@ -19,9 +19,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         TITLE: {
             intercompanypo: 'Purchase Order #',
             itemreceipt: 'Item Receipt #',
-            inventoryadjustment_standard: 'Inventory Adjustment',
-            inventoryadjustment_backbar: 'Backbar Usage',
-            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft'
+            inventoryadjustment_standard: 'Inventory Adjustment #',
+            inventoryadjustment_backbar: 'Backbar Usage #',
+            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft #'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
@@ -249,6 +249,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     label: 'accessType',
                     displayType: 'hidden'
                 }, 
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 ADJUSTMENT_ACCOUNT: {
                     id: 'custpage_cwgp_adjustmentaccount',
                     type: serverWidget.FieldType.TEXT,
@@ -312,6 +319,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     label: 'Inventory Adjustment Subtype',
                     container: 'CLASS',
                     displayType: 'hidden'
+                },
+                ITEM_SUMMARY_HTML: {
+                    id: 'custpage_cwgp_itemsummary',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: 'Item Summary',
+                    container: 'ITEM_SUMMARY',
+                    displayType: 'inline'
                 }
             },
         },
@@ -429,7 +443,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Location',
-                        displaType: 'hidden'
+                        displayType: 'hidden'
                     },
                     UNITS: {
                         id: 'custpage_cwgp_units',
@@ -454,11 +468,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         label: 'Final Quantity',
                         displaType: 'hidden'
                     },
-                    ESTIMATED_UNIT_COST: {
+                    /*ESTIMATED_UNIT_COST: {
                         id: 'custpage_cwgp_estimatedunitcost',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Est Unit Cost'
-                    },
+                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.TEXT,
@@ -543,13 +557,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Location',
-                        displayType: 'disabled'
+                        displayType: 'hidden'
                     },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Starting Quantity',
-                        displayType: 'disabled'
+                        displayType: 'hidden',
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
@@ -566,11 +580,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'St Assignment',
                     },
-                    /*ENDING_INVENTORY_QUANTITY: {
-                        id: 'custpage_cwgp_endinginventoryqty',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Ending Inventory Quantity'
-                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.TEXT,
@@ -586,7 +595,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Final Quantity',
-                        displayType: 'disabled'
+                        displayType: 'hidden'
                     },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
@@ -635,7 +644,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Location',
-                        displayType: 'disabled'
+                        displayType: 'hidden'
                     },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
@@ -653,39 +662,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
                     },
-                    /*ROOM_NUMBER: {
-                        id: 'custpage_cwgp_roomnumber',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Room # Assignment',
-                    },
-                    ST_ASSIGNMENT: {
-                        id: 'custpage_cwgp_stassignment',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'St Assignment',
-                    },
-                    ENDING_INVENTORY_QUANTITY: {
-                        id: 'custpage_cwgp_endinginventoryqty',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Ending Inventory Quantity'
-                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'hidden'
                     },
-                    /*DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: 'Business Line',
-                        displayType: 'hidden'
-                    },
-                    NEW_QUANTITY: {
-                        id: 'custpage_cwgp_newquantity',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Final Quantity',
-                        displayType: 'disabled'
-                    },*/
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.TEXT,
@@ -781,6 +763,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 CLASS: {
                     id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
                     label: 'Classification'
+                },
+                ITEM_SUMMARY: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
+                    label: 'Item Summary'
                 }
             },
         },
@@ -1191,7 +1177,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stSubType = 'standard'
         }
         log.debug('after',stType+'_'+stSubType);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType+'_'+stSubType] });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType+'_'+stSubType]+stTranId });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -1214,6 +1200,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : 'Damage/Tester/Theft'
+        objPO.body.custpage_cwgp_adjustmenttype = subType;
+        
         //log.debug('objPO', objPO);
 
         //render body fields
@@ -1248,6 +1237,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
             if (displayType) {
                 fld.updateDisplayType({ displayType });
+            }
+
+            if (id == 'custpage_cwgp_itemsummary' && stSubType != 'damagetestertheft') {
+                fld.updateDisplayType({ displayType:'hidden' });
             }
 
             if (objPO.body[fld.id] != 'undefined') {
@@ -1287,6 +1280,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
+
         });
 
         utilLib.setSublistValues(sbl, objPO);

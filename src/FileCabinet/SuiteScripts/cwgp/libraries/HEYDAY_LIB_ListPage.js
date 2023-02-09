@@ -93,6 +93,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Date'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
                     }
                 },
                 itemperlocation: {
