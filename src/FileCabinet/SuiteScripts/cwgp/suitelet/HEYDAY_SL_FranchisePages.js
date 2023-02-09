@@ -150,7 +150,8 @@ define([
                     stSubsidiary,
                     stPageMode,
                     stUserId,
-                    stPoId
+                    stPoId,
+                    stOperator
                 });
                 break;
             default:
@@ -170,7 +171,7 @@ define([
         log.debug('ir params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stCustomer);
-
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         switch (stPageMode) {
             case 'list':
                 listPage.renderItemReceipt({
@@ -191,7 +192,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stOperator
                 });
 
                 break;
@@ -240,7 +242,7 @@ define([
         const stCustomer = getCustomer(stUserId);
         log.debug('stCustomer',stCustomer);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
-
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryAdjustment({
@@ -264,7 +266,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stSubType
+                    stSubType,
+                    stOperator
                 });
 
                 break;

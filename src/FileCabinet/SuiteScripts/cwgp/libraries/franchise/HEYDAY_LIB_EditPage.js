@@ -107,6 +107,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Memo',
                     container: 'PRIMARY',
                 },
+                STATUS: {
+                    id: 'custpage_cwgp_status',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Approval Status',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                FOR_RECEIVING: {
+                    id: 'custpage_cwgp_forreceiving',
+                    type: serverWidget.FieldType.CHECKBOX,
+                    label: 'For Receiving',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -213,13 +234,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Damaged Inventory Adjustment',
                     container: 'CLASS',
                     displayType: 'hidden'
-                },
-                VARIANCE: {
-                    id: 'custpage_cwgp_variance',
-                    type: serverWidget.FieldType.INTEGER,
-                    label: 'Variance',
-                    displayType: 'inline'
-                },
+                }
             },
         },
         COLUMN: {
@@ -335,11 +350,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         displayType: 'inline',
                         source: 'item',
                     },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code'
+                    },
                     DAMAGED_QUANTITY:{
-                        id: 'custpage_cwgp_adjustqtyby',
+                        id: 'custpage_cwgp_damagedquantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damaged Quantity',
-                    }
+                    },
                 },
                 inventoryadjustment_variance:{
                     ITEM_RECEIPT_VARIANCE: {
@@ -406,7 +431,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stSubsidiary,
             stPageMode,
             stUserId,
-            stPoId
+            stPoId,
+            stOperator
         } = options;
       
         objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
@@ -430,6 +456,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_poid = stPoId;
+        if(objPO.body.custpage_cwgp_operator==''){
+            objPO.body.custpage_cwgp_operator = stOperator;
+        }
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
         // objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         // objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss();
