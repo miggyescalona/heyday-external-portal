@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages2',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
+            ID: 'customscript_cwgp_sl_franchisepages',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
         }
     };
     /**
@@ -150,7 +150,8 @@ define([
                     stSubsidiary,
                     stPageMode,
                     stUserId,
-                    stPoId
+                    stPoId,
+                    stOperator
                 });
                 break;
             default:
@@ -170,7 +171,7 @@ define([
         log.debug('ir params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stCustomer);
-
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         switch (stPageMode) {
             case 'list':
                 listPage.renderItemReceipt({
@@ -191,7 +192,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stOperator
                 });
 
                 break;
@@ -230,7 +232,8 @@ define([
             userId: stUserId,
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId
+            tranid: stTranId,
+            subtype: stSubType
         } = request.parameters;
 
         log.debug('ia params',request.parameters);
@@ -239,7 +242,7 @@ define([
         const stCustomer = getCustomer(stUserId);
         log.debug('stCustomer',stCustomer);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
-
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryAdjustment({
@@ -262,7 +265,9 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stAccessType
+                    stAccessType,
+                    stSubType,
+                    stOperator
                 });
 
                 break;
@@ -433,6 +438,9 @@ define([
             }else if(stRecType == 'itemreceipt'){
                 idRec = txnLib.createFranchiseIR(request);
             }
+            else if(stRecType == 'inventoryadjustment'){
+                idRec = txnLib.createFranchiseIA(request);
+            }
         }
 
         if (stPageMode == 'edit') {
@@ -474,6 +482,21 @@ define([
                 }
             });
         }
+        else if(stRecType == 'inventoryadjustment'){
+            redirect.toSuitelet({
+                scriptId: _CONFIG.SCRIPT.ID,
+                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    tranid: idRec
+                }
+            });
+        }
+        
     };
     
     const buildItemReceiptSearch = (stCustomer) => {

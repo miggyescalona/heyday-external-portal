@@ -67,7 +67,6 @@ define(['N/search'], (search) => {
 
         objLookup['franchiseprice'] = getFranchisePrice(stItem);
 
-
         log.debug('objLookup', objLookup);
 
         return objLookup
@@ -108,7 +107,7 @@ define(['N/search'], (search) => {
             columns:	
             [	
                search.createColumn({	
-                  name: "custrecord_cwgp_frl_quantity",	
+                  name: "custrecord_cwgp_ftl_actualqty",	
                   summary: "SUM",	
                   label: "Quantity"	
                })	

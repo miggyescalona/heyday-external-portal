@@ -25,8 +25,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         	franchisepo: 'custpage_interpo_listtab_franchise',
         	itemreceipt: 'custpage_ir_listtab_franchise',
             inventoryadjustment: 'custpage_ia_listtab_franchise'
-        	
-        	
         },
         SUBLIST: {
         	franchisepo: 'custpage_interpo_list_franchise',
@@ -92,6 +90,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Date'
+                    },
+                    TYPE: {
+                        id: 'custpage_cwgp_type',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Type'
                     }
                 }
             }
@@ -417,8 +420,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+            functionName: `createInventoryAdjustment(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
         });
+
     
 
         form.addButton({
@@ -519,6 +523,22 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             color: white !important;
             font-family: 'Roboto Mono', monospace;
         }
+
+        input#custpage_create_invadj_button, input#secondarycustpage_create_invadj_button {
+            background-color: #105368 !important;
+            color: white !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+        input#custpage_create_backbar_button, input#secondarycustpage_create_backbar_button {
+            background-color: #105368 !important;
+            color: white !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+        input#custpage_create_damage_button, input#secondarycustpage_create_damage_button {
+            background-color: #105368 !important;
+            color: white !important;
+            font-family: 'Roboto Mono', monospace;
+        }
         
         input#custpage_back_button, input#secondarycustpage_back_button {
             background-color: white !important;
@@ -547,4 +567,3 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         renderInventoryAdjustment
     }
 });
-

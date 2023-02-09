@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/format', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, format, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -39,6 +39,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                     id: 'custpage_cwgp_forreceiving',
                     type: serverWidget.FieldType.SELECT,
                     label: 'For Receiving'
+                },
+                TYPE: {
+                    id: 'custpage_cwgp_type',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Type'
                 }
             }
         },
@@ -149,10 +154,29 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
             const stID = result.id;
             const stUrl =  `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&tranid=${stID}&rectype=inventoryadjustment`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment # ${stID}</a>`;
+            const stSubtype = result.getValue({ name: 'custrecord_cwgp_fia_subtype' });
+            let stType = '';
+            switch (stSubtype) {
+                case 'standard':
+                    stType = 'Standard';
+    
+                    break;
+                case 'backbar':
+                    stType = 'Backbar';
+                    break;
+                case 'damagetestertheft':
+                    stType = 'Damage/Tester/Theft'
+                    break;
+                default:
+                    stType = 'Standard'
+            }
+
+
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDate,
-                [_CONFIG.COLUMN.LIST.CUSTOMER.id]: stCustomer
+                [_CONFIG.COLUMN.LIST.CUSTOMER.id]: stCustomer,
+                [_CONFIG.COLUMN.LIST.TYPE.id]: stType
             })
         });
         return arrMapIntercompanyPO;
@@ -324,6 +348,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                     search.createColumn({ name: 'salesdescription', join: 'item' }),
                     search.createColumn({ name: 'custbody_cwgp_franchiseitemreceipt' }),
                     search.createColumn({ name: 'custcol_cwgp_remaining' }),
+                    search.createColumn({ name: 'custbody_cwgp_franchiseapprovalstatus' }),
+                    search.createColumn({ name: 'custbody_cwgp_canreceive' }),
+                    search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     
                 ]
         }).run().each((result) => {
@@ -338,6 +365,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
                 objPO.body.custpage_cwgp_location = result.getValue({ name: 'location' });
                 objPO.body.custpage_cwgp_orderno = stPoId;
+                objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+                objPO.body.custpage_cwgp_status = result.getText({ name: 'custbody_cwgp_franchiseapprovalstatus' });
+                if(result.getValue({ name: 'custbody_cwgp_canreceive' })){
+                    objPO.body.custpage_cwgp_forreceiving = 'T'
+                }
+                //objPO.body.custpage_cwgp_forreceiving = result.getValue({ name: 'custbody_cwgp_canreceive' });
             } else {
                 log.debug('result id', result.id);
                 log.debug('status', result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' }));
@@ -349,7 +382,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 objPO.item.push({
                     custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                     custpage_cwgp_item: result.getValue({ name: 'item' }),
-                    custpage_cwgp_description: result.getValue({ name: 'salesdescription', join: 'item' }),
+                    custpage_cwgp_description: result.getValue({ name: 'memo' }),
                     custpage_cwgp_quantity: result.getValue({ name: 'quantity' }),
                     custpage_cwgp_rate: result.getValue({ name: 'rate' }),
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
@@ -423,8 +456,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
                 
                 custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                 custpage_cwgp_item: result.getValue({ name: 'item' }),
-                custpage_cwgp_description: result.getValue({ name: 'salesdescription', join: 'item' }),
-                custpage_cwgp_shippedquantity: result.getValue({ name: 'custcol_cwgp_remaining' }),
+                custpage_cwgp_description: result.getValue({ name: 'memo' }),
+                custpage_cwgp_quantityremaining: result.getValue({ name: 'custcol_cwgp_remaining' }),
                 custpage_cwgp_quantitystarting: String(qtyOnhand),
                 custpage_cwgp_quantityfinal: String(qtyOnhand),
                 custpage_cwgp_quantity: '0',
@@ -591,12 +624,44 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         
         objPO.body.custpage_cwgp_customer = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_customer' });
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_date' });
+        objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_memo' });
+        objPO.body.custpage_cwgp_operator = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_operator' });
+        objPO.body.custpage_cwgp_itemsummary = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_itemsummary' });
+
+        objItemSummary = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_itemsummary' });
+        subType = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fia_subtype' });
+
+        if(objItemSummary){
+            objItemSummary =  JSON.parse(objItemSummary);
+        }
+
+        if(objItemSummary.length > 0){
+            let stTextAreaVal = '';
+
+            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2">Starting Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
+            for(let x = 0; x < objItemSummary.length; x++){
+                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intQtyOnHand+'</tr>';
+            }
+            stTextAreaVal += '</div></table><br></br>'
+
+            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2">Final Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
+            for(let x = 0; x < objItemSummary.length; x++){
+                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intFinalOnHand+'</tr>';
+            }
+            stTextAreaVal += '</div></table>'
+
+            objPO.body.custpage_cwgp_itemsummary = stTextAreaVal;
+        }
         
         var franchiseIRLineSearch = search.create({
-        	   type: "customrecord_cwgp_franchiseinvadjline",
+        	   type: "customrecord_cwgp_franchise_tranline",
         	   filters:
         	   [
-        	      ["custrecord_cwgp_fial_invadj","anyof",stPoId]
+        	      ["custrecord_cwgp_ftl_parentia","anyof",stPoId]
         	   ],
         	   columns:
         	   [
@@ -605,15 +670,49 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         	         sort: search.Sort.ASC,
         	         label: "ID"
         	      }),
-        	      search.createColumn({name: "custrecord_cwgp_fial_item"}),
-        	      search.createColumn({name: "custrecord_cwgp_fial_adjqty"})
+        	      search.createColumn({name: "custrecord_cwgp_ftl_item"}),
+                  search.createColumn({
+                    name: "custitemheyday_upccode",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "UPC Code"
+                 }),
+                 search.createColumn({
+                    name: "custitem_heyday_sku",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "Internal SKU"
+                 }),
+                 search.createColumn({name: "custrecord_cwgp_ftl_actualqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmentreason"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmenttype"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_description"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_roomno"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_st"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_datetime"}),
+                 
+                 
         	   ]
         	});
         franchiseIRLineSearch.run().each(function(result){
+            let stDateTime = result.getValue({ name: 'custrecord_cwgp_ftl_datetime' });
+            if(stDateTime){
+                stDateTime = format.format({value: new Date(stDateTime), type: format.Type.DATETIMETZ})
+            }
         	objPO.item.push({
         		custpage_cwgp_id: result.id,
-                custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_fial_item' }),
-                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_fial_adjqty' })
+                custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_ftl_item' }),
+                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_actualqty' }),
+                //custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
+                custpage_cwgp_description: result.getValue({ name: 'custrecord_cwgp_ftl_description' }),
+                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_actualqty' }),
+                custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_adjustmentreason: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmentreason' }),
+                custpage_cwgp_adjustmenttype: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmenttype' }),
+                custpage_cwgp_roomnumber: result.getValue({ name: 'custrecord_cwgp_ftl_roomno' }),
+                custpage_cwgp_stassignment: result.getValue({ name: 'custrecord_cwgp_ftl_st' }),
+                custpage_cwgp_datetime: stDateTime,
+                
             });
         	   // .run().each has a limit of 4,000 results
     	   return true;
@@ -873,6 +972,35 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         });
     };
 
+    const addOptionsAdjusmentReason= (fld,stSubType) => {
+        fld.addSelectOption({
+            value: '',
+            text: ''
+        });
+        search.create({
+            type: "customlist_cwgp_adjustmenttype",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            if(stSubType=='damagetestertheft' && result.id != 3 && result.id != 4 && result.id != 5){
+                
+            }
+            else{
+                fld.addSelectOption({
+                    value: result.id,
+                    text: result.getValue({ name: 'name' })
+                });
+            }
+            
+            return true;
+        });
+    };
+
     
 
     
@@ -897,7 +1025,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', '../HEYD
         mapInvAdjValues,
         setSublistValues,
         addOptionsFranchiseApprovalStatus,
-        addOptionsForReceiving
+        addOptionsForReceiving,
+        addOptionsAdjusmentReason
     }
 });
-
