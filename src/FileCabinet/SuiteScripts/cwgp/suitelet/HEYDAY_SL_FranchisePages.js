@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
+            ID: 'customscript_cwgp_sl_franchisepages2',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
         }
     };
     /**
@@ -121,17 +121,20 @@ define([
                 });
                 break;
             case 'approve':
-            	record.submitFields({
-            	    type: record.Type.SALES_ORDER,
-            	    id: stPoId,
-            	    values: {
-            	    	custbody_cwgp_franchiseapprovalstatus: 3
-            	    },
-            	    options: {
-            	        enableSourcing: false,
-            	        ignoreMandatoryFields : true
-            	    }
-            	});
+
+                const objRecord = record.load({
+                    type: record.Type.SALES_ORDER,
+                    id: stPoId
+                });
+
+                objRecord.setValue({
+                    fieldId: 'custbody_cwgp_franchiseapprovalstatus',
+                    value: 3,
+                });
+                objRecord.save({
+                    enableSourcing: false,
+                    ignoreMandatoryFields: false
+                });
             	viewPage.render({
                     response,
                     stType: 'franchisepo',
