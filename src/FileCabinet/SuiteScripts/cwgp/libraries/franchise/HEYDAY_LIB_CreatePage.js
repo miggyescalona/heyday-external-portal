@@ -20,7 +20,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
 
             franchisepo: 'Purchase Order',
             itemreceipt: 'Item Receipt',
-            inventoryadjustment: 'Inventory Adjustment',
             inventoryadjustment_standard: 'Inventory Adjustment',
             inventoryadjustment_backbar: 'Backbar Usage',
             inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft'
@@ -28,7 +27,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         TAB: {
             franchisepo: 'custpage_franchisepo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
-            inventoryadjustment: 'custpage_inventoryadjustment_itemstab',
             inventoryadjustment_standard: 'custpage_inventoryadjustment_itemstab',
             inventoryadjustment_backbar: 'custpage_inventoryadjustmentbackbar_itemstab',
             inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab'
@@ -36,7 +34,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         SUBLIST: {
             franchisepo: 'custpage_franchisepo_items',
             itemreceipt: 'custpage_itemreceipt_items',
-            inventoryadjustment: 'custpage_inventorayadjustment_items',
             inventoryadjustment_standard: 'custpage_inventorayadjustment_items',
             inventoryadjustment_backbar: 'custpage_inventorayadjustmentbackbar_items',
             inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_items'
@@ -285,23 +282,23 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                 TOTAL_ADJUSTMENT_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: ' ',
+                    label: '   ',
                     container: 'TOTAL_ADJUSTMENT',
                     displayType:'inline'
+                },
+                TOTAL_ADJUSTMENT_HTMLHIDDEN: {
+                    id: 'custpage_cwgp_totaladjustmenthidden',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Total Adjustment Hidden',
+                    container: 'TOTAL_ADJUSTMENT',
+                    displayType: 'hidden'
                 },
                 ITEM_SUMMARY_HTML: {
                     id: 'custpage_cwgp_itemsummary',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: ' ',
+                    label: '   ',
                     container: 'ITEM_SUMMARY',
                     displayType: 'inline'
-                },
-                ITEM_SUMMARY_HTMLHIDDEN: {
-                    id: 'custpage_cwgp_itemsummaryhidden',
-                    type: serverWidget.FieldType.LONGTEXT,
-                    label: 'Item Summary',
-                    container: 'ITEM_SUMMARY',
-                    displayType: 'hidden'
                 },
             }
         },
@@ -393,17 +390,50 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'UPC Code',
                         displayType:'disabled'
                     },
-                    QUANTITY_STARTING: {
+                    /*QUANTITY_STARTING: {
                         id: 'custpage_cwgp_quantitystarting',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Starting Quantity',
                         displayType:'disabled'
                     },
                     QUANTITY_REMAINING: {
-                        id: 'custpage_cwgp_shippedquantity',
+                        id: 'custpage_cwgp_quantityremaining',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Shipped Quantity',
                         displayType:'inline'
+                    },*/
+                    STARTING_QUANTITY: {
+                        id: 'custpage_cwgp_startingquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity',
+                    },
+                    STARTING_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_startingquantityhidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity Hidden',
+                        displayType: 'hidden'
+                    },
+                    SHIPPED_QUANTITY: {
+                        id: 'custpage_cwgp_shippedquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Shipped Quantity'
+                    },
+                    SHIPPED_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_shippedquantityhidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Shipped Quantity Hidden',
+                        displayType: 'hidden'
+                    },
+                    REMAINING_QUANTITY: {
+                        id: 'custpage_cwgp_quantityremaining',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Remaining Quantity'
+                    },
+                    REMAINING_QUANTITY_HIDDEN: {
+                        id: 'custpage_cwgp_quantityremaininghidden',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Remaining Quantity',
+                        displayType:'hidden'
                     },
                     QUANTITY: {
                         id: 'custpage_cwgp_quantity',
@@ -423,8 +453,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'Variance',
                         displayType: 'ENTRY'
                     },
-                    QUANTITY_FINAL: {
-                        id: 'custpage_cwgp_quantityfinal',
+                    FINAL_QUANTITY: {
+                        id: 'custpage_cwgp_finalquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Final Quantity',
                         displayType: 'ENTRY'
@@ -551,7 +581,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     ITEM: {
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Items'
+                        label: 'Items',
+                        mandatory: true
                     },
                     ITEM_ID: {
                         id: 'custpage_cwgp_itemid',
@@ -577,12 +608,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         label: 'UPC Code',
                         displayType:'disabled'
                     },
-                    /*LOCATION: {
+                    LOCATION: {
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Location',
-                        displayType: 'disabled'
-                    },*/
+                        displayType: 'hidden'
+                    },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
@@ -592,12 +623,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Adjust Inventory Quantity'
+                        label: '*Adjust Inventory Quantity'
                     },
                     ENDING_INVENTORY_QUANTITY: {
                         id: 'custpage_cwgp_endinginventoryqty',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Ending Inventory Quantity'
+                        label: '*Ending Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
@@ -614,12 +645,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
-                        label: 'Adjustment Type'
+                        label: 'Adjustment Type',
+                        displayType:'disabled'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
-                        label: 'Adjustment Reason'
+                        label: '*Adjustment Reason',
                     }
                 },
                 inventoryadjustment_backbar: {
@@ -1031,7 +1063,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stPageMode,
             stUserId,
             stPoId,
-            stAccessType
+            stAccessType,
+            stOperator
         } = options;
         log.debug('options',options);
         log.debug('stType',stType);
@@ -1078,6 +1111,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         let objPO = utilLib.mapIRValuesCreate(stPoId);
         log.debug('objPO',objPO);
         //let objPO = utilLib.mapPOValues(stPoId);
+
+        
         
         objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_pagemode = stPageMode;
@@ -1087,6 +1122,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         objPO.body.custpage_cwgp_accesstype = stAccessType;
         objPO.body.custpage_cwgp_location = 230;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        objPO.body.custpage_cwgp_operator = stOperator;
         objPO.body.custpage_cwgp_upccodemap = stUpcMap;
         objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: 'itemreceipt'});
 
@@ -1317,7 +1353,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                 });
             }
             if(id == 'custpage_cwgp_adjustmenttype'){
-                utilLib.addOptionsAdjusmentReason(col,stSubType);
+                utilLib.addOptionsAdjusmentTypeFiltered(col,stSubType);
                 /*if(stSubType == 'damagetestertheft'){
                     col.removeSelectOption({
                         value: 1,
