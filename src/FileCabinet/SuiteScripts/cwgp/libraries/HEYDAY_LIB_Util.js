@@ -853,7 +853,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
                     custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }) || null,
                     custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }) || null,
-                    custpage_cwgp_expectedreceiptdate: result.getValue({ name: 'expectedreceiptdate'}) || null
+                    //custpage_cwgp_expectedreceiptdate: result.getValue({ name: 'expectedreceiptdate'}) || null
                 });
             }
 
@@ -1236,7 +1236,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                if(fieldId == 'custpage_cwgp_expectedreceiptdate' || fieldId == 'custpage_cwgp_datetime'){
+                if(fieldId == 'custpage_cwgp_datetime'){
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,

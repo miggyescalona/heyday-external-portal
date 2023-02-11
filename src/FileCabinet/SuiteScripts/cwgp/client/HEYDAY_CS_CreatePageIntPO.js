@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord'], (https, util, url, ClientEPLib, currentRecord) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message'], (https, util, url, ClientEPLib, currentRecord, message) => {
     
     /**
      * Function to be executed after page is initialized.
@@ -25,12 +25,23 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         let stQuery = window.location.search;
         let objParams = new URLSearchParams(stQuery);
         let stSubType = objParams.get('subtype');
+        let stRecType = objParams.get('rectype');
+        let stPageMode = objParams.get('pageMode');
 
 
         /*if(stSubType == 'damagetestertheft'){
             jQuery('#custpage_cwgp_totaladjustment_fs_lbl').hide();
             jQuery('#custpage_cwgp_itemsummary_fs_lbl').hide();
         }*/
+
+        if(stRecType == 'intercompanypo' && stPageMode == 'create'){
+            let messageUI = message.create({
+                title: 'Reminder',
+                message: 'Item and Quanatity requested are subject for approval.',
+                type: message.Type.WARNING,
+            });
+            messageUI.show(); // will disappear after 20s
+        }
     };
 
      const saveRecord = (context) => {
@@ -178,6 +189,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 //default item details
                 let blNegativeQuantity = [];
                 let blEmptyQuantity = [];
+                let blBothWithQuantity = [];
                 let blAdjustmentReason = [];
                 for(let x = 0; x < intIaLineCountStandard; x++){
                     currentRecord.selectLine({
@@ -220,8 +232,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         blNegativeQuantity.push(x+1);
                     }
 
-                    if(!intQuantity && !intEndingQty){
+                    if((intQuantity == 0 && intEndingQty == 0) || (isNaN(intQuantity) && isNaN(intEndingQty))){
                         blEmptyQuantity.push(x+1);
+                    }
+
+                    
+                    if(!isNaN(intQuantity) && !isNaN(intEndingQty)){
+                        blBothWithQuantity.push(x+1);
                     }
 
                     if(!stAdjustmentReason){
@@ -233,7 +250,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     blEmptyQuantity: blEmptyQuantity,
                     blAdjustmentReason: blAdjustmentReason
                 }));
-                if(blEmptyQuantity.length > 0 || blAdjustmentReason.length > 0 || blNegativeQuantity.length > 0){
+                if(blEmptyQuantity.length > 0 || blAdjustmentReason.length > 0 || blNegativeQuantity.length > 0 || blBothWithQuantity.length > 0){
                     /*if(blAllZeroQuantity){
                         alert('You have zero quantity for both Adjust Inventory Quantity and Ending Inventory Quantity at line/s: ' +blAllZeroQuantity.toString())
                         return false;
@@ -244,6 +261,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     }
                     if(blEmptyQuantity.length > 0){
                         alert('You need to enter either Adjust Inventory Quantity or Ending Inventory Quantity at line/s: ' +blEmptyQuantity.toString());
+                        return false;
+                    }
+                    if(blBothWithQuantity.length > 0){
+                        alert('You have quantities in both Adjust Inventory Quantity and Ending Inventory Quantity at line/s: ' +blBothWithQuantity.toString());
                         return false;
                     }
                     else if(blAdjustmentReason){
@@ -726,8 +747,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             
             return true;
         }
+        
 
-        ///Inventory Adjustment Backbar
+        ///Inventory Adjustment Backbar/DamageTesterTheft
         if (sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId == 'custpage_inventoryadjustmentdamagetestertheft_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_adjustqtyby') {

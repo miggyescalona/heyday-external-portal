@@ -369,11 +369,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount'
                     },
-                    EXPECTED_RECEIPT_DATE: {
+                    /*EXPECTED_RECEIPT_DATE: {
                         id: 'custpage_cwgp_expectedreceiptdate',
                         type: serverWidget.FieldType.DATE,
                         label: 'Expected Receipt Date',
-                    }
+                    }*/
                 },
                 itemreceipt: {
                     ITEM: {

@@ -441,7 +441,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const intLineCount = request.getLineCount({ group: 'custpage_interpo_items' });
 
         for (let i = 0; i < intLineCount; i++) {
-            let objDate = request.getSublistValue({
+            /*let objDate = request.getSublistValue({
                 group: 'custpage_interpo_items',
                 name: 'custpage_cwgp_expectedreceiptdate',
                 line: i
@@ -450,7 +450,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 objDate = new Date(objDate);
             }else{
                 objDate = null;
-            }
+            }*/
             arrMapSblFields.push({
                 item: request.getSublistValue({
                     group: 'custpage_interpo_items',
@@ -780,20 +780,18 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 const arrSkipFields  = ['custpage_cwgp_description'];
                 util.each(objUpdateLines, (value, fieldId) => {
                    // if(arrSkipFields.includes(fieldId)){return;}
-                    if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
+                    /*if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
                         recPO.setCurrentSublistValue({
                             fieldId: fieldId,
                             sublistId: 'item',
                             value: value || null
                         });
-                    }
-                    else{
+                    }*/
                         recPO.setCurrentSublistValue({
                             fieldId: fieldId,
                             sublistId: 'item',
                             value: value || ''
                         });
-                    }
                 });
 
                 recPO.commitLine({ sublistId: 'item' });
