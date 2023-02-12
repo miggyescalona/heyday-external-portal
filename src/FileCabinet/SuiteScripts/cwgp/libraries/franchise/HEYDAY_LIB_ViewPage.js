@@ -402,61 +402,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         displayType: 'hidden'
                     }
                 },
-                inventoryadjustment: {
-                    ITEM: {
-                        id: 'custpage_cwgp_item',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Items',
-                        displayType: 'inline',
-                        source: 'item',
-                    },
-                    DESCRIPTION: {
-                        id: 'custpage_cwgp_description',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Description',
-                    },
-                    INTERNAL_SKU: {
-                        id: 'custpage_cwgp_internalsku',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Internal SKU'
-                    },
-                    UPC_CODE: {
-                        id: 'custpage_cwgp_upccode',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'UPC Code'
-                    },
-                    /*LOCATION: {
-                        id: 'custpage_cwgp_location',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Location',
-                    },
-                    UNITS: {
-                        id: 'custpage_cwgp_units',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Units',
-                    },
-                    QTY_ON_HAND: {
-                        id: 'custpage_cwgp_qtyonhand',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Quantity On Hand'
-                    },*/
-                    ADJUST_QUANTITY_BY: {
-                        id: 'custpage_cwgp_adjustqtyby',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Inventory Quantity'
-                    },
-                    ADJUSTMENT_TYPE: {
-                        id: 'custpage_cwgp_adjustmenttype',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Adjustment Type',
-                        displayType: 'inline'
-                    },
-                    ADJUSTMENT_REASON: {
-                        id: 'custpage_cwgp_adjustmentreason',
-                        type: serverWidget.FieldType.TEXTAREA,
-                        label: 'Adjustment Reason'
-                    }
-                },
                 inventoryadjustment_standard: {
                     ITEM: {
                         id: 'custpage_cwgp_item',
@@ -490,6 +435,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Adjust Inventory Quantity'
+                    },
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Final Quantity'
                     },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
@@ -773,7 +723,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         log.debug('stAction', stAction);
@@ -953,7 +903,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
 
         
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
 
