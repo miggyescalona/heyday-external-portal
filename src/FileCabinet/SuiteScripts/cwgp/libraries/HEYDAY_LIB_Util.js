@@ -249,7 +249,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stCreatedFrom = result.getText({ name: 'createdfrom' });
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
-            const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stTranId}</a>`;
+            const stViewLink = `<a href='${stUrl}'>Item Receipt # ${stTranId}</a>`;
 
             arrMapItemReceipt.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,

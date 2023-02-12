@@ -69,7 +69,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         const MAP_VALUES = {
             'franchisepo': mapFranchisePO,
             'itemreceipt': mapItemReceipt,
-            'inventoryadjustment': mapInventoryAdjustment
+            'inventoryadjustment': mapInventoryAdjustment,
+            'itemperlocation': mapItemPerLocation
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -187,6 +188,29 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
         });
         return arrMapIntercompanyPO;
+    };
+
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
+
+        let arrMapItemperLocation= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stItemName = result.getValue({ name: 'itemid' });
+            const stLocation = result.getText({ name: 'inventorylocation' });
+            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
+            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
+            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
+          
+            arrMapItemperLocation.push({
+                [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                //[_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
+                //[_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
+                [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                //[_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted
+            })
+        });
+
+        return arrMapItemperLocation;
     };
 
 
@@ -694,6 +718,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                  search.createColumn({name: "custrecord_cwgp_ftl_st"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_datetime"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_displayqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_endingqty"}),
                  
                  
         	   ]
@@ -716,6 +741,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_adjustmenttype: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmenttype' }),
                 custpage_cwgp_roomnumber: result.getValue({ name: 'custrecord_cwgp_ftl_roomno' }),
                 custpage_cwgp_stassignment: result.getValue({ name: 'custrecord_cwgp_ftl_st' }),
+                custpage_cwgp_newquantity: result.getValue({ name: 'custrecord_cwgp_ftl_endingqty' }),
                 custpage_cwgp_datetime: stDateTime,
                 
             });

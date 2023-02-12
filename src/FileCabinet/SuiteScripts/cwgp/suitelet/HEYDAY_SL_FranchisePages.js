@@ -42,7 +42,25 @@ define([
                 rectype: rectype
             } = request.parameters;
             if (request.method === 'GET') {
-                if(rectype == 'franchisepo'){
+                switch (rectype) {
+                    case 'franchisepo':
+                        renderFranchisePO(request, response);
+                        break;
+                    case 'itemreceipt':
+                        renderItemReceipt(request, response);
+                        break;
+                    case 'inventoryadjustment':
+                        renderInventoryAdjustment(request, response);
+                        break;
+                    case 'itemperlocation':
+                        renderItemPerLocation(request, response);
+                        break;
+                    default:
+                        throw 'Page Not Found';
+                }
+
+
+                /*if(rectype == 'franchisepo'){
                     renderFranchisePO(request, response);
                 }
                 else if(rectype== 'itemreceipt'){
@@ -50,7 +68,9 @@ define([
                 }
                 else if(rectype == 'inventoryadjustment'){
                     renderInventoryAdjustment(request, response);
-                }
+                }*/
+
+
             } else {
                 handleFranchiseTxn(request);
             }
@@ -303,6 +323,26 @@ define([
         }
     };
 
+    const renderItemPerLocation = (request, response) => {
+        const {
+            userId: stUserId,
+            accesstype: stAccessType,
+        } = request.parameters;
+
+        log.debug('itemp per loc params',request.parameters);
+        const stCustomer = getCustomer(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer);
+
+        listPage.renderItemPerLocation({
+            request,
+            response,
+            stType: 'itemperlocation',
+            stAccessType,
+            stUserId,
+            objSearch: objItemPerLocationSearch
+        });
+    };
+
     const buildIntercompanyPOSearch = (stCustomer,stStatus,stReceiving,) => {
         const ssIntercompanyPO = search.load({ id: "customsearch_cwgp_franchise_po"});
 
@@ -420,6 +460,8 @@ define([
             return ssCredentials[0].getValue({ name: 'custrecord_cwgp_customer' });
         }
     };
+
+    
     
     const handleFranchiseTxn = (request) => {
         log.debug('params handleIntercompanyPOTxn', request.parameters)
@@ -524,6 +566,18 @@ define([
         }));
 
         return ssItemReceipt;
+    };
+
+    const buildItemPerLocationSearch = (stCustomer) => {
+        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        return ssItemPerLocation;
     };
     
     const editFranchisePO = (request) => {

@@ -795,86 +795,97 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
         }*/
 
         ///Inventory Adjustment Standard
-          if(intIaLineCountStandard > 0){
-                //default item details
-                let blNegativeQuantity = [];
-                let blEmptyQuantity = [];
-                let blAdjustmentReason = [];
-                for(let x = 0; x < intIaLineCountStandard; x++){
-                    currentRecord.selectLine({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        line: x
-                    });
+        if(intIaLineCountStandard > 0){
+            //default item details
+            let blNegativeQuantity = [];
+            let blEmptyQuantity = [];
+            let blBothWithQuantity = [];
+            let blAdjustmentReason = [];
+            for(let x = 0; x < intIaLineCountStandard; x++){
+                currentRecord.selectLine({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    line: x
+                });
 
-                    //QTY_ON_HAND (STARTINGQUANTITY)
-                    let intStartingQty = parseInt(currentRecord.getCurrentSublistValue({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        fieldId: 'custpage_cwgp_qtyonhand'
-                    }));
-
-                    //ADJUST_QUANTITY_BY (ADJUST INVENTORY QUANTITY)
-                    let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        fieldId: 'custpage_cwgp_adjustqtyby'
-                    }));
-
-                    ///ENDING_INVENTORY_QUANTITY (ENDING INVENTORY QUANTITY)
-                    let intEndingQty = parseInt(currentRecord.getCurrentSublistValue({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        fieldId: 'custpage_cwgp_endinginventoryqty'
-                    }));
-
-                    let stAdjustmentReason = currentRecord.getCurrentSublistValue({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        fieldId: 'custpage_cwgp_adjustmentreason'
-                    });
-
-                    console.log(JSON.stringify({
-                        intStartingQty: intStartingQty,
-                        intQuantity: intQuantity,
-                        intEndingQty: intEndingQty,
-                        stAdjustmentReason: stAdjustmentReason
-                    }));
-
-
-                    if(intEndingQty < 0){
-                        blNegativeQuantity.push(x+1);
-                    }
-
-                    if(!intQuantity && !intEndingQty){
-                        blEmptyQuantity.push(x+1);
-                    }
-
-                    if(!stAdjustmentReason){
-                        blAdjustmentReason.push(x+1)
-                    }
-
-                }
-                console.log(JSON.stringify({
-                    blEmptyQuantity: blEmptyQuantity,
-                    blAdjustmentReason: blAdjustmentReason
+                //QTY_ON_HAND (STARTINGQUANTITY)
+                let intStartingQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_qtyonhand'
                 }));
-                if(blEmptyQuantity.length > 0 || blAdjustmentReason.length > 0 || blNegativeQuantity.length > 0){
-                    /*if(blAllZeroQuantity){
-                        alert('You have zero quantity for both Adjust Inventory Quantity and Ending Inventory Quantity at line/s: ' +blAllZeroQuantity.toString())
-                        return false;
-                    }*/
-                    if(blNegativeQuantity.length > 0){
-                        alert('You cannot enter negative Ending Inventory Quantity at line/s: ' +blNegativeQuantity.toString());
-                        return false;
-                    }
-                    if(blEmptyQuantity.length > 0){
-                        alert('You need to enter either Adjust Inventory Quantity or Ending Inventory Quantity at line/s: ' +blEmptyQuantity.toString());
-                        return false;
-                    }
-                    else if(blAdjustmentReason){
-                        alert('You have no adjustment reason at line/s: ' +blAdjustmentReason.toString());
-                        return false;
-                    }
-                    
+
+                //ADJUST_QUANTITY_BY (ADJUST INVENTORY QUANTITY)
+                let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                }));
+
+                ///ENDING_INVENTORY_QUANTITY (ENDING INVENTORY QUANTITY)
+                let intEndingQty = parseInt(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_endinginventoryqty'
+                }));
+
+                let stAdjustmentReason = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustment_items',
+                    fieldId: 'custpage_cwgp_adjustmentreason'
+                });
+
+                console.log(JSON.stringify({
+                    intStartingQty: intStartingQty,
+                    intQuantity: intQuantity,
+                    intEndingQty: intEndingQty,
+                    stAdjustmentReason: stAdjustmentReason
+                }));
+
+
+                if(intEndingQty < 0){
+                    blNegativeQuantity.push(x+1);
                 }
+
+                if((intQuantity == 0 && intEndingQty == 0) || (isNaN(intQuantity) && isNaN(intEndingQty))){
+                    blEmptyQuantity.push(x+1);
+                }
+
+                
+                if(!isNaN(intQuantity) && !isNaN(intEndingQty)){
+                    blBothWithQuantity.push(x+1);
+                }
+
+                if(!stAdjustmentReason){
+                    blAdjustmentReason.push(x+1)
+                }
+
+            }
+            console.log(JSON.stringify({
+                blEmptyQuantity: blEmptyQuantity,
+                blAdjustmentReason: blAdjustmentReason
+            }));
+            if(blEmptyQuantity.length > 0 || blAdjustmentReason.length > 0 || blNegativeQuantity.length > 0 || blBothWithQuantity.length > 0){
+                /*if(blAllZeroQuantity){
+                    alert('You have zero quantity for both Adjust Inventory Quantity and Ending Inventory Quantity at line/s: ' +blAllZeroQuantity.toString())
+                    return false;
+                }*/
+                if(blNegativeQuantity.length > 0){
+                    alert('You cannot enter negative Ending Inventory Quantity at line/s: ' +blNegativeQuantity.toString());
+                    return false;
+                }
+                if(blEmptyQuantity.length > 0){
+                    alert('You need to enter either Adjust Inventory Quantity or Ending Inventory Quantity at line/s: ' +blEmptyQuantity.toString());
+                    return false;
+                }
+                if(blBothWithQuantity.length > 0){
+                    alert('You have quantities in both Adjust Inventory Quantity and Ending Inventory Quantity at line/s: ' +blBothWithQuantity.toString());
+                    return false;
+                }
+                else if(blAdjustmentReason){
+                    alert('You have no adjustment reason at line/s: ' +blAdjustmentReason.toString());
+                    return false;
+                }
+                
+            }
             return true;
         }
+        
         ///Inventory Adjustment Backbar
         if(intIaLineCountBackbar > 0){
             //default item details
