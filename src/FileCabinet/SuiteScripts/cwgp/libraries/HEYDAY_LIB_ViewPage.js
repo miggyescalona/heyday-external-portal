@@ -83,6 +83,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     mandatory: true,
                     displayType: 'inline'
                 },
+                DELIVER_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver By Date',
+                    container: 'PRIMARY',
+                    mandatory: true,
+                    displayType: 'inline'
+                },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
@@ -806,11 +814,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         let objPO = utilLib.mapPOValues(stPoId);
         let objPOValues = utilLib.getPOValues(stPoId);
+        
+        
         log.debug('objPOValuesButton',JSON.stringify({
             stApprovalStatus: objPOValues.stApprovalStatus,
             stPairedInterco: objPOValues.stPairedIntercoStatus,
             stDocumentStatus: objPOValues.stDocumentStatus
         }));
+
         if(objPOValues.stApprovalStatus == 'Approved' && (objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled') && (objPOValues.stDocumentStatus == 'pendingBillPartReceived' || objPOValues.stDocumentStatus == 'pendingReceipt')){
             objPO.body.custpage_cwgp_forreceiving = 'Yes'
         }
@@ -821,7 +832,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        //log.debug('objPO', objPO);
+        log.debug('objPO', objPO);
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -860,6 +871,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             if (breakType) {
                 fld.updateBreakType({ breakType });
             }
+
 
             if (objPO.body[fld.id] != 'undefined') {
                 fld.defaultValue = objPO.body[fld.id]
@@ -1296,6 +1308,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         
     };
+
 
     const htmlCss = () => {
         const stHtmlCss = `<style>

@@ -84,7 +84,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -107,7 +107,7 @@ define([
                     stPageMode,
                     stUserId,
                     stAccessType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -152,7 +152,7 @@ define([
         log.debug('ir params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -176,7 +176,7 @@ define([
                     stPoId,
                     stTranId,
                     stAccessType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -223,7 +223,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -249,7 +249,7 @@ define([
                     stPoId,
                     stAccessType,
                     stSubType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -282,6 +282,8 @@ define([
                 throw 'Page Not Found';
         }
     };
+
+    
 
     const renderItemPerLocation = (request, response) => {
         const {
@@ -535,6 +537,7 @@ define([
     };
 
     const getOperator = (stId) => {
+        let arrCredentials = [];
         const ssCredentials = search.create({
             type: _CONFIG.RECORD.CREDENTIALS,
             filters:
@@ -548,6 +551,7 @@ define([
             columns:
                 [
                     search.createColumn({ name: 'custrecord_cwgp_username' }),
+                    search.createColumn({ name: 'internalid' })
                 ]
         }).run().getRange({
             start: 0,
@@ -555,8 +559,12 @@ define([
         });
 
         if (ssCredentials.length > 0) {
-            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' });
+            arrCredentials.push({
+                stOperator: ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' }),
+                stOperatorId: ssCredentials[0].getValue({ name: 'internalid' })
+            });
         }
+        return arrCredentials;
     };
 
 

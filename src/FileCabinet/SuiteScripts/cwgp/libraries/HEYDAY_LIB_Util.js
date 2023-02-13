@@ -829,6 +829,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'expectedreceiptdate' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'class' }),
+                    search.createColumn({ name: 'custbody_cwgp_deliverbydate' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -842,6 +843,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
                 objPO.body.custpage_cwgp_sointercoid = result.getValue({ name: 'intercotransaction' });
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+                objPO.body.custpage_cwgp_deliverbydate = result.getValue({ name: 'custbody_cwgp_deliverbydate' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_businessline: result.getValue({ name: 'class' }),
@@ -1118,9 +1120,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             let stTextAreaVal = '';
 
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Type</td><td style="font-weight: bold">Quantity</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
             for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].Id+'</td><td>'+objItemSummary[x].intQty+'</tr>';
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
@@ -1380,6 +1382,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             }
         }
     }
+
+    function setDeliverByDate(){
+        const d = new Date();
+        const n = 6;
+        var day = d.getDay();
+        d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
+        return d;
+    }
     
 
     return {
@@ -1404,6 +1414,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         mapInventoryAdjustmentValues,
         setSublistValues,
         getPOValues,
-        lookUpItem
+        lookUpItem,
+        setDeliverByDate
     }
 });

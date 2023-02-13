@@ -238,7 +238,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
-                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Inventory On Hand</button>
                     </div>
                 </div>
 
@@ -331,11 +331,13 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                     </div>
                     <div class="buttonsdiv">
                         <br>
-                        <button type="button" id="cwgp_so_btn" class="navbutton">Purchase Order</button>
+                        <button type="button" id="cwgp_po_franchise_btn" class="navbutton">Purchase Order</button>
                         <br>
                         <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Item Receipt</button>
                         <br>
                         <button type="button" id="cwgp_ia_franchise_btn" class="navbutton">Inventory Adjustment</button>
+                        <br>
+                        <button type="button" id="cwgp_itemperlocation_franchise_btn" class="navbutton">Inventory On Hand</button>
                     </div>
                 </div>
 
@@ -346,8 +348,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         window.location = '${stRenderBaseURL}';
                     });
                     
-                    const btnISalesOrder = document.getElementById('cwgp_so_btn');
-                    btnISalesOrder.addEventListener('click', () => {
+                    const btnPurchaseOrderFranchise = document.getElementById('cwgp_po_franchise_btn');
+                    btnPurchaseOrderFranchise.addEventListener('click', () => {
                         const stQuery = window.location.search;
                         const objParams = new URLSearchParams(stQuery);
                         const stUserId = objParams.get('userId');
@@ -372,6 +374,15 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         const stAccessType = objParams.get('accesstype');
 
                         window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
+                    });
+                    const btnItemPerLocationFranchise = document.getElementById('cwgp_itemperlocation_franchise_btn');
+                    btnItemPerLocationFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
                     

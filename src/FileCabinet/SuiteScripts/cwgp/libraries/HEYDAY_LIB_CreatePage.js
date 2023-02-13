@@ -21,21 +21,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             itemreceipt: 'Receive Items',
             inventoryadjustment_standard: 'Inventory Adjustment',
             inventoryadjustment_backbar: 'Backbar Usage',
-            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft'
+            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft',
+            inventoryadjustment_inventorycountinitial: 'Inventory Count - Select Items and Quantity (1 of 3)'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
             inventoryadjustment_standard: 'custpage_inventoryadjustment_itemstab',
             inventoryadjustment_backbar: 'custpage_inventoryadjustmentbackbar_itemstab',
-            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab'
+            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
+            inventoryadjustment_inventorycountinitial: 'custpage_inventoryadjustmentinventorycountinitial_itemstab'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_items',
             itemreceipt: 'custpage_itemreceipt_items',
             inventoryadjustment_standard: 'custpage_inventorayadjustment_items',
             inventoryadjustment_backbar: 'custpage_inventorayadjustmentbackbar_items',
-            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_items'
+            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_items',
+            inventoryadjustment_inventorycountinitial: 'custpage_inventoryadjustmentinventorycountinitial_items',
         },
         FIELD: {
             intercompanypo: {
@@ -88,6 +91,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'PRIMARY',
                     mandatory: true
                 },
+                DELIVER_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver By Date',
+                    container: 'PRIMARY',
+                    mandatory: true
+                },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
@@ -100,6 +110,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Operator',
                     container: 'PRIMARY',
                     displayType: 'inline'
+                },
+                OPERATOR_HIDDEN: {
+                    id: 'custpage_cwgp_operatorhidden',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator Hidden',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -205,13 +222,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
-                /*DAMAGED_INVENTORY_ID:{
-                    id: 'custpage_cwgp_damagedinventoryadjustmentid',
+                OPERATOR_HIDDEN: {
+                    id: 'custpage_cwgp_operatorhidden',
                     type: serverWidget.FieldType.TEXT,
-                    label: 'Damaged Inventory Adjustment',
-                    container: 'CLASS',
-                    displayType: 'inline'
-                },*/
+                    label: 'Operator Hidden',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -285,6 +302,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                OPERATOR_HIDDEN: {
+                    id: 'custpage_cwgp_operatorhidden',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator Hidden',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -336,7 +360,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'ITEM_SUMMARY',
                     displayType: 'inline'
                 },
-                
+                SUBTYPE_ID: {
+                    id: 'custpage_cwgp_adjustmentsubtypeid',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Inventory Adjustment Subtype Id',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },             
             }
         },
         COLUMN: {
@@ -626,11 +656,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Location',
                         displayType: 'hidden'
                     },
-                    DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: '*Date/Time (M/D/YYYY hhmm)',
-                    },
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
@@ -652,11 +677,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.TEXT,
                         label: '*St Assignment',
                     },
-                    /*ENDING_INVENTORY_QUANTITY: {
-                        id: 'custpage_cwgp_endinginventoryqty',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Ending Inventory Quantity'
-                    },*/
+                    DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.DATETIMETZ,
+                        label: '*Date/Time (M/D/YYYY hhmm)',
+                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -734,39 +759,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.INTEGER,
                         label: '*Quantity Removed'
                     },
-                    /*ROOM_NUMBER: {
-                        id: 'custpage_cwgp_roomnumber',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Room # Assignment',
-                    },
-                    ST_ASSIGNMENT: {
-                        id: 'custpage_cwgp_stassignment',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'St Assignment',
-                    },
-                    /*ENDING_INVENTORY_QUANTITY: {
-                        id: 'custpage_cwgp_endinginventoryqty',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Ending Inventory Quantity'
-                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'hidden'
                     },
-                    /*DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: 'Business Line',
-                        displayType: 'hidden'
-                    },
-                    NEW_QUANTITY: {
-                        id: 'custpage_cwgp_newquantity',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Final Quantity',
-                        displayType: 'disabled'
-                    },*/
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
@@ -776,6 +774,78 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
                         label: '*Adjustment Reason',
+                    }
+                },
+                inventoryadjustment_inventorycountinitial: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        mandatory: true
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    LOCATION: {
+                        id: 'custpage_cwgp_location',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Location',
+                        displayType: 'hidden'
+                    },
+                    /*DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.DATETIMETZ,
+                        label: '*Date/Time (M/D/YYYY hhmm)',
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity in Saleable Inventory',
+                        displayType: 'disabled'
+                    },*/
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Quantity'
+                    },
+                    BUSINESS_LINE: {
+                        id: 'custpage_cwgp_businessline',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Business Line',
+                        displayType: 'hidden'
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: '*Adjustment Type',
+                        displayType: 'hidden'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: '*Adjustment Reason',
+                        displayType: 'hidden'
                     }
                 }
             }
@@ -839,6 +909,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
                     label: 'Item Summary'
                 }
+            },
+            inventoryadjustment_inventorycountinitial: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustmentinventorycountinitial_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustmentinventorycountinitial_class_grp',
+                    label: 'Classification'
+                },
             }
         },
         CLIENT_SCRIPT: '../client/HEYDAY_CS_CreatePageIntPO.js'
@@ -855,7 +935,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPageMode,
             stUserId,
             stAccessType,
-            stOperator
+            objOperator
         } = options;
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
@@ -919,7 +999,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (mandatory) {
                 fld.isMandatory = true;
             }
-
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
@@ -932,6 +1011,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (id == 'custpage_cwgp_location') {
                 utilLib.addOptionsLocationBySubsidiary(fld, stSubsidiary);
             }
+
+            const stOperator = objOperator[0].stOperator;
+            const stOperatorId = objOperator[0].stOperatorId;
             const objDefaultValues = mapDefaultValues({
                 stSubsidiary, 
                 stLocation,
@@ -939,7 +1021,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 stUserId,
                 stAccessType,
                 stType,
-                stOperator
+                stOperator,
+                stOperatorId
                 // stUpcMap
 
             });
@@ -1013,7 +1096,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPoId,
             stTranId,
             stAccessType,
-            stOperator
+            objOperator
         } = options;
 
 
@@ -1051,18 +1134,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             });
         });
 
+        
         let objPO = utilLib.mapPOtoItemReceiptValues(stPoId);
         log.debug('objPO',objPO);
-        objPO.body.custpage_cwgp_rectype = stType;
-        objPO.body.custpage_cwgp_pagemode = stPageMode;
-        objPO.body.custpage_cwgp_userid = stUserId;
-        objPO.body.custpage_cwgp_poid = stPoId;
-        objPO.body.custpage_cwgp_accesstype = stAccessType;
-        objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        objPO.body.custpage_cwgp_upccodemap = stUpcMap;
-        objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stTranId;
-        objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: stType});
-        objPO.body.custpage_cwgp_operator = stOperator;
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -1099,16 +1173,52 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
+            if (breakType) {
+                fld.updateBreakType({ breakType });
+            }
 
-            if (objPO.body[fld.id] != 'undefined') {
-                fld.defaultValue = objPO.body[fld.id]
+            /*objPO.body.custpage_cwgp_rectype = stType;
+            objPO.body.custpage_cwgp_pagemode = stPageMode;
+            objPO.body.custpage_cwgp_userid = stUserId;
+            objPO.body.custpage_cwgp_poid = stPoId;
+            objPO.body.custpage_cwgp_accesstype = stAccessType;
+            objPO.body.custpage_cwgp_htmlcss = htmlCss();
+            objPO.body.custpage_cwgp_upccodemap = stUpcMap;
+            objPO.body.custpage_cwgp_createdfrom = 'Purchase Order #'+stTranId;
+            objPO.body.custpage_cwgp_scanbtnhtml = EPLib.getScanButtonCss({stPageType: stType});
+            objPO.body.custpage_cwgp_operator = stOperator;
+            objPO.body.custpage_cwgp_operatorhidden = stOperatorId;*/
+            
+            const stCreatedFrom = 'Purchase Order #'+stTranId;
+            const stOperator = objOperator[0].stOperator;
+            const stOperatorId = objOperator[0].stOperatorId;
+            const stIntercoId = objPO.body.custpage_cwgp_sointercoid;
+            const stMemo =  objPO.body.custpage_cwgp_memomain;
+            const stVendor = objPO.body.custpage_cwgp_vendor;
+
+            const objDefaultValues = mapDefaultValues({
+                stSubsidiary, 
+                stPageMode, 
+                stUserId,
+                stPoId,
+                stAccessType,
+                stType,
+                stUpcMap,
+                stCreatedFrom,
+                stOperator,
+                stOperatorId,
+                stIntercoId,
+                stMemo,
+                stVendor
+            });
+
+            if (objDefaultValues[fld.id] != 'undefined') {
+                fld.defaultValue = objDefaultValues[fld.id]
             }
             else if(defaultValue){
                 fld.defaultValue = defaultValue;
             }
-            if (breakType) {
-                fld.updateBreakType({ breakType });
-            }
+
 
         });
 
@@ -1186,7 +1296,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stUserId,
             stAccessType,
             stSubType,
-            stOperator
+            objOperator
         } = options;
 
         log.debug(stType+'_'+stSubType);
@@ -1278,14 +1388,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 utilLib.addOptionsPostingPeriod(fld);
             }
 
-            /*if(id == 'custpage_cwgp_location'){
-               // fld.defaultValue = stLocation;
-            }
-
-            if(id == 'custpage_cwgp_businessline'){
-                //fld.defaultValue = 1;
-            }*/
-
             let intAdjustmentAccount;
             if (id == 'custpage_cwgp_adjustmentaccount' && stSubType =='backbar') {
                 fld.updateDisplayType({ displayType: 'inline' });
@@ -1293,7 +1395,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
 
 
-
+            const stOperator = objOperator[0].stOperator;
+            const stOperatorId = objOperator[0].stOperatorId;
             const objDefaultValues = mapDefaultValues({
                 stSubsidiary, 
                 stLocation,
@@ -1304,6 +1407,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 stUpcMap,
                 stSubType,
                 stOperator,
+                stOperatorId,
                 intAdjustmentAccount
             });
 
@@ -1409,31 +1513,57 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stSubsidiary, 
             stPageMode, 
             stUserId,
+            stPoId,
             stAccessType,
             stType,
             stSubType,
             stUpcMap,
+            stCreatedFrom,
             stOperator,
-            intAdjustmentAccount
+            stOperatorId,
+            intAdjustmentAccount,
+            stIntercoId,
+            stMemo,
+            stVendor
         } = options;
+
+        let scanbhtml;
+        let stMapVendor;
+        let stSubTypeId;
+        if(stType == 'itemreceipt'){
+            scanbhtml = EPLib.getScanButtonCss({stPageType: stType});
+            stMapVendor = stVendor;
+        }
+        else{
+            scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})
+            stMapVendor = 19082;
+        }
+        stSubTypeId = stSubType == 'standard' ? '1' : stSubType == 'backbar' ? '2' : '3';
 
         return {
             custpage_cwgp_adjustmentlocation: stLocation,
             custpage_cwgp_subsidiary        : stSubsidiary,
             custpage_cwgp_pagemode          : stPageMode,
             custpage_cwgp_userid            : stUserId,
+            custpage_cwgp_poid              : stPoId,
             custpage_cwgp_accesstype        : stAccessType,
             custpage_cwgp_htmlcss           : htmlCss(),
-            custpage_cwgp_scanbtnhtml       : EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`}),
+            custpage_cwgp_scanbtnhtml       : scanbhtml,
             custpage_cwgp_upccodemap        : stUpcMap,
+            custpage_cwgp_createdfrom       : stCreatedFrom,
             custpage_cwgp_date              : new Date(),
+            custpage_cwgp_deliverbydate     : utilLib.setDeliverByDate(),
             custpage_cwgp_rectype           : stType,
             custpage_cwgp_businessline      : 1,
             custpage_cwgp_location: stLocation,
-            custpage_cwgp_vendor: 19082,
+            custpage_cwgp_vendor: stMapVendor,
             custpage_cwgp_operator: stOperator,
+            custpage_cwgp_operatorhidden: stOperatorId,
             custpage_cwgp_adjustmentaccount: intAdjustmentAccount,
-            custpage_cwgp_adjustmentsubtype: stSubType
+            custpage_cwgp_adjustmentsubtype: stSubType,
+            custpage_cwgp_sointercoid : stIntercoId,
+            custpage_cwgp_memomain: stMemo,
+            custpage_cwgp_adjustmentsubtypeid: stSubTypeId
         }
     };
 

@@ -94,6 +94,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     mandatory: true,
                     defaultValue: new Date()
                 },
+                DELIVER_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver By Date',
+                    container: 'PRIMARY',
+                    mandatory: true,
+                },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
@@ -300,11 +307,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Amount',
                         displayType: 'disabled'
                     },
-                    EXPECTED_RECEIPT_DATE: {
+                    /*EXPECTED_RECEIPT_DATE: {
                         id: 'custpage_cwgp_expectedreceiptdate',
                         type: serverWidget.FieldType.DATE,
                         label: 'Expected Receipt Date',
-                    }
+                    }*/
                 },    
                 itemreceipt: {
                     RECEIVE: {
