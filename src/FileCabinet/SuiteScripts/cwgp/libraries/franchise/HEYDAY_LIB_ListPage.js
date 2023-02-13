@@ -19,17 +19,20 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         TITLE: {
         	franchisepo: 'Purchase Order',
         	itemreceipt: 'Item Receipts',
-            inventoryadjustment: 'Inventory Adjustment'
+            inventoryadjustment: 'Inventory Adjustment',
+            itemperlocation: 'Item Per Location'
         },
         TAB: {
         	franchisepo: 'custpage_interpo_listtab_franchise',
         	itemreceipt: 'custpage_ir_listtab_franchise',
-            inventoryadjustment: 'custpage_ia_listtab_franchise'
+            inventoryadjustment: 'custpage_ia_listtab_franchise',
+            itemperlocation: 'Item Per Location'
         },
         SUBLIST: {
         	franchisepo: 'custpage_interpo_list_franchise',
         	itemreceipt: 'custpage_ir_list_franchise',
-            inventoryadjustment: 'custpage_ia_list_franchise'
+            inventoryadjustment: 'custpage_ia_list_franchise',
+            itemperlocation: 'Item Per Location'
         },
         COLUMN: {
             LIST: {
@@ -95,7 +98,40 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_type',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Type'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
                     }
+                },
+                itemperlocation: {
+                    NAME: {
+                        id: 'custpage_cwgp_name',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Name'
+                    },
+                    /*LOCATION: {
+                        id: 'custpage_cwgp_location',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Location'
+                    },
+                    AVAILABLE: {
+                        id: 'custpage_cwgp_available',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Available'
+                    },*/
+                    ON_HAND: {
+                        id: 'custpage_cwgp_onhand',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'On Hand'
+                    },
+                    /*COMMITTED: {
+                        id: 'custpage_cwgp_committed',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Committed'
+                    },*/
+
                 }
             }
         },
@@ -434,6 +470,87 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
+    const renderItemPerLocation = (options) => {
+        log.debug('===LIST===','===List Item per Location===');
+        const {
+            request,
+            response,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            container: _CONFIG.TAB[stType]  
+        });
+        fldPage.defaultValue = intPage;
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'itemperlocation')`
+        });
+
+        response.writePage(form);
+    };
+
     const getPageData = (objSearch, fldPage, intPage) => {
         const objPagedData = objSearch.runPaged({ pageSize: 20 });
 
@@ -564,6 +681,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     return {
         render,
         renderItemReceipt,
-        renderInventoryAdjustment
+        renderInventoryAdjustment,
+        renderItemPerLocation
     }
 });

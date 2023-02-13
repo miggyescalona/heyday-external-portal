@@ -55,6 +55,9 @@ define([
                     case 'inventoryadjustment':
                         renderInventoryAdjustment(request, response);
                         break;
+                    case 'inventorycount':
+                        renderInventoryCount(request, response);
+                        break;
                     case 'itemperlocation':
                         renderItemPerLocation(request, response);
                         break;
@@ -266,17 +269,67 @@ define([
                 });
 
                 break;
-            case 'edit':
-                editPage.renderInventoryAdjustment({
+            default:
+                throw 'Page Not Found';
+        }
+    };
+
+    const renderInventoryCount = (request, response) => {
+        const {
+            pageMode: stPageMode,
+            userId: stUserId,
+            inventoryadjustmentid: stPoId,
+            accesstype: stAccessType,
+            tranid: stTranId,
+            step: stStep
+        } = request.parameters;
+
+        log.debug('ic params',request.parameters);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
+        const objInventoryCountSearch = buildInventoryCountSearch(stSubsidiary);
+        const objOperator = getOperator(stUserId);
+
+        switch (stPageMode) {
+            case 'list':
+                listPage.renderInventoryAdjustment({
+                    request,
                     response,
-                    stType: 'inventoryadjustment',
                     stSubsidiary,
+                    stType: 'inventorycount',
+                    stAccessType,
+                    stUserId,
+                    objSearch: objInventoryCountSearch
+                });
+
+                break;
+            case 'create':
+                createPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventorycount',
+                    stSubsidiary,
+                    stLocation,
                     stPageMode,
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stStep,
+                    objOperator
                 });
+
+                break;
+            case 'view':
+                viewPage.renderInventoryAdjustment({
+                    response,
+                    stType: 'inventorycount',
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId,
+                    stSubType
+                });
+
                 break;
             default:
                 throw 'Page Not Found';
@@ -461,6 +514,18 @@ define([
 
     const buildInventoryAdjustmentSearch = (stSubsidiary) => {
         const ssItemReceipt = search.load({ id: "577", type: "inventoryadjustment" });
+
+        ssItemReceipt.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'is',
+            values: stSubsidiary,
+        }));
+
+        return ssItemReceipt;
+    };
+
+    const buildInventoryCountSearch = (stSubsidiary) => {
+        const ssItemReceipt = search.load({ id: "616", type: "inventoryadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'subsidiary',

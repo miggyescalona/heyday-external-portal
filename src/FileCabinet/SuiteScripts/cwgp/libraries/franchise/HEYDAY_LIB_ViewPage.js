@@ -200,6 +200,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -247,7 +254,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     type: serverWidget.FieldType.TEXT,
                     label: 'accessType',
                     displayType: 'hidden'
-                }, 
+                },
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 CUSTOMER: {
                     id: 'custpage_cwgp_customer',
                     type: serverWidget.FieldType.SELECT,
@@ -286,11 +300,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
-                ITEM_SUMMARY_HTML: {
-                    id: 'custpage_cwgp_itemsummary',
+                TOTAL_ADJUSTMENT_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: 'Item Summary',
-                    container: 'ITEM_SUMMARY',
+                    label: '   ',
+                    container: 'TOTAL_ADJUSTMENT',
                     displayType: 'inline'
                 }
             }
@@ -388,61 +402,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         displayType: 'hidden'
                     }
                 },
-                inventoryadjustment: {
-                    ITEM: {
-                        id: 'custpage_cwgp_item',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Items',
-                        displayType: 'inline',
-                        source: 'item',
-                    },
-                    DESCRIPTION: {
-                        id: 'custpage_cwgp_description',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Description',
-                    },
-                    INTERNAL_SKU: {
-                        id: 'custpage_cwgp_internalsku',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Internal SKU'
-                    },
-                    UPC_CODE: {
-                        id: 'custpage_cwgp_upccode',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'UPC Code'
-                    },
-                    /*LOCATION: {
-                        id: 'custpage_cwgp_location',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Location',
-                    },
-                    UNITS: {
-                        id: 'custpage_cwgp_units',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Units',
-                    },
-                    QTY_ON_HAND: {
-                        id: 'custpage_cwgp_qtyonhand',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Quantity On Hand'
-                    },*/
-                    ADJUST_QUANTITY_BY: {
-                        id: 'custpage_cwgp_adjustqtyby',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Inventory Quantity'
-                    },
-                    ADJUSTMENT_TYPE: {
-                        id: 'custpage_cwgp_adjustmenttype',
-                        type: serverWidget.FieldType.SELECT,
-                        label: 'Adjustment Type',
-                        displayType: 'inline'
-                    },
-                    ADJUSTMENT_REASON: {
-                        id: 'custpage_cwgp_adjustmentreason',
-                        type: serverWidget.FieldType.TEXTAREA,
-                        label: 'Adjustment Reason'
-                    }
-                },
                 inventoryadjustment_standard: {
                     ITEM: {
                         id: 'custpage_cwgp_item',
@@ -476,6 +435,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Adjust Inventory Quantity'
+                    },
+                    NEW_QUANTITY: {
+                        id: 'custpage_cwgp_newquantity',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Final Quantity'
                     },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
@@ -516,11 +480,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damaged Quantity',
-                    },
-                    DAMAGED_ADJUSTING_ACCOUNT: {
-                        id: 'custpage_cwgp_damagedadjustingaccount',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Inventory Adjustment Account',
                     },
                 },
                 inventoryadjustment_backbar: {
@@ -632,7 +591,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     },
                     DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
+                        type: serverWidget.FieldType.TEXT,
                         label: 'Date/Time (M/D/YYYY hhmm)',
                     },
                     ADJUSTMENT_TYPE: {
@@ -672,11 +631,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Quantity',
-                    },
-                    OPERATOR: {
-                        id: 'custpage_cwgp_operator',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Operator',
                     },
                 }
             }
@@ -741,10 +695,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
                     label: 'Classification'
                 },
-                ITEM_SUMMARY: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
-                    label: 'Item Summary'
-                }
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
             }
         },
         CLIENT_SCRIPT: '../franchise/HEYDAY_CS_ViewPage.js'
@@ -769,7 +723,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         log.debug('stAction', stAction);
@@ -949,7 +903,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
 
         
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
 
@@ -1050,7 +1004,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             const stType = 'inventoryadjustment_damaged';
 
             let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
-            log.debug('objPO',objPO);
+            log.debug('objPO DAMAGED',objPO);
             form.addSubtab({
                 id: _CONFIG.TAB[stType],
                 label: 'Damaged'
@@ -1192,12 +1146,31 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 label
             });
         });
+
+        let stAdjustmentType = '';
+
+        switch (stSubType) {
+            case 'standard':
+                stAdjustmentType = 'Standard';
+
+                break;
+            case 'backbar':
+                stAdjustmentType = 'Backbar';
+                break;
+            case 'damagetestertheft':
+                stAdjustmentType = 'Damage/Tester/Theft'
+                break;
+            default:
+                stAdjustmentType = 'Standard'
+        }
+
         let objPO = utilLib.mapInvAdjValues(stTranId);
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        objPO.body.custpage_cwgp_adjustmenttype = stAdjustmentType;
         //log.debug('objPO', objPO);
 
         //render body fields
@@ -1278,7 +1251,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 col.updateDisplayType({ displayType });
             }
             if(id == 'custpage_cwgp_adjustmenttype'){
-                utilLib.addOptionsAdjusmentReason(col);
+                utilLib.addOptionsAdjusmentType(col);
             }
             /*if(id == 'custpage_cwgp_adjustmenttype'){
                 utilLib.addOptionsAdjusmentReason(col);
