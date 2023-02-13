@@ -433,7 +433,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                 <div class="row">
                     <div class="column signin">
-                        <h1 class="signintxt">Sign In - Bravo</h1>
+                        <h1 class="signintxt">Sign In - Alpha</h1>
                     </div>
                     <div class="column loginform">
                         <p class="form_message">Please Enter Your Details</p>
