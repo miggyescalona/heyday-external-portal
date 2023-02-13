@@ -139,17 +139,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const recIR = objItemReceipt.save();
         if(arrPOSblFields[1].length){
             arrRecDamagedIRs = createDamagedInventoryAdjustment(objPOBodyFields,arrPOSblFields[1],recIR,intLocation);
-            /*objItemReceipt.setValue({
-                fieldId: 'custbody_cwgp_damagediaid',
-                value: recDamagedIAid
-            });*/
         }
         if(arrPOSblFields[2].length){
             arrRecItemReceiptVariance = createItemReceiptVariance(objPOBodyFields,arrPOSblFields[2],recIR, request);
-            /*objItemReceipt.setValue({
-                fieldId: 'custbody_cwgp_damagediaid',
-                value: recDamagedIAid
-            });*/
         }
         log.debug('createRetailItemReceipt', 'recIR: ' + recIR + '| arrRecDamagedIRs: ' + arrRecDamagedIRs + '| arrRecItemReceiptVariance: ' + arrRecItemReceiptVariance);
 
@@ -248,6 +240,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             recIA.setValue({
                 fieldId: 'class',
                 value: 1
+            });
+
+            recIA.setValue({
+                fieldId: 'custbody_cwgp_inventoryadjustmentsub',
+                value: 3
             });
 
             let stTranId = search.lookupFields({
@@ -363,8 +360,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stLocation = request.parameters.custpage_cwgp_location;
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
+        const stDeliverByDate = request.parameters.custpage_cwgp_deliverbydate;
         const stBusinessLine = request.parameters.custpage_cwgp_businessline;
         const stOperator = request.parameters.custpage_cwgp_operator;
+        const stOperatorId = request.parameters.custpage_cwgp_operatorhidden;
 
         const objMapBodyFields = {
             entity: stVendor,
@@ -373,7 +372,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             memo: stMemoMain || '',
             location: stLocation,
             class: stBusinessLine,
-            custbody_cwgp_externalportaloperator: stOperator
+            custbody_cwgp_externalportaloperator: stOperator,
+            custbody_cwgp_externalportaloperatorid: stOperatorId,
+            custbody_cwgp_deliverbydate: new Date(stDeliverByDate)
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -414,7 +415,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stDepartment = request.parameters.custpage_cwgp_department;
         const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = request.parameters.custpage_cwgp_operator;
-        const stItemSummary = request.parameters.custpage_cwgp_itemsummaryhidden;
+        const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
+        const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
 
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
@@ -427,7 +429,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             department: stDepartment,
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
-            custbody_cwgp_itemsummary: stItemSummary
+            custbody_cwgp_itemsummary: stTotalAdjustment,
+            custbody_cwgp_inventoryadjustmentsub: stSubTypeId
 
         };
         log.debug('objMapBodyFields', objMapBodyFields);
@@ -441,7 +444,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const intLineCount = request.getLineCount({ group: 'custpage_interpo_items' });
 
         for (let i = 0; i < intLineCount; i++) {
-            let objDate = request.getSublistValue({
+            /*let objDate = request.getSublistValue({
                 group: 'custpage_interpo_items',
                 name: 'custpage_cwgp_expectedreceiptdate',
                 line: i
@@ -450,7 +453,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 objDate = new Date(objDate);
             }else{
                 objDate = null;
-            }
+            }*/
             arrMapSblFields.push({
                 item: request.getSublistValue({
                     group: 'custpage_interpo_items',
@@ -478,7 +481,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     line: i
                 }),*/
                 class:1,
-                expectedreceiptdate: objDate
             });
         }
 
@@ -779,21 +781,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 const arrSkipFields  = ['custpage_cwgp_description'];
                 util.each(objUpdateLines, (value, fieldId) => {
-                   // if(arrSkipFields.includes(fieldId)){return;}
-                    if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
-                        recPO.setCurrentSublistValue({
-                            fieldId: fieldId,
-                            sublistId: 'item',
-                            value: value || null
-                        });
-                    }
-                    else{
                         recPO.setCurrentSublistValue({
                             fieldId: fieldId,
                             sublistId: 'item',
                             value: value || ''
                         });
-                    }
                 });
 
                 recPO.commitLine({ sublistId: 'item' });
@@ -905,7 +897,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     search.createColumn({ name: 'memo' }),
                     search.createColumn({ name: 'quantity' }),
                     search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'amount' })
+                    search.createColumn({ name: 'amount' }),
+                    search.createColumn({ name: 'custbody_cwgp_deliverbydate' })
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -915,6 +908,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 objPO.body.trandate = new Date(result.getValue({ name: 'trandate' }));
                 objPO.body.memo = result.getValue({ name: 'memomain' });
                 objPO.body.location = result.getValue({ name: 'location' });
+                objPO.body.custbody_cwgp_deliverbydate = new Date(result.getValue({ name: 'custbody_cwgp_deliverbydate' }));
             } else {
                 objPO.item.push({
                     item: result.getValue({ name: 'item' }),
@@ -998,11 +992,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         let stDate = objPORecordDetails.trandate;
         stDate = format.format({ value: stDate, type: format.Type.DATETIMETZ });
 
+        let stDeliverByDate = objPORecordDetails.custbody_cwgp_deliverbydate;
+        stDeliverByDate = format.format({ value: stDeliverByDate, type: format.Type.DATETIMETZ });
+
         const stEntity = objPORecordDetails.entity;
         const stMemoMain = objPORecordDetails.memo;
         const stLocation = objPORecordDetails.location;
         log.debug('recPO details', `{
             date: ${stDate},
+            deliverbydate: ${stDeliverByDate},
             vendor: ${stEntity},
             memo: ${stMemoMain},
             location: ${stLocation}
@@ -1011,6 +1009,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const { entity, memo, location } = objPOBodyFields;
         let trandate = objPOBodyFields.trandate;
         trandate = format.format({ value: trandate, type: format.Type.DATETIMETZ });
+
+        let deliverbydate = objPOBodyFields.custbody_cwgp_deliverbydate;
+        deliverbydate = format.format({ value: deliverbydate, type: format.Type.DATETIMETZ });
 
         if (stDate != trandate) {
             objBodyFldsToUpdate.trandate = new Date(trandate);
@@ -1026,6 +1027,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
         if (stLocation != location) {
             objBodyFldsToUpdate.location = location;
+        }
+        
+        if (stDeliverByDate != deliverbydate) {
+            objBodyFldsToUpdate.custbody_cwgp_deliverbydate = new Date(deliverbydate);
         }
 
         log.debug('PO Body Fields to update', objBodyFldsToUpdate);

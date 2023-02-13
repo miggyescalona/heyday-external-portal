@@ -829,6 +829,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'expectedreceiptdate' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'class' }),
+                    search.createColumn({ name: 'custbody_cwgp_deliverbydate' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -842,6 +843,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
                 objPO.body.custpage_cwgp_sointercoid = result.getValue({ name: 'intercotransaction' });
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+                objPO.body.custpage_cwgp_deliverbydate = result.getValue({ name: 'custbody_cwgp_deliverbydate' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_businessline: result.getValue({ name: 'class' }),
@@ -853,7 +855,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     custpage_cwgp_amount: result.getValue({ name: 'amount' }),
                     custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }) || null,
                     custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }) || null,
-                    custpage_cwgp_expectedreceiptdate: result.getValue({ name: 'expectedreceiptdate'}) || null
+                    //custpage_cwgp_expectedreceiptdate: result.getValue({ name: 'expectedreceiptdate'}) || null
                 });
             }
 
@@ -1117,23 +1119,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         if(objItemSummary.length > 0){
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2">Starting Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
             for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intQtyOnHand+'</tr>';
-            }
-            stTextAreaVal += '</div></table><br></br>'
-
-            stTextAreaVal += '<div><table style="width:100%" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2">Final Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td>Item</td><td>Quantity</tr>';
-            for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ objItemSummary[x].stItem+'</td><td>'+objItemSummary[x].intFinalOnHand+'</tr>';
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
-            objPO.body.custpage_cwgp_itemsummary = stTextAreaVal;
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
         }
 
         const intLineCount = objInventoryAdjustment.getLineCount('inventory');
@@ -1245,7 +1238,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                if(fieldId == 'custpage_cwgp_expectedreceiptdate' || fieldId == 'custpage_cwgp_datetime'){
+                if(fieldId == 'custpage_cwgp_datetime'){
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
@@ -1389,6 +1382,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             }
         }
     }
+
+    function setDeliverByDate(){
+        const d = new Date();
+        const n = 6;
+        var day = d.getDay();
+        d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
+        return d;
+    }
     
 
     return {
@@ -1413,6 +1414,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         mapInventoryAdjustmentValues,
         setSublistValues,
         getPOValues,
-        lookUpItem
+        lookUpItem,
+        setDeliverByDate
     }
 });

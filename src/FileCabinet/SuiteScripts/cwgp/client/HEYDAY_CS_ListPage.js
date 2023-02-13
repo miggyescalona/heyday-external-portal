@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'], (url, dialog, ClientEPLib) => {
+define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/search'], (url, dialog, ClientEPLib, search) => {
     /**
      * Function to be executed after page is initialized.
      *
@@ -149,6 +149,26 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
     };
 
     const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
+        /*let objSubTypes;
+        search.create({
+            type: "customlist_cwgp_inventoryadjustmentsub",
+            filters:
+                [
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each(function (result) {
+            objSubTypes.push({
+                label: result.getValue({ name: 'name' }),
+                value: result.id
+            });
+            return true;
+        });
+
+        alert(objSubTypes);*/
+
         var options = {
             title: 'Create Inventory Adjustment',
             message: 'Please select what type of inventory adjustment to create:',
@@ -156,7 +176,8 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
                 { label: 'Damage/Tester/Theft', value: 3 },
-                { label: 'Cancel', value: 0 },
+                { label: 'Inventory Count', value: 4},
+                { label: 'Cancel', value: 0 }
             ]
         };
         function success(result) { 
@@ -172,10 +193,13 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                     break;
                 case 2:
                     subType = 'backbar';
-                break;
+                    break;
                 case 3:
                     subType = 'damagetestertheft';
-                break;
+                    break;
+                case 4:
+                    subType = 'inventorycountinitial';
+                    break;
             }
             
             let stCreateIntPOUrl = url.resolveScript({

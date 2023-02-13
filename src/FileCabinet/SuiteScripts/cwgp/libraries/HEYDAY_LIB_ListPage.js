@@ -23,7 +23,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             intercompanypo: 'Replenishment Purchase Order',
             itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'Inventory On Hand'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_listtab_retail',

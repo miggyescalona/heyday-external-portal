@@ -20,8 +20,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             intercompanypo: 'Purchase Order #',
             itemreceipt: 'Item Receipt #',
             inventoryadjustment_standard: 'Inventory Adjustment #',
-            inventoryadjustment_backbar: 'Backbar Usage #',
-            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft #'
+            inventoryadjustment_backbar: 'Inventory Adjustment #',
+            inventoryadjustment_damagetestertheft: 'Inventory Adjustment #'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_itemstab',
@@ -79,6 +79,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_cwgp_date',
                     type: serverWidget.FieldType.DATE,
                     label: 'Date',
+                    container: 'PRIMARY',
+                    mandatory: true,
+                    displayType: 'inline'
+                },
+                DELIVER_BY_DATE: {
+                    id: 'custpage_cwgp_deliverbydate',
+                    type: serverWidget.FieldType.DATE,
+                    label: 'Deliver By Date',
                     container: 'PRIMARY',
                     mandatory: true,
                     displayType: 'inline'
@@ -320,11 +328,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
-                ITEM_SUMMARY_HTML: {
-                    id: 'custpage_cwgp_itemsummary',
+                TOTAL_ADJUSTMENT_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: 'Item Summary',
-                    container: 'ITEM_SUMMARY',
+                    label: '   ',
+                    container: 'TOTAL_ADJUSTMENT',
                     displayType: 'inline'
                 }
             },
@@ -369,11 +377,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.FLOAT,
                         label: 'Amount'
                     },
-                    EXPECTED_RECEIPT_DATE: {
+                    /*EXPECTED_RECEIPT_DATE: {
                         id: 'custpage_cwgp_expectedreceiptdate',
                         type: serverWidget.FieldType.DATE,
                         label: 'Expected Receipt Date',
-                    }
+                    }*/
                 },
                 itemreceipt: {
                     ITEM: {
@@ -455,7 +463,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Starting Quantity',
-                        displaType: 'hidden'
+                        displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
@@ -466,7 +474,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Final Quantity',
-                        displaType: 'hidden'
+                        displayType: 'hidden'
                     },
                     /*ESTIMATED_UNIT_COST: {
                         id: 'custpage_cwgp_estimatedunitcost',
@@ -764,10 +772,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
                     label: 'Classification'
                 },
-                ITEM_SUMMARY: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
-                    label: 'Item Summary'
-                }
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
             },
         },
         CLIENT_SCRIPT: '../client/HEYDAY_CS_ViewPage.js'
@@ -806,11 +814,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         let objPO = utilLib.mapPOValues(stPoId);
         let objPOValues = utilLib.getPOValues(stPoId);
+        
+        
         log.debug('objPOValuesButton',JSON.stringify({
             stApprovalStatus: objPOValues.stApprovalStatus,
             stPairedInterco: objPOValues.stPairedIntercoStatus,
             stDocumentStatus: objPOValues.stDocumentStatus
         }));
+
         if(objPOValues.stApprovalStatus == 'Approved' && (objPOValues.stPairedIntercoStatus == 'pendingBilling' || objPOValues.stPairedIntercoStatus == 'pendingBillingPartFulfilled') && (objPOValues.stDocumentStatus == 'pendingBillPartReceived' || objPOValues.stDocumentStatus == 'pendingReceipt')){
             objPO.body.custpage_cwgp_forreceiving = 'Yes'
         }
@@ -821,7 +832,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        //log.debug('objPO', objPO);
+        log.debug('objPO', objPO);
 
         //render body fields
         const objBodyFields = _CONFIG.FIELD[stType];
@@ -860,6 +871,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             if (breakType) {
                 fld.updateBreakType({ breakType });
             }
+
 
             if (objPO.body[fld.id] != 'undefined') {
                 fld.defaultValue = objPO.body[fld.id]
@@ -1296,6 +1308,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         
     };
+
 
     const htmlCss = () => {
         const stHtmlCss = `<style>
