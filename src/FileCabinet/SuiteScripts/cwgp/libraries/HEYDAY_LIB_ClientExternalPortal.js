@@ -21,6 +21,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         DAMAGED         : 'custpage_cwgp_damaged_scan_btn',
         ADD_ADJUST      : 'custpage_cwgp_add_adjustqty_scan_btn',
         SUBTRACT_ADJUST : 'custpage_cwgp_subtract_adjustqty_scan_btn',
+        ENDING          : 'custpage_cwgp_endingqty_scan_btn',
         BACKBAR         : 'custpage_cwgp_backbar_scan_btn',
         DTT             : 'custpage_cwgp_dtt_scan_btn'
         
