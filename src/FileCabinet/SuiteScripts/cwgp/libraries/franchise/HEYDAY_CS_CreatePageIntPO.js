@@ -595,17 +595,23 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
     const saveRecord = (context) => {
         const { currentRecord } = context;
-
+        //console.log('context: ' + JSON.stringify(context));
+        //console.log('mode: ' + JSON.stringify(context.mode));
         let stRecType = getParameterFromURL('rectype');
         console.log('stRecType '+stRecType);
              
         if(stRecType == 'franchisepo'){
+            let pageMode = getParameterFromURL('pageMode');
             let numLines = currentRecord.getLineCount({
                 sublistId: 'custpage_franchisepo_items'
             });
             if(numLines == 0){
                 alert('Please select at least one item');
                 return false;
+            }
+
+            if(pageMode == 'create'){
+                alert('Item and Quantity requested are still subject for approval.');
             }
 
         }
@@ -1105,10 +1111,10 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Type</td><td style="font-weight: bold">Quantity</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
             for(let x = 0; x < result.length; x++){
-                stTextAreaVal+= '<tr><td>'+ result[x].Id+'</td><td>'+result[x].intQty+'</tr>';
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
@@ -1117,21 +1123,41 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
            
         if(itemSummary.length > 0){
+            let result = []
+
+            ///Merge Similar Items and Add up Qty
+            itemSummary.reduce(function(res, value) {
+            if (!res[value.stItem]) {
+                res[value.stItem] = { Id: value.stItem, intQty: 0, intQtyOnHand: value.intQtyOnHand, intFinalOnHand: value.intFinalOnHand  };
+                result.push(res[value.stItem])
+            }
+            res[value.stItem].intQty += value.intQty;
+                return res;
+            }, {});
+
+            ///Subtract Quantity to Quantity on Hand to get Final Quantity On Hand
+            result.map(function(item){
+                item.intFinalOnHand = item.intQtyOnHand - item.intQty;
+                return item;
+            })
+
+            console.log(result);
+
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%;  border-collapse: collapse" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold">Starting Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Item</td><td style="font-weight: bold">Quantity</tr>';
-            for(let x = 0; x < itemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ itemSummary[x].stItem+'</td><td>'+itemSummary[x].intQtyOnHand+'</tr>';
+            stTextAreaVal += '<div><table style="width:100%;border-collapse: collapse;" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold;padding:3px">Starting Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Item</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            for(let x = 0; x < result.length; x++){
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQtyOnHand+'</tr>';
             }
             stTextAreaVal += '</div></table><br></br>'
 
-            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold">Final Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Item</td><td style="font-weight: bold">Quantity</tr>';
-            for(let x = 0; x < itemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ itemSummary[x].stItem+'</td><td>'+itemSummary[x].intFinalOnHand+'</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold;padding:3px">Final Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Item</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            for(let x = 0; x < result.length; x++){
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intFinalOnHand+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 

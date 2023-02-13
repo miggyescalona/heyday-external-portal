@@ -545,7 +545,7 @@ define([
     };
     
     const buildItemReceiptSearch = (stCustomer) => {
-        const ssItemReceipt = search.load({ id: "580", type: "customrecord_cwgp_franchisereciept" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_itemreceipt", type: "customrecord_cwgp_franchisereciept" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'custrecord_cwgp_fr_customer',
@@ -569,7 +569,7 @@ define([
     };
 
     const buildItemPerLocationSearch = (stCustomer) => {
-        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
