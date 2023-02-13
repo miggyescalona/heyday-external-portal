@@ -71,12 +71,25 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         });
 
         const objPOBodyFields = mapRetailItemReceiptBodyFields(request);
-        const arrSkipFields  = ['description','item','quantityremaining','rate','entity','account','subsidiary'];
+        const arrSkipSblFields  = ['description','item','quantityremaining','rate','entity','account','subsidiary'];
+        const arrSkipBdyFields  = ['location','description','item','quantityremaining','rate','entity','account','subsidiary'];
         log.debug('objPOBodyFields',objPOBodyFields);
+
+        let intCreatedFrom = objItemReceipt.getValue('createdfrom');
+        log.debug('intCreatedFrom',intCreatedFrom);
+        let intLocation = search.lookupFields({
+            type: search.Type.PURCHASE_ORDER,
+            id: intCreatedFrom,
+            columns: ['location']
+        });
+
+        intLocation = intLocation.location[0].value;
+
+        log.debug('intLocation',intLocation);
 
 
         util.each(objPOBodyFields, (value, fieldId) => {
-            if(arrSkipFields.includes(fieldId)){return;}
+            if(arrSkipBdyFields.includes(fieldId)){return;}
             objItemReceipt.setValue({
                 fieldId: fieldId,
                 value: value
@@ -88,18 +101,20 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         let arrRecItemReceiptVariance;
         
         let intCurrentLine = 0;
-        arrPOSblFields[0].forEach((objPOBodyFields) => {   
-            if(!objPOBodyFields.itemreceive){
+        arrPOSblFields[0].forEach((objPOBodyFields) => { 
+            if(!objPOBodyFields.itemreceive || objPOBodyFields.quantity == 0){
+                log.debug('!itemreceive',intCurrentLine);
                 objItemReceipt.setSublistValue({
                     sublistId: 'item',
                     fieldId: 'itemreceive',
                     line: intCurrentLine,
-                    value: objPOBodyFields.itemreceive
+                    value: false
                 });
             }
             else{
                 util.each(objPOBodyFields, (value, fieldId) => {
-                    if(arrSkipFields.includes(fieldId) || (fieldId == 'itemreceive' && value == true)){return;}
+                    if(arrSkipSblFields.includes(fieldId) || (fieldId == 'itemreceive' && value == true)){return;}
+                    log.debug('item receipt',value +'|'+fieldId + '|' +intCurrentLine);
                     if(Number.isInteger(value)){
                             objItemReceipt.setSublistValue({
                                 sublistId: 'item',
@@ -123,7 +138,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
         const recIR = objItemReceipt.save();
         if(arrPOSblFields[1].length){
-            arrRecDamagedIRs = createDamagedInventoryAdjustment(objPOBodyFields,arrPOSblFields[1],recIR);
+            arrRecDamagedIRs = createDamagedInventoryAdjustment(objPOBodyFields,arrPOSblFields[1],recIR,intLocation);
             /*objItemReceipt.setValue({
                 fieldId: 'custbody_cwgp_damagediaid',
                 value: recDamagedIAid
@@ -142,7 +157,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
     }
 
-    const createRetailInventoryAdjustment = (request) => {
+    const createRetailInventoryAdjustment = (request, stSubType) => {
 
         log.debug('createRetailInventoryAdjustment', '===createRetailInventoryAdjustment===');
         const recIA = record.create({
@@ -159,7 +174,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             });
         });
 
-        const arrPOSblFields = mapInventoryAdjustmentSublistFields(request);
+        const arrPOSblFields = mapInventoryAdjustmentSublistFields(request,stSubType);
 
         arrPOSblFields.forEach((objPOBodyFields) => {
             recIA.selectNewLine({ sublistId: 'inventory' });
@@ -178,7 +193,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         return idIA;
     };
 
-    const createDamagedInventoryAdjustment = (objPOBodyFields,arrPOSblFields,recIR) => {
+    const createDamagedInventoryAdjustment = (objPOBodyFields,arrPOSblFields,recIR,intLocation) => {
         log.debug('createRetailDamagedInventoryAdjustment', '===createRetailDamagedInventoryAdjustment===');
        
         log.debug('createDamagedInventoryAdjustment objPOBodyFields', objPOBodyFields);
@@ -192,6 +207,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
         const arrIteGroupedByAccount = Object.entries(arrGroupByAccount);
         let arrIARecIds = [];
+
+        log.debug('arrIteGroupedByAccount',arrIteGroupedByAccount)
 
         for(var x = 0; x < arrIteGroupedByAccount.length;x++){
             const recIA = record.create({
@@ -218,6 +235,29 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 value: recIR
             });
 
+            recIA.setValue({
+                fieldId: 'custbody_cwgp_adjustmentsubtype',
+                value: 'damagetestertheft'
+            });
+
+            recIA.setValue({
+                fieldId: 'adjlocation',
+                value: intLocation
+            });
+
+            recIA.setValue({
+                fieldId: 'class',
+                value: 1
+            });
+
+            let stTranId = search.lookupFields({
+                type: search.Type.ITEM_RECEIPT,
+                id: recIR,
+                columns: ['tranid']
+            });
+
+            stTranId = stTranId.tranid
+
             for(var i = 0;i<arrIteGroupedByAccount[x][1].length;i++){
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
@@ -242,6 +282,19 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     fieldId: 'class',
                     value: arrIteGroupedByAccount[x][1][i].class
                 });
+
+                recIA.setCurrentSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmentreason',
+                    value: 'Item Receipt# ' + stTranId
+                });
+
+                recIA.setCurrentSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_adjustmenttype',
+                    value: 3
+                });
+
                 recIA.commitLine({ sublistId: 'inventory' });
             }
 
@@ -334,6 +387,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
         const stAccount = 972;
         const stOperator = request.parameters.custpage_cwgp_operator;
+        const stLocation = request.parameters.custpage_cwgp_location;
 
         const objMapBodyFields = {
             entity: stVendor,
@@ -341,7 +395,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             memo: stMemoMain || '',
             subsidiary: stSubsidiary,
             account: stAccount,
-            custbody_cwgp_externalportaloperator: stOperator
+            custbody_cwgp_externalportaloperator: stOperator,
+            location: stLocation
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -357,6 +412,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stBusinessLine = request.parameters.custpage_cwgp_businessline;
         const stLocation = request.parameters.custpage_cwgp_adjustmentlocation;
         const stDepartment = request.parameters.custpage_cwgp_department;
+        const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+        const stOperator = request.parameters.custpage_cwgp_operator;
+        const stItemSummary = request.parameters.custpage_cwgp_itemsummaryhidden;
 
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
@@ -366,7 +424,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             postingperiod: stPeriod,
             class: stBusinessLine,
             adjlocation: stLocation,
-            department: stDepartment
+            department: stDepartment,
+            custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
+            custbody_cwgp_externalportaloperator: stOperator,
+            custbody_cwgp_itemsummary: stItemSummary
 
         };
         log.debug('objMapBodyFields', objMapBodyFields);
@@ -522,65 +583,122 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         return [arrMapSblFields,arrMapDamagedItems,arrMapVariance];
     };
 
-    const mapInventoryAdjustmentSublistFields = (request) => {
+    const mapInventoryAdjustmentSublistFields = (request,stSubType) => {
+        log.debug('mapInventoryAdjustmentSublistFields', '==mapInventoryAdjustmentSublistFields==');
+        log.debug('mapInventoryAdjustmentSublistFields stSubType', stSubType);
         let arrMapSblFields = [];
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        
+        const intLineCount = request.getLineCount({ group: subTypeSublist});
 
-        const intLineCount = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
-
+        log.debug('mapInventoryAdjustmentSublistFields sublist', subTypeSublist);
         for (let i = 0; i < intLineCount; i++) {
             let intFinalQuantity = 0;
 
             const intAdjQtyBy = parseInt(request.getSublistValue({
-                group: 'custpage_inventorayadjustment_items',
+                group: subTypeSublist,
                 name: 'custpage_cwgp_adjustqtyby',
                 line: i
             }));
 
-            const intEndingInvQty = parseInt(request.getSublistValue({
-                group: 'custpage_inventorayadjustment_items',
-                name: 'custpage_cwgp_endinginventoryqty',
+            const intEndingInvQuantity = parseInt(request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_newquantity',
                 line: i
             }));
 
             const intQtyOnHand = parseInt(request.getSublistValue({
-                group: 'custpage_inventorayadjustment_items',
+                group: subTypeSublist,
                 name: 'custpage_cwgp_qtyonhand',
                 line: i
             }));
 
-            log.debug('intAdjQtyBy | intEndingInvQty | intQtyOnHand', intAdjQtyBy +'|' + intEndingInvQty + '|' + intQtyOnHand);
+            const stAdjustmentReason = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_adjustmentreason',
+                line: i
+            });
 
-            if(intAdjQtyBy && intAdjQtyBy !=0){
-                intFinalQuantity = intAdjQtyBy;
-            }
-            else if(intEndingInvQty && intEndingInvQty !=0){
-                intFinalQuantity = intEndingInvQty-intQtyOnHand;
-            }
-            log.debug('intFinalQuantity', intFinalQuantity);
+            const stItem = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_item',
+                line: i
+            });
 
-            arrMapSblFields.push({
-                item: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_item',
-                    line: i
-                }),
-                location: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_location',
-                    line: i
-                }),
-                adjustqtyby: intFinalQuantity,
-                class: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_businessline',
-                    line: i
-                }),
-                custcol_cwgp_adjustmentreason: request.getSublistValue({
-                    group: 'custpage_inventorayadjustment_items',
-                    name: 'custpage_cwgp_adjustmentreason',
-                    line: i
-                }),
+            const stLocation = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_location',
+                line: i
             })
+
+            const stBusinessLine = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_businessline',
+                line: i
+            })
+
+            const stRoomNum = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_roomnumber',
+                line: i
+            })
+
+            const stAssign = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_stassignment',
+                line: i
+            })
+
+            let dtDateTime = new Date(request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_datetime',
+                line: i
+            }))
+
+            
+            const stAdjustmentType = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_adjustmenttype',
+                line: i
+            })
+
+            intFinalQuantity = intEndingInvQuantity-intQtyOnHand;
+
+            if(stSubType == 'standard'){
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: intFinalQuantity,
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                })
+            }
+            else if(stSubType == 'backbar'){
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: -Math.abs(intAdjQtyBy),
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                    custcol_cwgp_roomnumber: stRoomNum,
+                    custcol_cwgp_stassignment:stAssign,
+                    custcol_cwgp_datetime: dtDateTime,
+                })
+            }
+            else if(stSubType == 'damagetestertheft'){
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: -Math.abs(intAdjQtyBy),
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                    custcol_cwgp_datetime: dtDateTime,
+                })
+            }
+            
         }
 
         log.debug('arrMapSblFields', arrMapSblFields)
@@ -661,10 +779,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 const arrSkipFields  = ['custpage_cwgp_description'];
                 util.each(objUpdateLines, (value, fieldId) => {
-                    log.debug('arrPO', JSON.stringify({
-                        fieldId: fieldId,
-                        value: value
-                    }));
                    // if(arrSkipFields.includes(fieldId)){return;}
                     if(fieldId == 'custpage_cwgp_expectedreceiptdate'){
                         recPO.setCurrentSublistValue({
@@ -1025,4 +1139,3 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         getBodyFieldsToUpdateItemReceipt,
     }
 });
-

@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) => {
+define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget, search, utilLib) => {
     let _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -19,13 +19,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         TITLE: {
         	franchisepo: 'Purchase Order',
             itemreceipt: 'Item Receipt',
-            inventoryadjustment: 'Inventory Adjustment'
+            inventoryadjustment: 'Inventory Adjustment',
+            inventoryadjustment_standard: 'Inventory Adjustment',
+            inventoryadjustment_backbar: 'Backbar Usage',
+            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft'
         },
         TAB: {
         	franchisepo: 'custpage_interpo_itemstab',
             itemreceipt: 'custpage_itemreceipt_itemstab',
             inventoryadjustment: 'custpage_inventoryadjustment_itemstab',
+            inventoryadjustment_standard: 'custpage_inventoryadjustment_itemstab',
             inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_itemstab',
+            inventoryadjustment_backbar: 'custpage_inventoryadjustmentbackbar_itemstab',
+            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
             inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_itemstab',
         		
         },
@@ -33,7 +39,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         	franchisepo: 'custpage_interpo_items',
             itemreceipt: 'custpage_itemreceipt_items',
             inventoryadjustment: 'custpage_inventoryadjustment_items',
-            inventoryadjustment_damaged: 'custpage_inventoryadjustmentdamaged_items',
+            inventoryadjustment_damaged: 'custpage_inventorayadjustmentdamaged_items',
+            inventoryadjustment_standard: 'custpage_inventorayadjustment_items',
+            inventoryadjustment_backbar: 'custpage_inventorayadjustmentbackbar_items',
+            inventoryadjustment_damagetestertheft: 'custpage_inventorayadjustmentdamagetestertheft_items',
             inventoryadjustment_variance: 'custpage_inventoryadjustmentvariance_items'
         },
         FIELD: {
@@ -92,10 +101,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'PRIMARY',
                     displayType: 'inline',
                 },
+                STATUS: {
+                    id: 'custpage_cwgp_status',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Approval Status',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 FOR_RECEIVING: {
                     id: 'custpage_cwgp_forreceiving',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.CHECKBOX,
                     label: 'For Receiving',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
@@ -177,6 +200,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -199,13 +229,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     label: 'Damaged Inventory Adjustment',
                     container: 'CLASS',
                     displayType: 'hidden'
-                },
-                VARIANCE: {
-                    id: 'custpage_cwgp_variance',
-                    type: serverWidget.FieldType.INTEGER,
-                    label: 'Variance',
-                    displayType: 'inline'
-                },
+                }
             },
             inventoryadjustment:{
                 HTML_CSS: {
@@ -230,7 +254,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'accessType',
                     displayType: 'hidden'
-                }, 
+                },
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 CUSTOMER: {
                     id: 'custpage_cwgp_customer',
                     type: serverWidget.FieldType.SELECT,
@@ -253,6 +284,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
                     container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                SUBTYPE: {
+                    id: 'custpage_cwgp_adjustmentsubtype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Inventory Adjustment Subtype',
+                    container: 'CLASS',
+                    displayType: 'hidden'
+                },
+                TOTAL_ADJUSTMENT_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: '   ',
+                    container: 'TOTAL_ADJUSTMENT',
                     displayType: 'inline'
                 }
             }
@@ -331,7 +383,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         label: 'Received Quantity',
                         displayType: 'inline'
                     },
-                    DAMAGED: {
+                    /*DAMAGED: {
                         id: 'custpage_cwgp_damagedquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Damaged Quantity',
@@ -342,7 +394,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Variance',
                         displayType: 'inline'
-                    },
+                    },*/
                     LINE: {
                         id: 'custpage_cwgp_line',
                         type: serverWidget.FieldType.INTEGER,
@@ -350,7 +402,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         displayType: 'hidden'
                     }
                 },
-                inventoryadjustment: {
+                inventoryadjustment_standard: {
                     ITEM: {
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
@@ -366,29 +418,39 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     INTERNAL_SKU: {
                         id: 'custpage_cwgp_internalsku',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Internal SKU',
-                        displayType:'disabled'
+                        label: 'Internal SKU'
                     },
                     UPC_CODE: {
                         id: 'custpage_cwgp_upccode',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'UPC Code',
-                        displayType:'disabled'
+                        label: 'UPC Code'
                     },
-                    QTY_ON_HAND: {
-                        id: 'custpage_cwgp_qtyonhand',
+                    UNITS: {
+                        id: 'custpage_cwgp_units',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Quantity On Hand'
+                        label: 'Units',
+                        displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Qty. By'
+                        label: 'Adjust Inventory Quantity'
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'New Quantity'
+                        label: 'Final Quantity'
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Type',
+                        displayType: 'inline'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: 'Adjustment Reason'
                     }
                 },
                 inventoryadjustment_damaged:{
@@ -415,10 +477,134 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         label: 'UPC Code'
                     },
                     DAMAGED_QUANTITY:{
-                        id: 'custpage_cwgp_damagedquantity',
+                        id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damaged Quantity',
                     },
+                },
+                inventoryadjustment_backbar: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Quantity Removed'
+                    },
+                    ROOM_NUMBER: {
+                        id: 'custpage_cwgp_roomnumber',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Room # Assignment',
+                    },
+                    ST_ASSIGNMENT: {
+                        id: 'custpage_cwgp_stassignment',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'St Assignment',
+                    },
+                    DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.DATETIMETZ,
+                        label: 'Date/Time (M/D/YYYY hhmm)',
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Type',
+                        displayType: 'inline'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: 'Adjustment Reason',
+                    }
+                },
+                inventoryadjustment_damagetestertheft: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        displayType: 'inline',
+                        source: 'item',
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity',
+                        displayType: 'hidden'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Quantity Removed'
+                    },
+                    DATE_TIME: {
+                        id: 'custpage_cwgp_datetime',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date/Time (M/D/YYYY hhmm)',
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Adjustment Type',
+                        displayType: 'inline'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: 'Adjustment Reason',
+                    }
                 },
                 inventoryadjustment_variance:{
                     ITEM_RECEIPT_VARIANCE: {
@@ -445,7 +631,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                         id: 'custpage_cwgp_quantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Quantity',
-                    }
+                    },
                 }
             }
         },
@@ -453,7 +639,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             franchisepo: {
                 PRIMARY: {
                     id: 'custpage_interpo_pi_grp',
-                    label: 'Primary Infromation'
+                    label: 'Primary Information'
                 },
                 CLASS: {
                     id: 'custpage_interpo_class_grp',
@@ -479,6 +665,40 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                     id: 'custpage_inventoryadjustment_class_grp',
                     label: 'Classification'
                 }
+            },
+            inventoryadjustment_standard: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustment_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustment_class_grp',
+                    label: 'Classification'
+                }
+            },
+            inventoryadjustment_backbar: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustmentbackbar_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustmentbackbar_class_grp',
+                    label: 'Classification'
+                }
+            },
+            inventoryadjustment_damagetestertheft: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
+                    label: 'Classification'
+                },
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
             }
         },
         CLIENT_SCRIPT: '../franchise/HEYDAY_CS_ViewPage.js'
@@ -503,7 +723,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         objPO.body.custpage_cwgp_poid = stPoId;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         log.debug('stAction', stAction);
@@ -642,7 +862,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         if(isReceivable){
         	form.addButton({
                 id: 'custpage_recieve_btn',
-                label: 'Recieve',
+                label: 'Receive',
                 functionName: `receiveTransaction(${stUserId}, ${stPoId}, ${stAccessType}, 'itemreceipt')`
             });
         }
@@ -683,7 +903,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
 
         
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' ' + stPoId });
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' + stPoId });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
 
@@ -784,7 +1004,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             const stType = 'inventoryadjustment_damaged';
 
             let objPO = utilLib.mapInventoryAdjustmentValues(stDamageIAid);
-            log.debug('objPO',objPO);
+            log.debug('objPO DAMAGED',objPO);
             form.addSubtab({
                 id: _CONFIG.TAB[stType],
                 label: 'Damaged'
@@ -822,6 +1042,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             utilLib.setSublistValues(sbl, objPO);
         }
         log.debug('stPoId',stPoId)
+
         let arrMapItemReceiptVariance = utilLib.mapItemReceiptVariance(stPoId);
         log.debug('mapItemReceiptVariance',arrMapItemReceiptVariance)
          log.debug('mapItemReceiptVariance length',arrMapItemReceiptVariance.length)
@@ -897,13 +1118,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             stAccessType,
             stTranId
         } = options;
-
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+ ' #' +stTranId});
+        log.debug('stTranId',stTranId);
+        let stSubType = search.lookupFields({type: 'customrecord_cwgp_franchiseinvadjustment',id:parseInt(stTranId), columns: 'custrecord_cwgp_fia_subtype'});
+        log.debug('stSubType',stSubType);
+        stSubType = stSubType.custrecord_cwgp_fia_subtype;
+        
+        if(!stSubType || stSubType == ''){
+            stSubType = 'standard'
+        }
+        log.debug('before',stType+'_'+stSubType);
+        //const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+ ' #' +stTranId});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType+'_'+stSubType] + ' #' +stTranId});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //add field group
-        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType+'_'+stSubType];
 
         const arrFldGrp = Object.keys(objFldGrp);
         log.debug('arrFldGrp', arrFldGrp);
@@ -916,11 +1146,31 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 label
             });
         });
+
+        let stAdjustmentType = '';
+
+        switch (stSubType) {
+            case 'standard':
+                stAdjustmentType = 'Standard';
+
+                break;
+            case 'backbar':
+                stAdjustmentType = 'Backbar';
+                break;
+            case 'damagetestertheft':
+                stAdjustmentType = 'Damage/Tester/Theft'
+                break;
+            default:
+                stAdjustmentType = 'Standard'
+        }
+
         let objPO = utilLib.mapInvAdjValues(stTranId);
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
+        objPO.body.custpage_cwgp_rectype = stType;
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
+        objPO.body.custpage_cwgp_adjustmenttype = stAdjustmentType;
         //log.debug('objPO', objPO);
 
         //render body fields
@@ -946,7 +1196,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
                 type,
                 label,
                 source,
-                container: _CONFIG.FIELD_GROUP[stType][container]?.id
+                container: _CONFIG.FIELD_GROUP[stType+'_'+stSubType][container]?.id
             });
 
             if (mandatory) {
@@ -956,6 +1206,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
+            if (id == 'custpage_cwgp_itemsummary' && stSubType != 'damagetestertheft') {
+                fld.updateDisplayType({ displayType:'hidden' });
+            }
+            
 
             if (objPO.body[fld.id] != 'undefined') {
                 fld.defaultValue = objPO.body[fld.id]
@@ -964,20 +1218,22 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
 
         //render sublist
         form.addSubtab({
-            id: _CONFIG.TAB[stType],
+            id: _CONFIG.TAB[stType+'_'+stSubType],
             label: 'Items'
         });
 
         const sbl = form.addSublist({
-            id: _CONFIG.SUBLIST[stType],
+            id: _CONFIG.SUBLIST[stType+'_'+stSubType],
             label: ' ',
             type: serverWidget.SublistType.LIST,
-            tab: _CONFIG.TAB[stType]
+            tab: _CONFIG.TAB[stType+'_'+stSubType]
         });
 
-        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
-
+        log.debug('stType', stType);
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType+'_'+stSubType];
+        log.debug('objItemCols', objItemCols);
         const arrCols = Object.keys(objItemCols);
+        
         log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
@@ -994,6 +1250,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentType(col);
+            }
+            /*if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentReason(col);
+            }*/
         });
 
         utilLib.setSublistValues(sbl, objPO);
@@ -1076,6 +1338,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         div#custpage_inventoryadjustmentvariance_itemstab_pane_hd {
             background-color: #dbc8b6 !important;
         }
+        div#custpage_inventoryadjustmentbackbar_itemstab_pane_hd {
+            background-color: #dbc8b6 !important;
+        }
 
         td.fgroup_title {
             padding: 4px;
@@ -1117,4 +1382,3 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js'], (serverWidget, utilLib) =>
         renderInventoryAdjustment
     }
 });
-
