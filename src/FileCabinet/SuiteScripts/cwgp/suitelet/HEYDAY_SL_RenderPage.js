@@ -239,6 +239,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
                         <button type="button" id="cwgp_ipl_btn" class="navbutton">Inventory On Hand</button>
+                        <br>
+                        <button type="button" id="cwgp_ic_btn" class="navbutton">Inventory Count</button>
                     </div>
                 </div>
 
@@ -288,6 +290,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         const stAccessType = objParams.get('accesstype');
 
                         window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
+                    });
+
+                    const btnInventoryCount = document.getElementById('cwgp_ic_btn');
+                    btnInventoryCount.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventorycount&step=1';
                     });
 
                 </script>

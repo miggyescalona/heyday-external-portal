@@ -176,7 +176,6 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
                 { label: 'Damage/Tester/Theft', value: 3 },
-                { label: 'Inventory Count', value: 4},
                 { label: 'Cancel', value: 0 }
             ]
         };

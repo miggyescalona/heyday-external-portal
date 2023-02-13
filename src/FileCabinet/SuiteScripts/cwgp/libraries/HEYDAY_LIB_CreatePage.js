@@ -1507,6 +1507,229 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         response.writePage(form);
     };
 
+    const renderInventoryCount = (options) => {
+        log.debug('===CREATE===','===Create Inventory Count===');
+        const {
+            response,
+            stType,
+            stSubsidiary,
+            stLocation,
+            stPageMode,
+            stUserId,
+            stAccessType,
+            stSubType,
+            objOperator
+        } = options;
+
+        log.debug(stType+'_'+stSubType);
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType+'_'+stSubType] });
+
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubType,
+            stSubsidiary,
+            _CONFIG
+        })
+        
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
+        //add field group
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType+'_'+stSubType];
+
+        const arrFldGrp = Object.keys(objFldGrp);
+        log.debug('arrFldGrp', arrFldGrp);
+
+        arrFldGrp.forEach((stCol) => {
+            const { id, label } = objFldGrp[stCol];
+
+            form.addFieldGroup({
+                id,
+                label
+            });
+        });
+
+        //render body fields
+        const objBodyFields = _CONFIG.FIELD[stType];
+
+        const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
+
+        arrFlds.forEach((stCol) => {
+            const {
+                id,
+                type,
+                label,
+                source,
+                container,
+                mandatory,
+                defaultValue,
+                displayType,
+            } = objBodyFields[stCol];
+
+
+
+            let fld = form.addField({
+                id,
+                type,
+                label,
+                source,
+                container: _CONFIG.FIELD_GROUP[stType+'_'+stSubType][container]?.id
+            });
+
+            if (mandatory) {
+                fld.isMandatory = true;
+            }
+            
+            if (displayType) {
+                fld.updateDisplayType({ displayType });
+            }
+
+            log.debug('stSubType',stSubType);
+            if ((id =='custpage_cwgp_totaladjustment' || id == 'custpage_cwgp_itemsummary') && stSubType != 'damagetestertheft') {
+                fld.updateDisplayType({ displayType: 'hidden' });
+            }
+
+            
+            if (id == 'custpage_cwgp_adjustmentaccount') {
+                utilLib.addDamagedAdjustingAccount(fld);
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(fld);
+            }
+
+            if (id == 'custpage_cwgp_postingperiod') {
+                utilLib.addOptionsPostingPeriod(fld);
+            }
+
+            let intAdjustmentAccount;
+            if (id == 'custpage_cwgp_adjustmentaccount' && stSubType =='backbar') {
+                fld.updateDisplayType({ displayType: 'inline' });
+                intAdjustmentAccount = 973;
+            }
+
+
+            const stOperator = objOperator[0].stOperator;
+            const stOperatorId = objOperator[0].stOperatorId;
+            const objDefaultValues = mapDefaultValues({
+                stSubsidiary, 
+                stLocation,
+                stPageMode, 
+                stUserId,
+                stAccessType,
+                stType,
+                stUpcMap,
+                stSubType,
+                stOperator,
+                stOperatorId,
+                intAdjustmentAccount
+            });
+
+
+            if (objDefaultValues[fld.id] != 'undefined') {
+                fld.defaultValue = objDefaultValues[fld.id]
+            }
+        });
+
+        
+        //render sublist
+
+        form.addSubtab({
+            id: _CONFIG.TAB[stType+'_'+stSubType],
+            label: 'Items'
+        });
+
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType+'_'+stSubType],
+            label: ' ',
+            type: serverWidget.SublistType.INLINEEDITOR,
+            tab: _CONFIG.TAB[stType+'_'+stSubType]
+        });
+
+
+
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType+'_'+stSubType];
+
+        const arrCols = Object.keys(objItemCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];
+
+
+            let col = sbl.addField({
+                id,
+                type,
+                label,
+                source,
+                mandatory
+            });
+
+            if (mandatory) {
+                col.isMandatory = true;
+            }
+
+            if (id == 'custpage_cwgp_item') {
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
+            }
+
+            if (id == 'custpage_cwgp_location') {
+                utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+                col.defaultValue = stLocation;
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                col.defaultValue = 1;
+            }
+
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentType(col,stSubType);
+                if(stSubType == 'standard'){
+                    col.defaultValue = 6;
+                }
+                else if(stSubType == 'backbar'){
+                    col.defaultValue = 2;
+                }
+            }
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
+
+
+        });
+
+        form.addSubmitButton({ label: 'Save' });
+
+        if(stSubType == 'damagetestertheft'){
+            form.addButton({
+                id: 'custpage_back_calculatesummary',
+                label: 'Calculate Summary',
+                functionName: 'calculateSummary()'
+            });
+        }
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
+        });
+
+        response.writePage(form);
+    };
+
+
     const mapDefaultValues = (options) => {
         const {
             stLocation,
@@ -1645,6 +1868,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
     return {
         render,
         renderItemReceipt,
-        renderInventoryAdjustment
+        renderInventoryAdjustment,
+        renderInventoryCount
     }
 });
