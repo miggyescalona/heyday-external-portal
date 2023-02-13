@@ -26,13 +26,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         	franchisepo: 'custpage_interpo_listtab_franchise',
         	itemreceipt: 'custpage_ir_listtab_franchise',
             inventoryadjustment: 'custpage_ia_listtab_franchise',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'custpage_ipl_listtab_franchise'
         },
         SUBLIST: {
         	franchisepo: 'custpage_interpo_list_franchise',
         	itemreceipt: 'custpage_ir_list_franchise',
             inventoryadjustment: 'custpage_ia_list_franchise',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'custpage_ipl_list_franchise'
         },
         COLUMN: {
             LIST: {
@@ -541,7 +541,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stAccessType,
             stUserId
         });
-
+        log.debug('setListValues', '');
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
