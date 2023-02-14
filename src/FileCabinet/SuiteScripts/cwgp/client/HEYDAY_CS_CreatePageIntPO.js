@@ -651,7 +651,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
 
         ///Inventory Adjustment Standard/Backbar/DamageTesterTheft
-        if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId === 'custpage_inventoryadjustmentdamagetestertheft_items' || sublistId === 'custpage_inventoryadjustmentinventorycountinitial_items') {
+        if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId === 'custpage_inventoryadjustmentdamagetestertheft_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
                 const stItem = currentRecord.getCurrentSublistValue({
@@ -754,6 +754,52 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 });
             }
             
+        }
+
+        ///Inventory Count
+        if(sublistId === 'custpage_inventoryadjustmentinventorycount_items'){
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });       
+
+                const stLocation = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_location'
+                });
+                console.log('stItem', stItem);
+
+                /*const objQtyOnHand = getItemQtyOnHand(stItem,stLocation);
+                console.log('objQtyOnHand', objQtyOnHand);
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_qtyonhand',
+                    value: objQtyOnHand || 0
+                });
+
+                
+                if(sublistId != 'custpage_inventorayadjustment_items' && sublistId != 'custpage_inventoryadjustmentinventorycountinitial_items'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: 'custpage_cwgp_adjustqtyby',
+                        value: 1
+                    });
+                }*/
+            }
         }
     };
 
@@ -1061,6 +1107,135 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
     };
 
+    function nextStep(stUserId,stAccessType,stStep, objICprevious, stRecType){
+        console.log('nextStep');
+        const currRec = currentRecord.get();
+        let objIC = {
+            body: {},
+            item: []
+        };
+
+        const stBodyFields = ['custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary','custpage_cwgp_businessline','custpage_cwgp_adjustmentlocation',]
+        if(stStep == 1){
+            for(let x = 0; x < stBodyFields.length;x++){
+                objIC.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+            }
+        }
+        else{
+            for(let x = 0; x < stBodyFields.length;x++){
+                objICprevious.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+            }
+            objICprevious.body['custpage_cwgp_adjustmentsubtypeid'] = 1;
+        }
+       
+        
+        const intICLineCount = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items');
+        for(let x = 0; x < intICLineCount;x++){
+            currRec.selectLine({
+                sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                line: x
+            });
+            if(stStep == 1){
+                objIC.item.push({
+                    custpage_cwgp_item: parseInt(currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item'
+                    })),
+                    custpage_cwgp_description: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_description'
+                    }),
+                    custpage_cwgp_internalsku: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_internalsku'
+                    }),
+                    custpage_cwgp_upccode: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_upccode'
+                    }),
+                })
+            }
+            else if(stStep == 2){
+                const stQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                }));
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
+                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
+                objICprevious.item[x].custpage_cwgp_hasdiscrepancy = parseInt(getItemQtyOnHand(stItemId, stLocation)) != stQty ? 'Yes' : 'No';
+            }
+            else if(stStep == 3){
+                const stFinalQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_newquantity'
+                }));
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
+
+                objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
+                objICprevious.item[x].custpage_cwgp_discrepancy = parseInt(getItemQtyOnHand(stItemId, stLocation)) - stFinalQty;
+            }
+            else if(stStep == 4){
+                const stQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                }));
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
+                
+                objICprevious.item[x].custpage_cwgp_businessline = objICprevious.body.custpage_cwgp_businessline;;
+                objICprevious.item[x].custpage_cwgp_location = objICprevious.body.custpage_cwgp_adjustmentlocation;
+                objICprevious.item[x].custpage_cwgp_adjustmenttype = 1;
+                objICprevious.item[x].custpage_cwgp_adjustmentsubtypeid= 1;
+                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
+                objICprevious.item[x].custpage_cwgp_adjustmentreason = currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustmentreason'
+                });
+            }
+        }
+
+        objIC = stStep != 1 ? objICprevious : objIC;
+        
+        const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+
+
+        console.log(JSON.stringify({
+            pageMode: 'create',
+            userId: stUserId,
+            accesstype: stAccessType,
+            rectype: stRecType,
+            step: parseInt(stStep)+1,
+            objIC: JSON.stringify(objIC)
+        }));
+
+        let stRetailUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                pageMode    : 'create',
+                userId      : stUserId,
+                accesstype  : stAccessType,
+                rectype     : stRecType,
+                step: parseInt(stStep)+1,
+                objIC: JSON.stringify(objIC)
+            }
+        });
+
+        if (window.onbeforeunload) {
+            window.onbeforeunload = function () {
+                null;
+            };
+        };
+
+        window.location = stRetailUrl;
+        
+
+   
+    }
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
 
@@ -1072,6 +1247,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         lineInit,
         back,
         calculateSummary,
-        scanInputViaBtn
+        nextStep,
+        scanInputViaBtn,
     };
 });

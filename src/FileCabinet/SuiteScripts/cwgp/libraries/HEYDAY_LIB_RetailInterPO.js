@@ -353,6 +353,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
        return arrIARecIds;
     };
 
+    
+
 
     const mapRetailPOBodyFields = (request) => {
         const stVendor = request.parameters.custpage_cwgp_vendor;
@@ -589,7 +591,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         log.debug('mapInventoryAdjustmentSublistFields', '==mapInventoryAdjustmentSublistFields==');
         log.debug('mapInventoryAdjustmentSublistFields stSubType', stSubType);
         let arrMapSblFields = [];
-        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : stSubType == 'damagetestertheft' ? 'custpage_inventoryadjustmentdamagetestertheft_items' : 'custpage_inventoryadjustmentinventorycount_items';
         
         const intLineCount = request.getLineCount({ group: subTypeSublist});
 
@@ -698,6 +700,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
                     custcol_cwgp_datetime: dtDateTime,
+                })
+            }
+            else{
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: intAdjQtyBy,
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
                 })
             }
             

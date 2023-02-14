@@ -19,8 +19,9 @@ define([
     '../libraries/HEYDAY_LIB_ViewPage.js',
     '../libraries/HEYDAY_LIB_EditPage.js',
     '../libraries/HEYDAY_LIB_RetailInterPO.js',
-    '../libraries/HEYDAY_LIB_ExternalPortal'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib) => {
+    '../libraries/HEYDAY_LIB_ExternalPortal',
+    'N/file'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -43,6 +44,7 @@ define([
             } = request.parameters;
 
             log.debug('params',request.parameters);
+            log.debug('rectype',rectype);
     
             if (request.method === 'GET') {
                 switch (rectype) {
@@ -65,7 +67,7 @@ define([
                         throw 'Page Not Found';
                 }
             } else {
-                handleIntercompanyPOTxn(request);
+                handleIntercompanyPOTxn(request, response);
             }
         } catch (error) {
             log.error('ERROR', error);
@@ -281,7 +283,8 @@ define([
             inventoryadjustmentid: stPoId,
             accesstype: stAccessType,
             tranid: stTranId,
-            step: stStep
+            step: stStep,
+            objIC: objIC
         } = request.parameters;
 
         log.debug('ic params',request.parameters);
@@ -292,7 +295,7 @@ define([
 
         switch (stPageMode) {
             case 'list':
-                listPage.renderInventoryAdjustment({
+                listPage.renderInventoryCount({
                     request,
                     response,
                     stSubsidiary,
@@ -304,7 +307,7 @@ define([
 
                 break;
             case 'create':
-                createPage.renderInventoryAdjustment({
+                createPage.renderInventoryCount({
                     response,
                     stType: 'inventorycount',
                     stSubsidiary,
@@ -314,20 +317,20 @@ define([
                     stPoId,
                     stAccessType,
                     stStep,
-                    objOperator
+                    objOperator,
+                    objIC
                 });
 
                 break;
             case 'view':
-                viewPage.renderInventoryAdjustment({
+                viewPage.renderInventoryCount({
                     response,
                     stType: 'inventorycount',
                     stPageMode,
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId,
-                    stSubType
+                    stTranId
                 });
 
                 break;
@@ -359,13 +362,13 @@ define([
     };
 
 
-    const handleIntercompanyPOTxn = (request) => {
+    const handleIntercompanyPOTxn = (request, response) => {
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType
+            custpage_cwgp_adjustmentsubtype: stSubType,
 
         } = request.parameters;
 
@@ -386,6 +389,8 @@ define([
                 idRec = txnLib.createRetailItemReceipt(request);
             }else if(stRecType == 'inventoryadjustment'){
                 idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
+            }else if(stRecType == 'inventorycount'){
+                idRec = txnLib.createRetailInventoryAdjustment(request);
             }
         }
 
@@ -432,6 +437,21 @@ define([
             });
         }
         else if(stRecType == 'inventoryadjustment'){
+            redirect.toSuitelet({
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    inventoryadjustmentid: idRec,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    tranid: stTranId
+                }
+            });
+        }
+        else if(stRecType == 'inventorycount'){
             redirect.toSuitelet({
                 scriptId: objRetailUrl.SCRIPT_ID,
                 deploymentId: objRetailUrl.DEPLOY_ID,

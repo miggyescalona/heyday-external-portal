@@ -107,7 +107,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
             'inventoryadjustment': mapInventoryAdjustment,
-            'itemperlocation': mapItemPerLocation
+            'itemperlocation': mapItemPerLocation,
+            'inventorycount': mapInventoryCount
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -296,6 +297,38 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         return arrMapInventoryAdjustment;
     };
+
+    const mapInventoryCount = (stUserId, stAccessType, arrPagedData) => {
+        
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
+
+        let arrMapInventoryAdjustment= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stTranId = result.getValue({ name: 'tranid' });
+            const stID = result.id;
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventorycount&tranid=${stTranId}`;
+            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
+
+            arrMapInventoryAdjustment.push({
+                [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
+                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+            })
+        });
+
+        return arrMapInventoryAdjustment;
+    };
+
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
 
@@ -497,8 +530,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         else if(stSubType =='standard'){
             stTypes = [6];
         }
-        else{
+        else if(stSubType == 'backbar'){
             stTypes = [2];
+        }
+        else{
+            stTypes = [1,2,3,4,5,6];
         }
         search.create({
             type: "customlist_cwgp_adjustmenttype",
@@ -1231,6 +1267,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         log.debug('mapInventoryAdjustmentValues',objPO);
         return objPO;
     }
+    
 
     const setSublistValues = (sbl, objPO) => {
         const arrListValues = objPO.item;
