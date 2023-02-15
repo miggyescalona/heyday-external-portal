@@ -42,12 +42,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 id      : 'custpage_interpo_scan_grp',
                 label   : 'Scanner'
             }
-        },
-        // SCAN_BUTTON: {
-        //     id          : 'custpage_cwgp_scanbtn',
-        //     label       : 'Scan UPC Codes',
-        //     functionName: `scanInputViaBtn()`
-        // }
+        }
     }
 
     //Adds fields and field group into main _CONFIG file
@@ -208,7 +203,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = (options) => {
         const {
-            stPageType
+            stPageType,
+            stStep
         } = options;
         
         let stBtnDefCss = ''
@@ -240,11 +236,14 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     `
                     break;
                 case 'inventorycount':
-                    stBtnDefCss = `
-                        <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
-                    `
+                    if(stStep == 2 || stStep == 3){
+                        log.debug('Step 2 or 3', stPageType)
+                        stBtnDefCss = `
+                            <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
+                        `
+                    }
                     break;
-        }
+            }
 
             stBtnCss = `
                 

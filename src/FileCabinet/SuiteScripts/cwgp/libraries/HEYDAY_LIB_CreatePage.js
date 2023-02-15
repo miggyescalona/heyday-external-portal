@@ -1651,15 +1651,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        const {
-            objItemResultSet,
-            objUpcMap,
-        }= EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
-        
+        //Add scanner UI for step 2 and 3 only
+        if(stStep == 2 || stStep == 3){
+            var {
+                objItemResultSet,
+                objUpcMap,
+            }= EPLib.initScanner({
+                stType,
+                stSubsidiary,
+                _CONFIG
+            })
+        }
+        else{
+            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        }
+            
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
@@ -1914,6 +1920,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         if(stType == 'itemreceipt'){
             scanbhtml = EPLib.getScanButtonCss({stPageType: stType});
             stMapVendor = stVendor;
+        }
+        else if(stType == 'inventorycount'){
+            scanbhtml = EPLib.getScanButtonCss({
+                stPageType: stType,
+                stStep
+            });
+            stMapVendor = 19082;
         }
         else{
             scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})

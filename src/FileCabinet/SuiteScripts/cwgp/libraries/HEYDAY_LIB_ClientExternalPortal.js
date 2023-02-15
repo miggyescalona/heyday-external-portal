@@ -789,9 +789,11 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             const objParams = new URLSearchParams(stQuery);
             let stRecType  = objParams.get('rectype')
             let stSubType  = objParams.get('subtype')
+            let stStep     = objParams.get('step')
 
             console.log('stRecType', stRecType)
             console.log('stSubType', stSubType)
+            console.log('stStep', stStep)
 
             let stPageType = stRecType;
             if(stSubType){
@@ -818,7 +820,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 addBtnListener({stBtnAction: 'DTT'})
                 console.log('Damage/Tester/Theft Scan Button Set')
             }
-            else if(stPageType == 'inventorycount'){
+            else if(stPageType == 'inventorycount' && (stStep == 2 || stStep == 3)){
                 addBtnListener({stBtnAction: 'COUNT'})
                 console.log('Inventory Count Scan Button Set')
             }
