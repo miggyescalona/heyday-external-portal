@@ -1109,6 +1109,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
     function nextStep(stUserId,stAccessType,stStep, objICprevious, stRecType){
         console.log('nextStep');
+
+        const blReturnError = validateInventoryCount(stStep);
+        if(blReturnError[0]){
+            alert(blReturnError[1]);
+            return false;
+        }
+
         const currRec = currentRecord.get();
         let objIC = {
             body: {},
@@ -1173,16 +1180,18 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 const stItemId = objICprevious.item[x].custpage_cwgp_item;
                 const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
 
-                objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
-                objICprevious.item[x].custpage_cwgp_discrepancy = parseInt(getItemQtyOnHand(stItemId, stLocation)) - stFinalQty;
+                if(!isNaN(stFinalQty)){
+                    objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
+                }
+                objICprevious.item[x].custpage_cwgp_discrepancy =  objICprevious.item[x].custpage_cwgp_adjustqtyby - parseInt(getItemQtyOnHand(stItemId, stLocation));
             }
             else if(stStep == 4){
                 const stQty = parseInt(currRec.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
-                const stItemId = objICprevious.item[x].custpage_cwgp_item;
-                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
+                /*const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;*/
                 
                 objICprevious.item[x].custpage_cwgp_businessline = objICprevious.body.custpage_cwgp_businessline;;
                 objICprevious.item[x].custpage_cwgp_location = objICprevious.body.custpage_cwgp_adjustmentlocation;
@@ -1236,6 +1245,132 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
    
     }
+    function validateInventoryCount(intStep){
+        const currRec = currentRecord.get();
+        let stErrorMessage = '';
+        let stEmptyField = 'You have empty values for the following field(s): '
+        let stNegativeQty = 'You have a negative quantity for: '
+        let stAddMissingLine = 'Please add at least one item to process.'
+        let blEmptyField;
+        let blNegativeQty;
+        let blAddMissingLine;
+        let blIsError = false;
+
+        const objBodyMandatoryFields = {
+            ITEM: {
+                id: 'custpage_cwgp_adjustmentaccount',
+                label: 'Adjustment Account',
+                steps: [1]
+            },
+            ITEM_ID: {
+                id: 'custpage_cwgp_date',
+                label: 'Date',
+                steps: [1]
+            }
+        }
+
+        const objItemMandatoryFields = {
+            ITEM: {
+                id: 'custpage_cwgp_item',
+                label: 'Items',
+                steps: [1]
+            },
+            QUANTITY: {
+                id: 'custpage_cwgp_adjustqtyby',
+                label: 'Quantity',
+                steps: [2]
+            }
+        }
+
+        const objQtyFields = {
+            QUANTITY: {
+                id: 'custpage_cwgp_adjustqtyby',
+                label: 'Quantity',
+                steps: [2]
+            },
+            NEW_QUANTITY: {
+                id: 'custpage_cwgp_newquantity',
+                label: 'New Quantity',
+                steps: [3]
+            }
+        }
+
+
+
+
+        const arrBodyMandatoryFieldsGrp = Object.keys(objBodyMandatoryFields);
+        const arrItemMandatoryFieldsGrp = Object.keys(objItemMandatoryFields);
+        const arrQtyFieldsFieldsGrp = Object.keys(objQtyFields);
+
+        arrBodyMandatoryFieldsGrp.forEach((stCol) => {
+            const { id, label, steps} = objBodyMandatoryFields[stCol];
+
+            let stBodyFieldVal= currRec.getValue(id);
+            if(steps.includes(intStep)){
+                if(!stBodyFieldVal){
+                    console.log(id)
+                    blEmptyField = true;
+                    stEmptyField += '\n -' + label;
+                }
+            }
+        });
+
+        const intInventoryCountLine = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items')
+        for(var x = 0; x < intInventoryCountLine;x++){
+            currRec.selectLine({
+                sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                line: x
+            });
+            arrItemMandatoryFieldsGrp.forEach((stCol) => {
+                const { id, label, steps} = objItemMandatoryFields[stCol];
+                if(steps.includes(intStep)){
+                    let stItemFieldVal = currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: id
+                    })
+                    if(!stItemFieldVal){
+                        blEmptyField = true;
+                        stEmptyField += '\n -' + label;
+                    }
+                }
+            });
+
+            arrQtyFieldsFieldsGrp.forEach((stCol) => {
+                const { id, label, steps} = objQtyFields[stCol];
+                if(steps.includes(intStep)){
+                    let stItemFieldVal = currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: id
+                    })
+                    if(!isNaN(stItemFieldVal)){
+                        if(stItemFieldVal < 0){
+                            blNegativeQty = true;
+                            stNegativeQty += '\n -' + label;
+                        }
+                    }
+                }
+            });
+        }
+        if(intInventoryCountLine < 1){
+            blAddMissingLine = true;
+        }
+        console.log(JSON.stringify({
+            blEmptyField: blEmptyField,
+            blNegativeQty: blNegativeQty,
+            blAddMissingLine: blAddMissingLine
+        }));
+
+
+        blIsError = blEmptyField == true ? blEmptyField : blNegativeQty == true ? blNegativeQty : blAddMissingLine == true ? blAddMissingLine : blIsError;
+        stErrorMessage += blEmptyField == true ? stEmptyField : blNegativeQty == true ? stNegativeQty : blAddMissingLine == true  ? stAddMissingLine : '';
+
+        console.log(JSON.stringify({
+            blIsError: blIsError,
+            stErrorMessage: stErrorMessage
+        }));
+
+        return [blIsError,stErrorMessage]
+    }
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
 
@@ -1248,6 +1383,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         back,
         calculateSummary,
         nextStep,
+        validateInventoryCount,
         scanInputViaBtn,
     };
 });

@@ -617,6 +617,13 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 line: i
             }));
 
+            const intDiscrepancy = parseInt(request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_discrepancy',
+                line: i
+            }));
+
+
             const stAdjustmentReason = request.getSublistValue({
                 group: subTypeSublist,
                 name: 'custpage_cwgp_adjustmentreason',
@@ -706,7 +713,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 arrMapSblFields.push({
                     item: stItem,
                     location: stLocation,
-                    adjustqtyby: intAdjQtyBy,
+                    adjustqtyby: intDiscrepancy,
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
@@ -715,7 +722,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             
         }
 
-        log.debug('arrMapSblFields', arrMapSblFields)
+        log.debug('arrMapSblFields', )
         return arrMapSblFields;
     };
 

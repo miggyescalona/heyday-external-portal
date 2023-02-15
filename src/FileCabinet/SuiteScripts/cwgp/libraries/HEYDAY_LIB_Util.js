@@ -1183,7 +1183,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 fieldId: 'adjustqtyby',
                 line: x
             })) || 0
-            if(subType != 'standard'){
+            if(subType != 'standard' && subType){
                 intAdjQtyBy = Math.abs(intAdjQtyBy);
             }
 

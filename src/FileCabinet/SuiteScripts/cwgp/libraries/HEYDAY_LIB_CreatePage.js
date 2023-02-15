@@ -404,6 +404,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Adjustment Account',
                     container: 'PRIMARY',
                     mandatory: true,
+                    isInline: ['2','3','4']
                 },
                 DATE: {
                     id: 'custpage_cwgp_date',
@@ -411,6 +412,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    isInline: ['2','3','4']
                 },
                 POSTING_PERIOD: {
                     id: 'custpage_cwgp_postingperiod',
@@ -896,7 +898,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
                         label: 'Items',
-                        mandatory: true
+                        mandatory: true,
+                        isInline: ['2','3','4']
                     },
                     ITEM_ID: {
                         id: 'custpage_cwgp_itemid',
@@ -932,23 +935,30 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: '*Quantity',
+                        isInline: ['3','4'],
+                        isHidden: ['1'],
+                        isEntry: ['2']
                     },
                     HAS_DISCREPANCY: {
                         id: 'custpage_cwgp_hasdiscrepancy',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Has Discrepancy',
-                        displayType: 'inline'
+                        displayType: 'inline',
+                        isHidden: ['2','4'],
                     },
                     DISCREPANCY: {
                         id: 'custpage_cwgp_discrepancy',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Discrepancy',
-                        displayType: 'inline'
+                        displayType: 'inline',
+                        isHidden: ['2','3']
                     },
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'New Quantity',
+                        isHidden: ['1','2','4'],
+                        isEntry: ['3']
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
@@ -966,6 +976,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
                         label: '*Reason',
+                        isHidden: ['1','2','3','4']
                     },
                 }
             }
@@ -1699,6 +1710,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 mandatory,
                 defaultValue,
                 displayType,
+                isInline,
             } = objBodyFields[stCol];
 
 
@@ -1708,6 +1720,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 type,
                 label,
                 source,
+                isInline,
                 container: _CONFIG.FIELD_GROUP[stType][container]?.id
             });
 
@@ -1729,6 +1742,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
             if (id == 'custpage_cwgp_postingperiod') {
                 utilLib.addOptionsPostingPeriod(fld);
+            }
+
+            if(isInline){
+                if(isInline.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'inline' });
+                };
             }
 
            
@@ -1791,7 +1810,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const arrCols = Object.keys(objItemCols);
 
         arrCols.forEach((stCol) => {
-            const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];
+            const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
 
 
             let col = sbl.addField({
@@ -1799,7 +1818,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 type,
                 label,
                 source,
-                mandatory
+                mandatory,
+                isInline,
+                isHidden,
+                isEntry
             });
 
             if (mandatory) {
@@ -1831,112 +1853,29 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 col.updateDisplayType({ displayType });
             }
-            
-            /*if(stStep != 1){
-                if(id == 'custpage_cwgp_item'){
-                    col.updateDisplayType({ displayType: 'inline' });
+
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'hidden' });
                 }
-                if(id == 'custpage_cwgp_adjustqtyby'){
+            };
+            if(isInline){
+                if(isInline.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'inline' });
+                };
+            }
+            if(isEntry){
+                if(isEntry.includes(stStep)){
                     col.updateDisplayType({ displayType: 'entry' });
-                }
+                };
             }
-            if(stStep != 3){
-                if(id == 'custpage_cwgp_hasdiscrepancy'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }    
-            }*/
-            if(stStep == 1){
-                if(id == 'custpage_cwgp_adjustqtyby'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                if(id == 'custpage_cwgp_newquantity'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                if(id == 'custpage_cwgp_adjustmentreason'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-            }
-            if(stStep == 2){
-                if(id == 'custpage_cwgp_adjustqtyby'){
-                    col.updateDisplayType({ displayType: 'entry' });
-                }
-                if(id == 'custpage_cwgp_item'){
-                    col.updateDisplayType({ displayType: 'inline' });
-                }
-                if(id == 'custpage_cwgp_newquantity'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                if(id == 'custpage_cwgp_newquantity'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                if(id == 'custpage_cwgp_hasdiscrepancy'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-
-                if(id == 'custpage_cwgp_adjustmentreason'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-            
-                if(id == 'custpage_cwgp_discrepancy'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-
-
-            }
-            if(stStep == 3){
-                if(id == 'custpage_cwgp_adjustqtyby'){
-                    col.updateDisplayType({ displayType: 'inline' });
-                }
-                if(id == 'custpage_cwgp_item'){
-                    col.updateDisplayType({ displayType: 'inline' });
-                }
-                if(id == 'custpage_cwgp_newquantity'){
-                    col.updateDisplayType({ displayType: 'entry' });
-                }
-                            
-                if(id == 'custpage_cwgp_discrepancy'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                
-                if(id == 'custpage_cwgp_adjustmentreason'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-
-
-            }
-            if(stStep == 4){
-                if(id == 'custpage_cwgp_adjustqtyby'){
-                    col.updateDisplayType({ displayType: 'inline' });
-                }
-                if(id == 'custpage_cwgp_item'){
-                    col.updateDisplayType({ displayType: 'inline' });
-                }
-                if(id == 'custpage_cwgp_newquantity'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-                if(id == 'custpage_cwgp_hasdiscrepancy'){
-                    col.updateDisplayType({ displayType: 'hidden' });
-                }
-
-                if(id == 'custpage_cwgp_adjustmentreason'){
-                    col.updateDisplayType({ displayType: 'entry' });
-                }
-            }
-            
-            
-
-            /*
-               //Default Value
-                if(id == 'custpage_cwgp_adjustmentreason'){
-                    col.defaultValue = 'Inventory Recount';
-                }*/
+     
 
         });
 
         if(objICparsed && stStep != 1){
             utilLib.setSublistValues(sbl, objICparsed);
         }
-
 
         //Create Buttons
        
@@ -1954,7 +1893,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.addButton({
             id: 'custpage_back_button',
-            label: 'Back',
+            label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
