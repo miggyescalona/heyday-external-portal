@@ -553,7 +553,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
                     }
                 }
-                console.log(UI_CONFIG)
                 for(var ii = 0; ii < intScannedQty; ii++){
                     recCurrent.selectNewLine({ 
                         sublistId   : UI_CONFIG.SUBLIST_ID,
