@@ -1692,6 +1692,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const arrFlds = Object.keys(objBodyFields);
         log.debug('arrFlds', arrFlds);
 
+        const stOperator = objOperator[0].stOperator;
+        const stOperatorId = objOperator[0].stOperatorId;
+        const objDefaultValues = mapDefaultValues({
+            stSubsidiary, 
+            stLocation,
+            stPageMode, 
+            stUserId,
+            stAccessType,
+            stType,
+            stUpcMap,
+            stOperator,
+            stOperatorId,
+            stStep
+        });
+
         arrFlds.forEach((stCol) => {
             const {
                 id,
@@ -1741,25 +1756,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     fld.updateDisplayType({ displayType: 'inline' });
                 };
             }
-
-           
-
-
-            const stOperator = objOperator[0].stOperator;
-            const stOperatorId = objOperator[0].stOperatorId;
-            const objDefaultValues = mapDefaultValues({
-                stSubsidiary, 
-                stLocation,
-                stPageMode, 
-                stUserId,
-                stAccessType,
-                stType,
-                stUpcMap,
-                stOperator,
-                stOperatorId,
-                stStep
-            });
-
 
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
@@ -1927,6 +1923,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 stStep
             });
             stMapVendor = 19082;
+            log.debug('scanbhtml', scanbhtml)
         }
         else{
             scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})
