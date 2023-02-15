@@ -239,6 +239,11 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         <button id="custpage_cwgp_dtt_scan_btn" type="button" class="scanbutton">Remove<br />Item</button>
                     `
                     break;
+                case 'inventorycount':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
+                    `
+                    break;
         }
 
             stBtnCss = `
