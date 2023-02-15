@@ -292,6 +292,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=itemperlocation';
                     });
 
+                    const btnInventoryCount = document.getElementById('cwgp_ic_btn');
+                    btnInventoryCount.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stRetailBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventorycount&step=1';
+                    });
+
                 </script>
             </div>`;
 
@@ -435,7 +445,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                 <div class="row">
                     <div class="column signin">
-                        <h1 class="signintxt">Sign In</h1>
+                        <h1 class="signintxt">Sign In - Alpha</h1>
                     </div>
                     <div class="column loginform">
                         <p class="form_message">Please Enter Your Details</p>

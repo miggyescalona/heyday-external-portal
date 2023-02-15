@@ -19,8 +19,9 @@ define([
     '../libraries/HEYDAY_LIB_ViewPage.js',
     '../libraries/HEYDAY_LIB_EditPage.js',
     '../libraries/HEYDAY_LIB_RetailInterPO.js',
-    '../libraries/HEYDAY_LIB_ExternalPortal'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib) => {
+    '../libraries/HEYDAY_LIB_ExternalPortal',
+    'N/file'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -43,6 +44,7 @@ define([
             } = request.parameters;
 
             log.debug('params',request.parameters);
+            log.debug('rectype',rectype);
     
             if (request.method === 'GET') {
                 switch (rectype) {
@@ -55,6 +57,9 @@ define([
                     case 'inventoryadjustment':
                         renderInventoryAdjustment(request, response);
                         break;
+                    case 'inventorycount':
+                        renderInventoryCount(request, response);
+                        break;
                     case 'itemperlocation':
                         renderItemPerLocation(request, response);
                         break;
@@ -62,7 +67,7 @@ define([
                         throw 'Page Not Found';
                 }
             } else {
-                handleIntercompanyPOTxn(request);
+                handleIntercompanyPOTxn(request, response);
             }
         } catch (error) {
             log.error('ERROR', error);
@@ -84,7 +89,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -107,7 +112,7 @@ define([
                     stPageMode,
                     stUserId,
                     stAccessType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -152,7 +157,7 @@ define([
         log.debug('ir params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -176,7 +181,7 @@ define([
                     stPoId,
                     stTranId,
                     stAccessType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -223,7 +228,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
-        const stOperator = getOperator(stUserId);
+        const objOperator = getOperator(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -249,7 +254,7 @@ define([
                     stPoId,
                     stAccessType,
                     stSubType,
-                    stOperator
+                    objOperator
                 });
 
                 break;
@@ -266,22 +271,75 @@ define([
                 });
 
                 break;
-            case 'edit':
-                editPage.renderInventoryAdjustment({
+            default:
+                throw 'Page Not Found';
+        }
+    };
+
+    const renderInventoryCount = (request, response) => {
+        const {
+            pageMode: stPageMode,
+            userId: stUserId,
+            inventoryadjustmentid: stPoId,
+            accesstype: stAccessType,
+            tranid: stTranId,
+            step: stStep,
+            objIC: objIC
+        } = request.parameters;
+
+        log.debug('ic params',request.parameters);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const stLocation = getLocation(stUserId);
+        const objInventoryCountSearch = buildInventoryCountSearch(stSubsidiary);
+        const objOperator = getOperator(stUserId);
+
+        switch (stPageMode) {
+            case 'list':
+                listPage.renderInventoryCount({
+                    request,
                     response,
-                    stType: 'inventoryadjustment',
                     stSubsidiary,
+                    stType: 'inventorycount',
+                    stAccessType,
+                    stUserId,
+                    objSearch: objInventoryCountSearch
+                });
+
+                break;
+            case 'create':
+                createPage.renderInventoryCount({
+                    response,
+                    stType: 'inventorycount',
+                    stSubsidiary,
+                    stLocation,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stStep,
+                    objOperator,
+                    objIC
+                });
+
+                break;
+            case 'view':
+                viewPage.renderInventoryCount({
+                    response,
+                    stType: 'inventorycount',
                     stPageMode,
                     stUserId,
                     stPoId,
                     stAccessType,
                     stTranId
                 });
+
                 break;
             default:
                 throw 'Page Not Found';
         }
     };
+
+    
 
     const renderItemPerLocation = (request, response) => {
         const {
@@ -304,13 +362,13 @@ define([
     };
 
 
-    const handleIntercompanyPOTxn = (request) => {
+    const handleIntercompanyPOTxn = (request, response) => {
         const {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType
+            custpage_cwgp_adjustmentsubtype: stSubType,
 
         } = request.parameters;
 
@@ -331,6 +389,8 @@ define([
                 idRec = txnLib.createRetailItemReceipt(request);
             }else if(stRecType == 'inventoryadjustment'){
                 idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
+            }else if(stRecType == 'inventorycount'){
+                idRec = txnLib.createRetailInventoryAdjustment(request);
             }
         }
 
@@ -377,6 +437,21 @@ define([
             });
         }
         else if(stRecType == 'inventoryadjustment'){
+            redirect.toSuitelet({
+                scriptId: objRetailUrl.SCRIPT_ID,
+                deploymentId: objRetailUrl.DEPLOY_ID,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    inventoryadjustmentid: idRec,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    tranid: stTranId
+                }
+            });
+        }
+        else if(stRecType == 'inventorycount'){
             redirect.toSuitelet({
                 scriptId: objRetailUrl.SCRIPT_ID,
                 deploymentId: objRetailUrl.DEPLOY_ID,
@@ -469,6 +544,18 @@ define([
         return ssItemReceipt;
     };
 
+    const buildInventoryCountSearch = (stSubsidiary) => {
+        const ssItemReceipt = search.load({ id: "616", type: "inventoryadjustment" });
+
+        ssItemReceipt.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'is',
+            values: stSubsidiary,
+        }));
+
+        return ssItemReceipt;
+    };
+
     const buildItemPerLocationSearch = (stLocation) => {
         const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
 
@@ -535,6 +622,7 @@ define([
     };
 
     const getOperator = (stId) => {
+        let arrCredentials = [];
         const ssCredentials = search.create({
             type: _CONFIG.RECORD.CREDENTIALS,
             filters:
@@ -548,6 +636,7 @@ define([
             columns:
                 [
                     search.createColumn({ name: 'custrecord_cwgp_username' }),
+                    search.createColumn({ name: 'internalid' })
                 ]
         }).run().getRange({
             start: 0,
@@ -555,8 +644,12 @@ define([
         });
 
         if (ssCredentials.length > 0) {
-            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' });
+            arrCredentials.push({
+                stOperator: ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' }),
+                stOperatorId: ssCredentials[0].getValue({ name: 'internalid' })
+            });
         }
+        return arrCredentials;
     };
 
 

@@ -42,12 +42,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 id      : 'custpage_interpo_scan_grp',
                 label   : 'Scanner'
             }
-        },
-        // SCAN_BUTTON: {
-        //     id          : 'custpage_cwgp_scanbtn',
-        //     label       : 'Scan UPC Codes',
-        //     functionName: `scanInputViaBtn()`
-        // }
+        }
     }
 
     //Adds fields and field group into main _CONFIG file
@@ -93,7 +88,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getInvItemsBySubsidiary = (options) => {
         const {
-            stSubsidiary
+            stSubsidiary,
+            stSubType
         } = options
         
 
@@ -108,7 +104,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     name: 'isinactive',
                     operator: search.Operator.IS,
                     values: 'F'
-                })
+                }),
             ]
 
             if(stSubsidiary){
@@ -118,6 +114,15 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     values: stSubsidiary
                 }))
             }
+
+            if(stSubType == 'backbar'){
+                filters.push(search.createFilter({
+                    name: 'name',
+                    operator: search.Operator.HASKEYWORDS,
+                    values: 'Backbar'
+                }))
+            }
+ 
 
             let objItemSearchProps = {
                 type: search.Type.INVENTORY_ITEM,
@@ -154,7 +159,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
             //Get UPC Mapping
             try{
 
-                objItemResultSet = getInvItemsBySubsidiary({stSubsidiary});
+                objItemResultSet = getInvItemsBySubsidiary({stSubsidiary,stSubType});
 
                 
                 objItemResultSet.each(function (result) {
@@ -198,7 +203,8 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = (options) => {
         const {
-            stPageType
+            stPageType,
+            stStep
         } = options;
         
         let stBtnDefCss = ''
@@ -214,23 +220,30 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     break;
                 case 'inventoryadjustment_standard':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_adjustqty_scan_btn" type="button" class="scanbutton">Add to<br />Adjusted Quantity</button>
-                        <button id="custpage_cwgp_endingqty_scan_btn" type="button" class="scanbutton">Add to<br />Ending Quantity</button>
+                        <button id="custpage_cwgp_add_adjustqty_scan_btn" type="button" class="scanbutton">Add<br />Quantity</button>
+                        <button id="custpage_cwgp_subtract_adjustqty_scan_btn" type="button" class="scanbutton">Subtract<br />Quantity</button>
+                        <button id="custpage_cwgp_endingqty_scan_btn" type="button" class="scanbutton">Ending<br />Quantity</button>
                     `
                     break;
                 case 'inventoryadjustment_backbar':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_backbar_scan_btn" type="button" class="scanbutton">Add as<br /> Backbar</button>
+                        <button id="custpage_cwgp_backbar_scan_btn" type="button" class="scanbutton">Add to<br />Backbar Usage</button>
                     `
                     break;
                 case 'inventoryadjustment_damagetestertheft':
                     stBtnDefCss = `
-                        <button id="custpage_cwgp_damaged_scan_btn" type="button" class="scanbutton">Add as<br /> Damaged</button>
-                        <button id="custpage_cwgp_tester_scan_btn" type="button" class="scanbutton">Add as<br /> Tester</button>
-                        <button id="custpage_cwgp_theft_scan_btn" type="button" class="scanbutton">Add as<br /> Theft</button>
+                        <button id="custpage_cwgp_dtt_scan_btn" type="button" class="scanbutton">Remove<br />Item</button>
                     `
                     break;
-        }
+                case 'inventorycount':
+                    if(stStep == 2 || stStep == 3){
+                        log.debug('Step 2 or 3', stPageType)
+                        stBtnDefCss = `
+                            <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
+                        `
+                    }
+                    break;
+            }
 
             stBtnCss = `
                 
