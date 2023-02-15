@@ -81,7 +81,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             'franchisepo': mapFranchisePO,
             'itemreceipt': mapItemReceipt,
             'inventoryadjustment': mapInventoryAdjustment,
-            'itemperlocation': mapItemPerLocation
+            'itemperlocation': mapItemPerLocation,
+            'inventorycount': mapInventoryCount
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -199,6 +200,37 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
         });
         return arrMapIntercompanyPO;
+    };
+
+    const mapInventoryCount = (stUserId, stAccessType, arrPagedData) => {
+        
+        const objFranchiseUrl = EPLib._CONFIG.FRANCHISE_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
+
+        let arrMapInventoryAdjustment= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stTranId = result.getValue({ name: 'tranid' });
+            const stID = result.id;
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventorycount&tranid=${stTranId}`;
+            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stID}</a>`;
+
+            arrMapInventoryAdjustment.push({
+                [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
+                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+            })
+        });
+
+        return arrMapInventoryAdjustment;
     };
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
@@ -776,6 +808,78 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         return objPO;
     };
 
+    const mapInvCountValues = (stPoId) => {
+        let objPO = {
+            body: {},
+            item: []
+        };
+
+        const objItemReceipt = record.load({
+            type: 'customrecord_cwgp_franchiseinvcount',
+            id: stPoId
+        });
+        
+        objPO.body.custpage_cwgp_customer = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_customer' });
+        objPO.body.custpage_cwgp_date = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_date' });
+        objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_memo' });
+        objPO.body.custpage_cwgp_operator = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_operator' });
+        var franchiseIRLineSearch = search.create({
+        	   type: "customrecord_cwgp_franchise_tranline",
+        	   filters:
+        	   [
+        	      ["custrecord_cwgp_ftl_parentic","anyof",stPoId]
+        	   ],
+        	   columns:
+        	   [
+        	      search.createColumn({
+        	         name: "id",
+        	         sort: search.Sort.ASC,
+        	         label: "ID"
+        	      }),
+        	      search.createColumn({name: "custrecord_cwgp_ftl_item"}),
+                  search.createColumn({
+                    name: "custitemheyday_upccode",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "UPC Code"
+                 }),
+                 search.createColumn({
+                    name: "custitem_heyday_sku",
+                    join: "CUSTRECORD_CWGP_FTL_ITEM",
+                    label: "Internal SKU"
+                 }),
+                 search.createColumn({name: "custrecord_cwgp_ftl_actualqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmentreason"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_adjustmenttype"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_description"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_roomno"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_st"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_datetime"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_displayqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_endingqty"}),
+                 
+                 
+        	   ]
+        	});
+        franchiseIRLineSearch.run().each(function(result){
+
+        	objPO.item.push({
+        		custpage_cwgp_id: result.id,
+                custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_ftl_item' }),
+                //custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
+                custpage_cwgp_description: result.getValue({ name: 'custrecord_cwgp_ftl_description' }),
+                custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
+                custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_newquantity: result.getValue({ name: 'custrecord_cwgp_ftl_endingqty' })
+                
+            });
+        	   // .run().each has a limit of 4,000 results
+    	   return true;
+    	});        
+
+        return objPO;
+    };
+
     const mapItemReceiptVariance = (stPoId) => {
         let objIA = {
             item: []
@@ -1114,6 +1218,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         mapInventoryAdjustment,
         mapIRValuesViewEdit,
         mapInvAdjValues,
+        mapInvCountValues,
         setSublistValues,
         addOptionsFranchiseApprovalStatus,
         addOptionsForReceiving,

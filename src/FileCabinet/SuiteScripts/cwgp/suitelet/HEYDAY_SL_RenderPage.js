@@ -238,9 +238,9 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
-                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Inventory On Hand</button>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                         <br>
-                        <button type="button" id="cwgp_ic_btn" class="navbutton">Inventory Count</button>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                     </div>
                 </div>
 
@@ -349,6 +349,8 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_ia_franchise_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
+                        <button type="button" id="cwgp_ic_franchise_btn" class="navbutton">Inventory Count</button>
+                        <br>
                         <button type="button" id="cwgp_itemperlocation_franchise_btn" class="navbutton">Inventory On Hand</button>
                     </div>
                 </div>
@@ -387,6 +389,16 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                         window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventoryadjustment';
                     });
+                    const btnInvCountFranchise = document.getElementById('cwgp_ic_franchise_btn');
+                    btnInvCountFranchise.addEventListener('click', () => {
+                        const stQuery = window.location.search;
+                        const objParams = new URLSearchParams(stQuery);
+                        const stUserId = objParams.get('userId');
+                        const stAccessType = objParams.get('accesstype');
+
+                        window.location = '${stFranchiseBaseUrl}&pageMode=list&userId=' + stUserId + '&accesstype=' + stAccessType +'&rectype=inventorycount';
+                    });
+
                     const btnItemPerLocationFranchise = document.getElementById('cwgp_itemperlocation_franchise_btn');
                     btnItemPerLocationFranchise.addEventListener('click', () => {
                         const stQuery = window.location.search;
