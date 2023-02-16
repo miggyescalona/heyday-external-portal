@@ -366,6 +366,7 @@ define([
         const objInventoryCountSearch = buildInventoryCountSearch(stCustomer);
         const objOperator = getOperator(stUserId);
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
+        const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryCount({
@@ -383,6 +384,7 @@ define([
                     response,
                     stType: 'inventorycount',
                     stSubsidiary,
+                    stLocation,
                     stCustomer,
                     stPageMode,
                     stUserId,
