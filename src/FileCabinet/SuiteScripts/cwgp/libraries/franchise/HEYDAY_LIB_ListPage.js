@@ -18,7 +18,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         },
         TITLE: {
         	franchisepo: 'Purchase Order',
-        	itemreceipt: 'Item Receipts',
+        	itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment',
             itemperlocation: 'Item Per Location',
             inventorycount: 'Inventory Count',

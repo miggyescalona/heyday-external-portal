@@ -450,6 +450,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stDate = request.parameters.custpage_cwgp_date;
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
+        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        const stLocation = request.parameters.custpage_cwgp_location;
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fic_customer': stCustomer,
@@ -457,7 +459,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             'custrecord_cwgp_fic_memo': stMemoMain,
             'custrecord_cwgp_fic_operator': stMemoMain,
             'custrecord_cwgp_fic_operator': stOperator,
-            'custrecord_cwgp_fic_subsidiary': stSubsidiary
+            'custrecord_cwgp_fic_subsidiary': stSubsidiary,
+        	'custrecord_cwgp_fic_location': stLocation,
+            'custrecord_cwgp_fic_totaldiscrepancy': stTotalDiscrepancy
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -809,6 +813,17 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                         name: 'custpage_cwgp_discrepancy',
                         line: i
                     }),
+                    'custrecord_cwgp_ftl_adjustmentreason': request.getSublistValue({
+                        group: stSublistName,
+                        name: 'custpage_cwgp_adjustmentreason',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_adjustmenttype': request.getSublistValue({
+                        group: stSublistName,
+                        name: 'custpage_cwgp_adjustmenttype',
+                        line: i
+                    }),
+                    
                 });
             //}
             

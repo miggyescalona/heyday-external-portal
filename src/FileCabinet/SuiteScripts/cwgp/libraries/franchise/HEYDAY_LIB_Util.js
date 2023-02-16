@@ -800,6 +800,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_newquantity: result.getValue({ name: 'custrecord_cwgp_ftl_endingqty' }),
                 custpage_cwgp_datetime: stDateTime,
                 
+                
             });
         	   // .run().each has a limit of 4,000 results
     	   return true;
@@ -823,6 +824,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         objPO.body.custpage_cwgp_date = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_date' });
         objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_memo' });
         objPO.body.custpage_cwgp_operator = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_operator' });
+        objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_subsidiary' });
+        objPO.body.custpage_cwgp_location = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_location' });
+        objDiscrepancySummary = objItemReceipt.getText('custrecord_cwgp_fic_totaldiscrepancy');
+
+        if(objDiscrepancySummary){
+            let stTextAreaVal = '';
+
+            stTextAreaVal += '<div><br><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Total Discrepancy</td></tr>';
+            stTextAreaVal+= '<tr><td style="padding:3px">'+ objDiscrepancySummary+'</td></tr>';
+            stTextAreaVal += '</table></div><br>'
+
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
+        }
+
         var franchiseIRLineSearch = search.create({
         	   type: "customrecord_cwgp_franchise_tranline",
         	   filters:
@@ -856,6 +872,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                  search.createColumn({name: "custrecord_cwgp_ftl_datetime"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_displayqty"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_endingqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_discrepancy"}),
                  
                  
         	   ]
@@ -870,7 +887,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_adjustqtyby: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
                 custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
                 custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
-                custpage_cwgp_newquantity: result.getValue({ name: 'custrecord_cwgp_ftl_endingqty' })
+                custpage_cwgp_newquantity: result.getValue({ name: 'custrecord_cwgp_ftl_endingqty' }),
+                custpage_cwgp_discrepancy: result.getValue({ name: 'custrecord_cwgp_ftl_discrepancy' }),
+                custpage_cwgp_adjustmenttype: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmenttype' }),
+                custpage_cwgp_adjustmentreason: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmentreason' }),
+                custpage_cwgp_enteredcount: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
+                custpage_cwgp_icfinalqty: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
                 
             });
         	   // .run().each has a limit of 4,000 results
@@ -1048,11 +1070,28 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value || ' '
-                });
+                if(fieldId == 'custpage_cwgp_datetime'){
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || null 
+                    });
+                }
+                else if(Number.isInteger(value)){
+                    log.debug('integer', value +'|'+fieldId)
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: parseInt(value) 
+                    });
+                }
+                else{
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || ' '
+                    });
+                }
             });
         });
     };
