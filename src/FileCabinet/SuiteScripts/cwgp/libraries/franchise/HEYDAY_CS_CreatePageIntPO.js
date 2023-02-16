@@ -371,6 +371,47 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
             
         }
 
+        ///Inventory Count
+        if(sublistId === 'custpage_inventoryadjustmentinventorycount_items'){
+            if (fieldId === 'custpage_cwgp_item') {
+                const stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_item'
+                });
+                console.log('stItem', stItem);
+
+                const objItem = getItemDetails(stItem);
+                console.log('objItem', objItem);
+
+                util.each(objItem, function (value, fieldId) {
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: fieldId,
+                        value: value
+                    });
+                });
+                console.log('stItem', stItem);
+
+                /*const objQtyOnHand = getItemQtyOnHand(stItem,stLocation);
+                console.log('objQtyOnHand', objQtyOnHand);
+
+                currentRecord.setCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId: 'custpage_cwgp_qtyonhand',
+                    value: objQtyOnHand || 0
+                });
+
+                
+                if(sublistId != 'custpage_inventorayadjustment_items' && sublistId != 'custpage_inventoryadjustmentinventorycountinitial_items'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: 'custpage_cwgp_adjustqtyby',
+                        value: 1
+                    });
+                }*/
+            }
+        }
+
 
     };
 
@@ -439,7 +480,7 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
     const getQtyOnHandFranchise = (stItem,stCustomer) => {
 
-        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
         
         let stCreateIntPOBaseUrl = url.resolveScript({
             deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
@@ -595,17 +636,23 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
     const saveRecord = (context) => {
         const { currentRecord } = context;
-
+        //console.log('context: ' + JSON.stringify(context));
+        //console.log('mode: ' + JSON.stringify(context.mode));
         let stRecType = getParameterFromURL('rectype');
         console.log('stRecType '+stRecType);
              
         if(stRecType == 'franchisepo'){
+            let pageMode = getParameterFromURL('pageMode');
             let numLines = currentRecord.getLineCount({
                 sublistId: 'custpage_franchisepo_items'
             });
             if(numLines == 0){
                 alert('Please select at least one item');
                 return false;
+            }
+
+            if(pageMode == 'create'){
+                alert('Item and Quantity requested are still subject for approval.');
             }
 
         }
@@ -1105,10 +1152,10 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Type</td><td style="font-weight: bold">Quantity</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
             for(let x = 0; x < result.length; x++){
-                stTextAreaVal+= '<tr><td>'+ result[x].Id+'</td><td>'+result[x].intQty+'</tr>';
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
@@ -1117,21 +1164,41 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
 
            
         if(itemSummary.length > 0){
+            let result = []
+
+            ///Merge Similar Items and Add up Qty
+            itemSummary.reduce(function(res, value) {
+            if (!res[value.stItem]) {
+                res[value.stItem] = { Id: value.stItem, intQty: 0, intQtyOnHand: value.intQtyOnHand, intFinalOnHand: value.intFinalOnHand  };
+                result.push(res[value.stItem])
+            }
+            res[value.stItem].intQty += value.intQty;
+                return res;
+            }, {});
+
+            ///Subtract Quantity to Quantity on Hand to get Final Quantity On Hand
+            result.map(function(item){
+                item.intFinalOnHand = item.intQtyOnHand - item.intQty;
+                return item;
+            })
+
+            console.log(result);
+
             let stTextAreaVal = '';
 
-            stTextAreaVal += '<div><table style="width:100%;  border-collapse: collapse" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold">Starting Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Item</td><td style="font-weight: bold">Quantity</tr>';
-            for(let x = 0; x < itemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ itemSummary[x].stItem+'</td><td>'+itemSummary[x].intQtyOnHand+'</tr>';
+            stTextAreaVal += '<div><table style="width:100%;border-collapse: collapse;" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold;padding:3px">Starting Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Item</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            for(let x = 0; x < result.length; x++){
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQtyOnHand+'</tr>';
             }
             stTextAreaVal += '</div></table><br></br>'
 
-            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black">'
-            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold">Final Location On Hand</tr>';
-            stTextAreaVal+= '<tr><td style="font-weight: bold">Item</td><td style="font-weight: bold">Quantity</tr>';
-            for(let x = 0; x < itemSummary.length; x++){
-                stTextAreaVal+= '<tr><td>'+ itemSummary[x].stItem+'</td><td>'+itemSummary[x].intFinalOnHand+'</tr>';
+            stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black">'
+            stTextAreaVal+= '<tr><td colspan ="2" style="font-weight: bold;padding:3px">Final Location On Hand</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Item</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            for(let x = 0; x < result.length; x++){
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intFinalOnHand+'</tr>';
             }
             stTextAreaVal += '</div></table>'
 
@@ -1156,6 +1223,286 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
         return (false);
     }*/
 
+    function nextStep(stUserId,stAccessType,stStep, objICprevious, stRecType){
+
+        const blReturnError = validateInventoryCount(stStep);
+        if(blReturnError[0]){
+            alert(blReturnError[1]);
+            return false;
+        }
+
+        console.log('nextStep');
+        const currRec = currentRecord.get();
+        let objIC = {
+            body: {},
+            item: []
+        };
+
+        const stBodyFields = ['custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_customer','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary']
+        if(stStep == 1){
+            for(let x = 0; x < stBodyFields.length;x++){
+                objIC.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+            }
+        }
+        else{
+            for(let x = 0; x < stBodyFields.length;x++){
+                objICprevious.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+            }
+            objICprevious.body['custpage_cwgp_adjustmentsubtypeid'] = 1;
+        }
+       
+        const stCustomer = currRec.getValue({fieldId: 'custpage_cwgp_customer'});
+        const intICLineCount = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items');
+        for(let x = 0; x < intICLineCount;x++){
+            currRec.selectLine({
+                sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                line: x
+            });
+            
+            if(stStep == 1){
+                objIC.item.push({
+                    custpage_cwgp_item: parseInt(currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item'
+                    })),
+                    custpage_cwgp_description: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_description'
+                    }),
+                    custpage_cwgp_internalsku: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_internalsku'
+                    }),
+                    custpage_cwgp_upccode: currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_upccode'
+                    }),
+                })
+            }
+            else if(stStep == 2){
+                const stQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                }));
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+
+                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
+                objICprevious.item[x].custpage_cwgp_hasdiscrepancy = parseInt(getQtyOnHandFranchise(stItemId, stCustomer)) != stQty ? 'Yes' : 'No';
+            }
+            else if(stStep == 3){
+                const stFinalQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_newquantity'
+                }));
+
+                const stCount = parseInt(currRec.getSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby',
+                    line: x
+                }));
+
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                console.log('3 getQtyOnHandFranchise '+getQtyOnHandFranchise(stItemId, stCustomer));
+                if(!isNaN(stFinalQty)){
+                    console.log('stFinalQty '+stFinalQty);
+                    objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
+                }
+                else{
+                    console.log('stCount '+stCount);
+                    objICprevious.item[x].custpage_cwgp_adjustqtyby = stCount;
+                    
+                }
+
+                //objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
+                objICprevious.item[x].custpage_cwgp_qtyonhand = parseInt(getQtyOnHandFranchise(stItemId, stCustomer));
+                objICprevious.item[x].custpage_cwgp_discrepancy = parseInt(getQtyOnHandFranchise(stItemId, stCustomer)) - stFinalQty;
+            }
+            else if(stStep == 4){
+                const stQty = parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                }));
+                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                console.log('4 getQtyOnHandFranchise '+getQtyOnHandFranchise(stItemId, stCustomer));
+                if(stQty){
+                    objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
+                }
+                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
+                objICprevious.item[x].custpage_cwgp_adjustmenttype = 1;
+                objICprevious.item[x].custpage_cwgp_adjustmentsubtypeid= 1;
+                objICprevious.item[x].custpage_cwgp_qtyonhand = parseInt(getQtyOnHandFranchise(stItemId, stCustomer));
+
+                objICprevious.item[x].custpage_cwgp_adjustmentreason = currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                    fieldId: 'custpage_cwgp_adjustmentreason'
+                });
+            }
+        }
+
+        objIC = stStep != 1 ? objICprevious : objIC;
+
+        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
+        console.log(JSON.stringify({
+            pageMode: 'create',
+            userId: stUserId,
+            accesstype: stAccessType,
+            rectype: stRecType,
+            step: parseInt(stStep)+1,
+            objIC: JSON.stringify(objIC)
+        }));
+
+        let stFranchiseUrl = url.resolveScript({
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                pageMode    : 'create',
+                userId      : stUserId,
+                accesstype  : stAccessType,
+                rectype     : stRecType,
+                step: parseInt(stStep)+1,
+                objIC: JSON.stringify(objIC)
+            }
+        });
+
+        if (window.onbeforeunload) {
+            window.onbeforeunload = function () {
+                null;
+            };
+        };
+        //console.log(parseInt(getQtyOnHandFranchise(stItemId, stCustomer)));
+        window.location = stFranchiseUrl;
+    }
+
+    function validateInventoryCount(intStep){
+        const currRec = currentRecord.get();
+        let stErrorMessage = '';
+        let stEmptyField = 'You have empty values for the following field(s): '
+        let stNegativeQty = 'You have a negative quantity for: '
+        let stAddMissingLine = 'Please add at least one item to process.'
+        let blEmptyField;
+        let blNegativeQty;
+        let blAddMissingLine;
+        let blIsError = false;
+
+        const objBodyMandatoryFields = {
+            /*ITEM: {
+                id: 'custpage_cwgp_adjustmentaccount',
+                label: 'Adjustment Account',
+                steps: [1]
+            },*/
+            ITEM_ID: {
+                id: 'custpage_cwgp_date',
+                label: 'Date',
+                steps: [1]
+            }
+        }
+
+        const objItemMandatoryFields = {
+            ITEM: {
+                id: 'custpage_cwgp_item',
+                label: 'Items',
+                steps: [1]
+            },
+            QUANTITY: {
+                id: 'custpage_cwgp_adjustqtyby',
+                label: 'Quantity',
+                steps: [2]
+            }
+        }
+
+        const objQtyFields = {
+            QUANTITY: {
+                id: 'custpage_cwgp_adjustqtyby',
+                label: 'Quantity',
+                steps: [2]
+            },
+            NEW_QUANTITY: {
+                id: 'custpage_cwgp_newquantity',
+                label: 'New Quantity',
+                steps: [3]
+            }
+        }
+
+
+
+
+        const arrBodyMandatoryFieldsGrp = Object.keys(objBodyMandatoryFields);
+        const arrItemMandatoryFieldsGrp = Object.keys(objItemMandatoryFields);
+        const arrQtyFieldsFieldsGrp = Object.keys(objQtyFields);
+
+        arrBodyMandatoryFieldsGrp.forEach((stCol) => {
+            const { id, label, steps} = objBodyMandatoryFields[stCol];
+
+            let stBodyFieldVal= currRec.getValue(id);
+            if(steps.includes(intStep)){
+                if(!stBodyFieldVal){
+                    console.log(id)
+                    blEmptyField = true;
+                    stEmptyField += '\n -' + label;
+                }
+            }
+        });
+
+        const intInventoryCountLine = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items')
+        for(var x = 0; x < intInventoryCountLine;x++){
+            currRec.selectLine({
+                sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                line: x
+            });
+            arrItemMandatoryFieldsGrp.forEach((stCol) => {
+                const { id, label, steps} = objItemMandatoryFields[stCol];
+                if(steps.includes(intStep)){
+                    let stItemFieldVal = currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: id
+                    })
+                    if(!stItemFieldVal){
+                        blEmptyField = true;
+                        stEmptyField += '\n -' + label;
+                    }
+                }
+            });
+
+            arrQtyFieldsFieldsGrp.forEach((stCol) => {
+                const { id, label, steps} = objQtyFields[stCol];
+                if(steps.includes(intStep)){
+                    let stItemFieldVal = currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: id
+                    })
+                    if(!isNaN(stItemFieldVal)){
+                        if(stItemFieldVal < 0){
+                            blNegativeQty = true;
+                            stNegativeQty += '\n -' + label;
+                        }
+                    }
+                }
+            });
+        }
+        if(intInventoryCountLine < 1){
+            blAddMissingLine = true;
+        }
+        console.log(JSON.stringify({
+            blEmptyField: blEmptyField,
+            blNegativeQty: blNegativeQty,
+            blAddMissingLine: blAddMissingLine
+        }));
+
+
+        blIsError = blEmptyField == true ? blEmptyField : blNegativeQty == true ? blNegativeQty : blAddMissingLine == true ? blAddMissingLine : blIsError;
+        stErrorMessage += blEmptyField == true ? stEmptyField : blNegativeQty == true ? stNegativeQty : blAddMissingLine == true  ? stAddMissingLine : '';
+
+        console.log(JSON.stringify({
+            blIsError: blIsError,
+            stErrorMessage: stErrorMessage
+        }));
+
+        return [blIsError,stErrorMessage]
+    }
+
+    const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
+
     return {
         pageInit,
         fieldChanged,
@@ -1164,6 +1511,10 @@ define(['N/https', 'N/util', 'N/url', 'N/currentRecord', '../HEYDAY_LIB_ClientEx
         validateField,
         validateLine,
         saveRecord,
-        calculateSummary
+        calculateSummary,
+        nextStep,
+        validateInventoryCount,
+        scanInputViaBtn
+
     };
 });

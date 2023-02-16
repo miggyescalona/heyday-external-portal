@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages2',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
+            ID: 'customscript_cwgp_sl_franchisepages',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
         }
     };
     /**
@@ -41,6 +41,9 @@ define([
         	const {
                 rectype: rectype
             } = request.parameters;
+
+            log.debug('params',request.parameters);
+            log.debug('rectype',rectype);
             if (request.method === 'GET') {
                 switch (rectype) {
                     case 'franchisepo':
@@ -54,6 +57,9 @@ define([
                         break;
                     case 'itemperlocation':
                         renderItemPerLocation(request, response);
+                        break;
+                    case 'inventorycount':
+                        renderInventoryCount(request, response);
                         break;
                     default:
                         throw 'Page Not Found';
@@ -261,7 +267,6 @@ define([
 
         log.debug('ia params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
-        //const stLocation = getLocation(stUserId);
         const stCustomer = getCustomer(stUserId);
         log.debug('stCustomer',stCustomer);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
@@ -330,6 +335,7 @@ define([
         } = request.parameters;
 
         log.debug('itemp per loc params',request.parameters);
+        
         const stCustomer = getCustomer(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer);
 
@@ -341,6 +347,68 @@ define([
             stUserId,
             objSearch: objItemPerLocationSearch
         });
+    };
+
+    const renderInventoryCount = (request, response) => {
+        const {
+            pageMode: stPageMode,
+            userId: stUserId,
+            inventoryadjustmentid: stPoId,
+            accesstype: stAccessType,
+            tranid: stTranId,
+            step: stStep,
+            objIC: objIC
+        } = request.parameters;
+
+        log.debug('ic params',request.parameters);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const stCustomer = getCustomer(stUserId);
+        const objInventoryCountSearch = buildInventoryCountSearch(stCustomer);
+        const objOperator = getOperator(stUserId);
+        const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
+        switch (stPageMode) {
+            case 'list':
+                listPage.renderInventoryCount({
+                    request,
+                    response,
+                    stType: 'inventorycount',
+                    stAccessType,
+                    stUserId,
+                    objSearch: objInventoryCountSearch
+                });
+
+                break;
+            case 'create':
+                createPage.renderInventoryCount({
+                    response,
+                    stType: 'inventorycount',
+                    stSubsidiary,
+                    stCustomer,
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stStep,
+                    objOperator,
+                    objIC
+                });
+
+                break;
+            case 'view':
+                viewPage.renderInventoryCount({
+                    response,
+                    stType: 'inventorycount',
+                    stPageMode,
+                    stUserId,
+                    stPoId,
+                    stAccessType,
+                    stTranId
+                });
+
+                break;
+            default:
+                throw 'Page Not Found';
+        }
     };
 
     const buildIntercompanyPOSearch = (stCustomer,stStatus,stReceiving,) => {
@@ -461,6 +529,37 @@ define([
         }
     };
 
+    const getOperator = (stId) => {
+        let arrCredentials = [];
+        const ssCredentials = search.create({
+            type: _CONFIG.RECORD.CREDENTIALS,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_username' }),
+                    search.createColumn({ name: 'internalid' })
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            arrCredentials.push({
+                stOperator: ssCredentials[0].getValue({ name: 'custrecord_cwgp_username' }),
+                stOperatorId: ssCredentials[0].getValue({ name: 'internalid' })
+            });
+        }
+        return arrCredentials;
+    };
+
     
     
     const handleFranchiseTxn = (request) => {
@@ -476,7 +575,24 @@ define([
         let idRec = null;
         log.debug('stPageMode', stPageMode);
         log.debug('stRecType', stRecType);
-        if (stPageMode == 'create') {
+        switch (stRecType) {
+            case 'franchisepo':
+                idRec = txnLib.createFranchisePO(request);
+                break;
+            case 'itemreceipt':
+                idRec = txnLib.createFranchiseIR(request);
+                break;
+            case 'inventoryadjustment':
+                idRec = txnLib.createFranchiseIA(request);
+                break;
+            case 'inventorycount':
+                idRec = txnLib.createFranchiseIC(request);
+                break;
+            default:
+                throw 'Page Not Found';
+        }
+
+        /*if (stPageMode == 'create') {
             if(stRecType == 'franchisepo'){
             	log.debug('create franchise po', '')
                 idRec = txnLib.createFranchisePO(request);
@@ -486,7 +602,7 @@ define([
             else if(stRecType == 'inventoryadjustment'){
                 idRec = txnLib.createFranchiseIA(request);
             }
-        }
+        }*/
 
         if (stPageMode == 'edit') {
             if(stRecType == 'franchisepo'){
@@ -541,11 +657,25 @@ define([
                 }
             });
         }
+        else if(stRecType == 'inventorycount'){
+            redirect.toSuitelet({
+                scriptId: _CONFIG.SCRIPT.ID,
+                deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                isExternal: true,
+                parameters: {
+                    pageMode: 'view',
+                    userId: stUserId,
+                    accesstype: stAccessType,
+                    rectype: stRecType,
+                    inventoryadjustmentid: idRec
+                }
+            });
+        }
         
     };
     
     const buildItemReceiptSearch = (stCustomer) => {
-        const ssItemReceipt = search.load({ id: "580", type: "customrecord_cwgp_franchisereciept" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_itemreceipt", type: "customrecord_cwgp_franchisereciept" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'custrecord_cwgp_fr_customer',
@@ -569,7 +699,7 @@ define([
     };
 
     const buildItemPerLocationSearch = (stCustomer) => {
-        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
@@ -578,6 +708,18 @@ define([
         }));
 
         return ssItemPerLocation;
+    };
+
+    const buildInventoryCountSearch = (stCustomer) => {
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invcount", type: "customrecord_cwgp_franchiseinvcount" });
+
+        ssItemReceipt.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_fic_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        return ssItemReceipt;
     };
     
     const editFranchisePO = (request) => {

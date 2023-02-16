@@ -246,6 +246,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         QTY     : 'custpage_cwgp_adjustqtyby'
                     }
                 }
+                break;
             case 'inventorycount':   
                 UI_CONFIG = {
                     SUBLIST_ID      : 'custpage_inventoryadjustmentinventorycount_items',
@@ -552,7 +553,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
                     }
                 }
-
                 for(var ii = 0; ii < intScannedQty; ii++){
                     recCurrent.selectNewLine({ 
                         sublistId   : UI_CONFIG.SUBLIST_ID,

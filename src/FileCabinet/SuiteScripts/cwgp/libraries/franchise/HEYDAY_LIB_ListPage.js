@@ -20,19 +20,22 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         	franchisepo: 'Purchase Order',
         	itemreceipt: 'Item Receipts',
             inventoryadjustment: 'Inventory Adjustment',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'Item Per Location',
+            inventorycount: 'Inventory Count',
         },
         TAB: {
         	franchisepo: 'custpage_interpo_listtab_franchise',
         	itemreceipt: 'custpage_ir_listtab_franchise',
             inventoryadjustment: 'custpage_ia_listtab_franchise',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'custpage_ipl_listtab_franchise',
+            inventorycount: 'custpage_ic_listtab_franchise',
         },
         SUBLIST: {
         	franchisepo: 'custpage_interpo_list_franchise',
         	itemreceipt: 'custpage_ir_list_franchise',
             inventoryadjustment: 'custpage_ia_list_franchise',
-            itemperlocation: 'Item Per Location'
+            itemperlocation: 'custpage_ipl_list_franchise',
+            inventorycount: 'custpage_ic_list_retail',
         },
         COLUMN: {
             LIST: {
@@ -132,6 +135,23 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         label: 'Committed'
                     },*/
 
+                },
+                inventorycount: {
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Transaction No'
+                    },
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
+                    }
                 }
             }
         },
@@ -541,11 +561,98 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stAccessType,
             stUserId
         });
-
+        log.debug('setListValues', '');
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'itemperlocation')`
+        });
+
+        response.writePage(form);
+    };
+
+    const renderInventoryCount = (options) => {
+        const {
+            request,
+            response,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        const intLocation = request.parameters[_CONFIG.PARAMETER.LOCATION] ? request.parameters[_CONFIG.PARAMETER.LOCATION] : '';
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Transactions'
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            container: _CONFIG.TAB[stType]  
+        });
+        fldPage.defaultValue = intPage;
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
         response.writePage(form);
@@ -682,6 +789,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         render,
         renderItemReceipt,
         renderInventoryAdjustment,
-        renderItemPerLocation
+        renderItemPerLocation,
+        renderInventoryCount
     }
 });
