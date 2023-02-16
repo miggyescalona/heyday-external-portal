@@ -85,10 +85,16 @@ define(['N/search'], (search) => {
             columns:
             [
                search.createColumn({name: "locationquantityonhand", label: "Location On Hand"}),
+               search.createColumn({
+                name: "formulanumeric",
+                formula: "nvl({locationquantityonhand},0)",
+                label: "Formula (Numeric)"
+             })
             ]
          });
          itemSearchObj.run().each(function(result){
-            stQtyOnHand = result.getValue({ name: 'locationquantityonhand' })
+           //stQtyOnHand = result.getValue({ name: 'locationquantityonhand' })
+           stQtyOnHand = result.getValue({ name: 'formulanumeric' })
             return true;
          });
          return stQtyOnHand;
@@ -110,7 +116,7 @@ define(['N/search'], (search) => {
                   name: "custrecord_cwgp_ftl_actualqty",	
                   summary: "SUM",	
                   label: "Quantity"	
-               })	
+               })
             ]	
          });	
          IRLineSearch.run().each(function(result){	
@@ -123,7 +129,7 @@ define(['N/search'], (search) => {
             log.debug("qtyIR",qtyIR);	
             if(!isNaN(qtyIR) && qtyIR != ''){	
                 qtyOnHand += parseFloat(qtyIR);	
-            }	
+            }
             	
             return true;	
          });	

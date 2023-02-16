@@ -353,6 +353,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
        return arrIARecIds;
     };
 
+    
+
 
     const mapRetailPOBodyFields = (request) => {
         const stVendor = request.parameters.custpage_cwgp_vendor;
@@ -417,7 +419,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
-
+        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        log.debug('stTotalDiscrepancy',stTotalDiscrepancy);
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),
@@ -430,7 +433,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
             custbody_cwgp_itemsummary: stTotalAdjustment,
-            custbody_cwgp_inventoryadjustmentsub: stSubTypeId
+            custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
+            custbody_cwgp_totaldiscrepancy: stTotalDiscrepancy
 
         };
         log.debug('objMapBodyFields', objMapBodyFields);
@@ -589,7 +593,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         log.debug('mapInventoryAdjustmentSublistFields', '==mapInventoryAdjustmentSublistFields==');
         log.debug('mapInventoryAdjustmentSublistFields stSubType', stSubType);
         let arrMapSblFields = [];
-        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : stSubType == 'damagetestertheft' ? 'custpage_inventoryadjustmentdamagetestertheft_items' : 'custpage_inventoryadjustmentinventorycount_items';
         
         const intLineCount = request.getLineCount({ group: subTypeSublist});
 
@@ -614,6 +618,13 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 name: 'custpage_cwgp_qtyonhand',
                 line: i
             }));
+
+            const intDiscrepancy = parseInt(request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_discrepancy',
+                line: i
+            }));
+
 
             const stAdjustmentReason = request.getSublistValue({
                 group: subTypeSublist,
@@ -666,6 +677,20 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             intFinalQuantity = intEndingInvQuantity-intQtyOnHand;
 
+            const stDiscrepancy = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_discrepancy',
+                line: i
+            })
+
+            const stEnteredCount = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_enteredcount',
+                line: i
+            })
+
+
+
             if(stSubType == 'standard'){
                 arrMapSblFields.push({
                     item: stItem,
@@ -700,10 +725,22 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     custcol_cwgp_datetime: dtDateTime,
                 })
             }
+            else{
+                arrMapSblFields.push({
+                    item: stItem,
+                    location: stLocation,
+                    adjustqtyby: intDiscrepancy,
+                    class: stBusinessLine,
+                    custcol_cwgp_adjustmenttype: stAdjustmentType,
+                    custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                    custcol_cwgp_discrepancy: stDiscrepancy,
+                    custcol_cwgp_enteredcountfinalqty: stEnteredCount
+                })
+            }
             
         }
 
-        log.debug('arrMapSblFields', arrMapSblFields)
+        log.debug('arrMapSblFields', )
         return arrMapSblFields;
     };
 

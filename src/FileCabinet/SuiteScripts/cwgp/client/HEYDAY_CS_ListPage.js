@@ -111,7 +111,8 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
        // window.location = `https://5530036-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=686&deploy=1&compid=5530036_SB1&h=b8a78be5c27a4d76e7a8&pageMode=create&userId=${stUserId}&accesstype=${stAccessType}&rectype=${stType}`;
    
        const objCreateIntPOUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
-        
+       const stStep = stType == 'inventorycount' ? 1 : null; 
+
        let stCreateIntPOUrl = url.resolveScript({
            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
@@ -121,6 +122,7 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
                userId      : stUserId,
                accesstype  : stAccessType,
                rectype     : stType,
+               step        : stStep
            }
        });
        window.location = stCreateIntPOUrl;

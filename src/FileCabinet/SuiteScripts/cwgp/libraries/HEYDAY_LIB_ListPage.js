@@ -23,18 +23,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             intercompanypo: 'Replenishment Purchase Order',
             itemreceipt: 'Receive Items',
             inventoryadjustment: 'Inventory Adjustment',
+            inventorycount: 'Inventory Count',
             itemperlocation: 'Inventory On Hand'
         },
         TAB: {
             intercompanypo: 'custpage_interpo_listtab_retail',
             itemreceipt: 'custpage_ir_listtab_retail',
             inventoryadjustment: 'custpage_ia_listtab_retail',
+            inventorycount: 'custpage_ic_listtab_retail',
             itemperlocation: 'custpage_ipl_listtab_retail'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_list_retail',
             itemreceipt: 'custpage_ir_list_retail',
             inventoryadjustment: 'custpage_ia_list_retail',
+            inventorycount: 'custpage_ic_list_retail',
             itemperlocation: 'custpage_ipl_list_retail'
         },
         COLUMN: {
@@ -84,6 +87,23 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     }
                 },
                 inventoryadjustment: {
+                    TRAN_NO: {
+                        id: 'custpage_cwgp_tranid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Transaction No'
+                    },
+                    DATE: {
+                        id: 'custpage_cwgp_trandate',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Date'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
+                    }
+                },
+                inventorycount: {
                     TRAN_NO: {
                         id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
@@ -407,27 +427,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             label: 'Create',
             functionName: `createInventoryAdjustment(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
         });
-    
-       ///add buttons
-       /* form.addButton({
-            id: 'custpage_createtxn_buton',
-            label: 'Create',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment')`
-        });
-
-        form.addButton({
-            id: 'custpage_createtxn_buton',
-            label: 'Create Backbar',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','backbar')`
-        });
-
-
-        form.addButton({
-            id: 'custpage_createtxn_buton',
-            label: 'Create Damage/Tester',
-            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventoryadjustment','damage')`
-        });*/
-
 
         form.addButton({
             id: 'custpage_back_button',
@@ -437,6 +436,96 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         response.writePage(form);
     };
+
+    const renderInventoryCount = (options) => {
+        log.debug('===LIST===','===List Inventory Count===');
+        const {
+            request,
+            response,
+            stSubsidiary,
+            stType,
+            stAccessType,
+            stUserId,
+            objSearch
+        } = options;
+
+
+        const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        const intLocation = request.parameters[_CONFIG.PARAMETER.LOCATION] ? request.parameters[_CONFIG.PARAMETER.LOCATION] : '';
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
+
+        form.clientScriptModulePath = '../client/HEYDAY_CS_ListPage.js';
+        
+        //add body fields
+        const fldHtml = form.addField({
+            id: 'custpage_cwgp_htmlcss',
+            type: serverWidget.FieldType.INLINEHTML,
+            label: 'HTMLCSS'
+        });
+        fldHtml.defaultValue = htmlCss();
+        
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Transactions'
+        });
+
+        const fldPage = form.addField({
+            id: 'custpage_cwgp_page',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Page',
+            container: _CONFIG.TAB[stType]  
+        });
+        fldPage.defaultValue = intPage;
+
+        //add sublist values
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+        const objListCols = _CONFIG.COLUMN.LIST[stType];
+
+        const arrCols = Object.keys(objListCols);
+        log.debug('arrCols', arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label } = objListCols[stCol];
+
+            sbl.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        setListValues({
+            objSearch,
+            fldPage,
+            intPage,
+            sbl,
+            stType,
+            stAccessType,
+            stUserId
+        });
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Back',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        response.writePage(form);
+    };
+
 
     const renderItemPerLocation = (options) => {
         log.debug('===LIST===','===List Item per Location===');
@@ -653,6 +742,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         render,
         renderItemReceipt,
         renderInventoryAdjustment,
+        renderInventoryCount,
         renderItemPerLocation
     }
 });

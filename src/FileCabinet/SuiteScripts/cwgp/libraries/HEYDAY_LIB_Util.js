@@ -107,7 +107,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
             'inventoryadjustment': mapInventoryAdjustment,
-            'itemperlocation': mapItemPerLocation
+            'itemperlocation': mapItemPerLocation,
+            'inventorycount': mapInventoryCount
         };
         const mapValues = MAP_VALUES[stType];
 
@@ -296,6 +297,38 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         return arrMapInventoryAdjustment;
     };
+
+    const mapInventoryCount = (stUserId, stAccessType, arrPagedData) => {
+        
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
+
+        let stBaseUrl = url.resolveScript({
+            deploymentId        : objRetailUrl.DEPLOY_ID,
+            scriptId            : objRetailUrl.SCRIPT_ID,
+            returnExternalUrl   : true
+        });
+
+
+        let arrMapInventoryAdjustment= [];
+
+        arrPagedData.forEach((result, index) => {
+            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stTranId = result.getValue({ name: 'tranid' });
+            const stID = result.id;
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventorycount&tranid=${stTranId}`;
+            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
+
+            arrMapInventoryAdjustment.push({
+                [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
+                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+            })
+        });
+
+        return arrMapInventoryAdjustment;
+    };
+
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
 
@@ -497,8 +530,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         else if(stSubType =='standard'){
             stTypes = [6];
         }
-        else{
+        else if(stSubType == 'backbar'){
             stTypes = [2];
+        }
+        else{
+            stTypes = [1,2,3,4,5,6];
         }
         search.create({
             type: "customlist_cwgp_adjustmenttype",
@@ -1090,6 +1126,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             item: []
         };
         let objItemSummary;
+        let objDiscrepancySummary;
         let subType;
         let intAdjQtyBy;
         let stDateTime 
@@ -1108,7 +1145,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
         objPO.body.custpage_cwgp_operator = objInventoryAdjustment.getText('custbody_cwgp_externalportaloperator');
-        
+      
+
         objItemSummary = objInventoryAdjustment.getValue('custbody_cwgp_itemsummary');
         subType = objInventoryAdjustment.getValue('custbody_cwgp_adjustmentsubtype');
 
@@ -1125,6 +1163,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
+
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
+        }
+
+        objDiscrepancySummary = objInventoryAdjustment.getText('custbody_cwgp_totaldiscrepancy');
+
+        if(objDiscrepancySummary){
+            let stTextAreaVal = '';
+
+            stTextAreaVal += '<div><br><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Total Discrepancy</td></tr>';
+            stTextAreaVal+= '<tr><td style="padding:3px">'+ objDiscrepancySummary+'</td></tr>';
+            stTextAreaVal += '</table></div><br>'
 
             objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
         }
@@ -1147,7 +1198,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 fieldId: 'adjustqtyby',
                 line: x
             })) || 0
-            if(subType != 'standard'){
+            if(subType != 'standard' && subType){
                 intAdjQtyBy = Math.abs(intAdjQtyBy);
             }
 
@@ -1189,6 +1240,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     line: x
                 })) || '0',
                 custpage_cwgp_adjustqtyby: intAdjQtyBy,
+                custpage_cwgp_finalqty: intAdjQtyBy,
+                custpage_cwgp_discrepancy:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_discrepancy',
+                    line: x
+                }),
+                custpage_cwgp_enteredcount:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
+                custpage_cwgp_icfinalqty: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
@@ -1231,6 +1298,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         log.debug('mapInventoryAdjustmentValues',objPO);
         return objPO;
     }
+    
 
     const setSublistValues = (sbl, objPO) => {
         const arrListValues = objPO.item;

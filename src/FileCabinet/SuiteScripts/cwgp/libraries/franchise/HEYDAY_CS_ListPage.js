@@ -66,7 +66,9 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
     //Used in button functionName; using multiple parameters
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
         
-        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
+        const stStep = stType == 'inventorycount' ? 1 : null; 
+
         
         let stCreateIntPOUrl = url.resolveScript({
             deploymentId        : objFranchiseUrl.DEPLOY_ID,
@@ -76,7 +78,8 @@ define(['N/url', 'N/ui/dialog', '../HEYDAY_LIB_ClientExternalPortal.js'], (url, 
                 pageMode    : 'create',
                 userId      : stUserId,
                 accesstype  : stAccessType,
-                rectype     : stType
+                rectype     : stType,
+                step        : stStep
             }
         });
 
