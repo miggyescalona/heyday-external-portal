@@ -240,7 +240,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
                         <br>
-                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
+                        <button type="button" id="cwgp_ic_btn" class="navbutton">Inventory Count</button>
                     </div>
                 </div>
 
@@ -345,13 +345,14 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_po_franchise_btn" class="navbutton">Purchase Order</button>
                         <br>
-                        <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Item Receipt</button>
+                        <button type="button" id="cwgp_ir_franchise_btn" class="navbutton">Receive Items</button>
                         <br>
                         <button type="button" id="cwgp_ia_franchise_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
-                        <button type="button" id="cwgp_ic_franchise_btn" class="navbutton">Inventory Count</button>
-                        <br>
                         <button type="button" id="cwgp_itemperlocation_franchise_btn" class="navbutton">Inventory On Hand</button>
+                        <br>
+                        <button type="button" id="cwgp_ic_franchise_btn" class="navbutton">Inventory Count</button>
+                        
                     </div>
                 </div>
 

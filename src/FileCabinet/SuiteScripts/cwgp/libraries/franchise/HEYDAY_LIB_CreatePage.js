@@ -349,6 +349,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    isInline: ['2','3','4']
                 },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
@@ -378,6 +379,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     source: 'subsidiary',
                     displayType: 'inline'
                 },
+                LOCATION: {
+                    id: 'custpage_cwgp_location',
+                    type: serverWidget.FieldType.SELECT,
+                    label: 'Location',
+                    container: 'CLASS',
+                    source: 'location',
+                    displayType: 'inline',
+                    mandatory: true
+                },
                 SUBTYPE: {
                     id: 'custpage_cwgp_adjustmentsubtype',
                     type: serverWidget.FieldType.TEXT,
@@ -397,7 +407,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     type: serverWidget.FieldType.TEXT,
                     label: 'Step',
                     displayType: 'hidden'
-                }   
+                },
+                ITEM_SUBLIST: {
+                    id: 'custpage_cwgp_itemlist',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Item List',
+                    displayType: 'hidden'
+                },
+                ITEM_SUMMARY_HTML: {
+                    id: 'custpage_cwgp_itemsummary',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: '   ',
+                    container: 'ITEM_SUMMARY',
+                    displayType: 'inline'
+                },
+                TOTAL_DISCREPANCY_HTMLHIDDEN: {
+                    id: 'custpage_cwgp_totaldiscrepancy',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Total Discrepancy Hidden',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
             }
         },
         COLUMN: {
@@ -956,6 +986,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                         isHidden: ['1'],
                         isEntry: ['2']
                     },
+                    ENTERED_COUNT: {
+                        id: 'custpage_cwgp_enteredcount',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Entered Count',
+                        isHidden: ['1','2','3','4'],
+                    },
                     HAS_DISCREPANCY: {
                         id: 'custpage_cwgp_hasdiscrepancy',
                         type: serverWidget.FieldType.TEXT,
@@ -992,8 +1028,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
-                        label: '*Reason',
-                        isHidden: ['1','2','3','4']
+                        label: '*Adjustment Reason',
+                        isHidden: ['1','2','3'],
+                        isEntry: ['4']
                     },
                 }
             }
@@ -1580,6 +1617,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             response,
             stType,
             stSubsidiary,
+            stLocation,
             stCustomer,
             stPageMode,
             stUserId,
@@ -1601,14 +1639,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        const {
-            objItemResultSet,
-            objUpcMap,
-        }= EPLib.initScanner({
-            stType,
-            stSubsidiary,
-            _CONFIG
-        })
+        //Add scanner UI for step 2 and 3 only	
+        if(stStep == 2 || stStep == 3){	
+            var {	
+                objItemResultSet,	
+                objUpcMap,	
+            }= EPLib.initScanner({	
+                stType,	
+                stSubsidiary,	
+                _CONFIG	
+            })	
+        }	
+        else{	
+            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
+        }
         
         let stUpcMap = ''
         if(objUpcMap){
@@ -1636,6 +1680,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         const arrFlds = Object.keys(objBodyFields);
         log.debug('arrFlds', arrFlds);
 
+        const stOperator = objOperator[0].stOperator;
+        const stOperatorId = objOperator[0].stOperatorId;
+        const objDefaultValues = mapDefaultValues({
+            stSubsidiary,
+            stLocation, 
+            stCustomer,
+            stPageMode, 
+            stUserId,
+            stAccessType,
+            stType,
+            stUpcMap,
+            stOperator,
+            stOperatorId,
+            stStep
+        });
+
+        
+
         arrFlds.forEach((stCol) => {
             const {
                 id,
@@ -1646,6 +1708,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                 mandatory,
                 defaultValue,
                 displayType,
+                isInline,
             } = objBodyFields[stCol];
 
 
@@ -1655,6 +1718,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                 type,
                 label,
                 source,
+                isInline,
                 container: _CONFIG.FIELD_GROUP[stType][container]?.id
             });
 
@@ -1668,21 +1732,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
            
 
 
-            const stOperator = objOperator[0].stOperator;
-            const stOperatorId = objOperator[0].stOperatorId;
-            const objDefaultValues = mapDefaultValues({
-                stSubsidiary, 
-                stCustomer,
-                stPageMode, 
-                stUserId,
-                stAccessType,
-                stType,
-                stUpcMap,
-                stOperator,
-                stOperatorId,
-                stStep
-            });
-
+            
+            if(isInline){	
+                if(isInline.includes(stStep)){	
+                    fld.updateDisplayType({ displayType: 'inline' });	
+                };	
+            }
 
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
@@ -1813,7 +1868,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
 
         form.addButton({
             id: 'custpage_back_button',
-            label: 'Back',
+            label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
@@ -1832,8 +1887,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stType,
             stUpcMap,
             stOperator,
-            stSubType
+            stSubType,
+            stStep
         } = options;
+
+        if(stType == 'itemreceipt'){
+            scanbhtml = EPLib.getScanButtonCss({stPageType: stType});
+            stMapVendor = stVendor;
+        }
+        else if(stType == 'inventorycount'){
+            scanbhtml = EPLib.getScanButtonCss({
+                stPageType: stType,
+                stStep
+            });
+            stMapVendor = 19082;
+            log.debug('scanbhtml', scanbhtml)
+        }
+        else{
+            scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})
+            stMapVendor = 19082;
+        }
+        stSubTypeId = stSubType == 'standard' ? '1' : stSubType == 'backbar' ? '2' : '3';
 
         return {
             custpage_cwgp_subsidiary    : stSubsidiary,
@@ -1849,7 +1923,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             custpage_cwgp_location      : stLocation,
             custpage_cwgp_rectype       : stType,
             custpage_cwgp_operator      : stOperator,
-            custpage_cwgp_adjustmentsubtype : stSubType
+            custpage_cwgp_adjustmentsubtype : stSubType,
+            custpage_cwgp_step: stStep
         }
     };
 
