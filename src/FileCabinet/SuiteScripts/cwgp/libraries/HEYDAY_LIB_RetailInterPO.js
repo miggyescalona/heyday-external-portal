@@ -419,7 +419,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
-
+        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        log.debug('stTotalDiscrepancy',stTotalDiscrepancy);
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),
@@ -432,7 +433,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
             custbody_cwgp_itemsummary: stTotalAdjustment,
-            custbody_cwgp_inventoryadjustmentsub: stSubTypeId
+            custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
+            custbody_cwgp_totaldiscrepancy: stTotalDiscrepancy
 
         };
         log.debug('objMapBodyFields', objMapBodyFields);
@@ -675,6 +677,20 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             intFinalQuantity = intEndingInvQuantity-intQtyOnHand;
 
+            const stDiscrepancy = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_discrepancy',
+                line: i
+            })
+
+            const stEnteredCount = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_enteredcount',
+                line: i
+            })
+
+
+
             if(stSubType == 'standard'){
                 arrMapSblFields.push({
                     item: stItem,
@@ -717,6 +733,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
+                    custcol_cwgp_discrepancy: stDiscrepancy,
+                    custcol_cwgp_enteredcountfinalqty: stEnteredCount
                 })
             }
             

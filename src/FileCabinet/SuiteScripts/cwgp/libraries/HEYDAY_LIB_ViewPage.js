@@ -434,6 +434,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
+                TOTAL_DISCREPANCY_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: ' ',
+                    container: 'TOTAL_DISCREPANCY',
+                    displayType:'inline'
+                },
             },
         },
         COLUMN: {
@@ -858,20 +865,25 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
-                        id: 'custpage_cwgp_adjustqtyby',
+                        id: 'custpage_cwgp_enteredcount',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Inventory Quantity'
+                        label: 'Entered Count'
+                    },
+                    DISREPANCY: {
+                        id: 'custpage_cwgp_discrepancy',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Discrepancy'
+                    },
+                    FINAL_QTY: {
+                        id: 'custpage_cwgp_icfinalqty',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Final Quantity At Location'
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Business Line',
                         displayType:'hidden'
-                    },
-                    ADJUSTMENT_TYPE: {
-                        id: 'custpage_cwgp_adjustmenttype',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Adjustment Type'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
@@ -946,6 +958,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 CLASS: {
                     id: 'custpage_inventoryadjustmentinventorycount_class_grp',
                     label: 'Classification'
+                },
+                TOTAL_DISCREPANCY: {
+                    id: 'custpage_inventoryadjustmentinventorycountinitial_total_grp',
+                    label: 'Total Discrepancy'
                 },
             },
         },

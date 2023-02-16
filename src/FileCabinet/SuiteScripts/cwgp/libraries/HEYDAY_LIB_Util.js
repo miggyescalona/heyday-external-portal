@@ -1126,6 +1126,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             item: []
         };
         let objItemSummary;
+        let objDiscrepancySummary;
         let subType;
         let intAdjQtyBy;
         let stDateTime 
@@ -1144,7 +1145,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
         objPO.body.custpage_cwgp_operator = objInventoryAdjustment.getText('custbody_cwgp_externalportaloperator');
-        
+      
+
         objItemSummary = objInventoryAdjustment.getValue('custbody_cwgp_itemsummary');
         subType = objInventoryAdjustment.getValue('custbody_cwgp_adjustmentsubtype');
 
@@ -1161,6 +1163,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
+
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
+        }
+
+        objDiscrepancySummary = objInventoryAdjustment.getText('custbody_cwgp_totaldiscrepancy');
+
+        if(objDiscrepancySummary){
+            let stTextAreaVal = '';
+
+            stTextAreaVal += '<div><br><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Total Discrepancy</td></tr>';
+            stTextAreaVal+= '<tr><td style="padding:3px">'+ objDiscrepancySummary+'</td></tr>';
+            stTextAreaVal += '</table></div><br>'
 
             objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
         }
@@ -1225,6 +1240,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     line: x
                 })) || '0',
                 custpage_cwgp_adjustqtyby: intAdjQtyBy,
+                custpage_cwgp_finalqty: intAdjQtyBy,
+                custpage_cwgp_discrepancy:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_discrepancy',
+                    line: x
+                }),
+                custpage_cwgp_enteredcount:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
+                custpage_cwgp_icfinalqty: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',

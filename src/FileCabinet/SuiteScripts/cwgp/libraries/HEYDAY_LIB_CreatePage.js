@@ -483,7 +483,27 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.TEXT,
                     label: 'Step',
                     displayType: 'hidden'
-                }   
+                },
+                ITEM_SUBLIST: {
+                    id: 'custpage_cwgp_itemlist',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Item List',
+                    displayType: 'hidden'
+                },
+                ITEM_SUMMARY_HTML: {
+                    id: 'custpage_cwgp_itemsummary',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: '   ',
+                    container: 'ITEM_SUMMARY',
+                    displayType: 'inline'
+                },
+                TOTAL_DISCREPANCY_HTMLHIDDEN: {
+                    id: 'custpage_cwgp_totaldiscrepancy',
+                    type: serverWidget.FieldType.LONGTEXT,
+                    label: 'Total Discrepancy Hidden',
+                    container: 'PRIMARY',
+                    displayType: 'hidden'
+                },
             }
         },
         COLUMN: {
@@ -939,6 +959,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         isHidden: ['1'],
                         isEntry: ['2']
                     },
+                    ENTERED_COUNT: {
+                        id: 'custpage_cwgp_enteredcount',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Entered Count',
+                        isHidden: ['1','2','3','4'],
+                    },
                     HAS_DISCREPANCY: {
                         id: 'custpage_cwgp_hasdiscrepancy',
                         type: serverWidget.FieldType.TEXT,
@@ -975,8 +1001,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
-                        label: '*Reason',
-                        isHidden: ['1','2','3','4']
+                        label: '*Adjustment Reason',
+                        isHidden: ['1','2','3'],
+                        isEntry: ['4']
                     },
                 }
             }
@@ -1868,6 +1895,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         //Create Buttons
        
         if(stStep == 4){form.addSubmitButton({ label: 'Save' });}
+        //form.addSubmitButton({ label: 'Save' });
 
         let stNextButton = stStep == 1 ? 'Submit Items' : stStep == 2 ? 'Submit Qty' : stStep == 3 ? 'Submit' : 'Complete Count';
 

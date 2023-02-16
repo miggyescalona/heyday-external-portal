@@ -20,8 +20,9 @@ define([
     '../libraries/HEYDAY_LIB_EditPage.js',
     '../libraries/HEYDAY_LIB_RetailInterPO.js',
     '../libraries/HEYDAY_LIB_ExternalPortal',
-    'N/file'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file) => {
+    'N/file',
+    'N/runtime'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file,runtime) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -277,7 +278,7 @@ define([
     };
 
     const renderInventoryCount = (request, response) => {
-        const {
+        let {
             pageMode: stPageMode,
             userId: stUserId,
             inventoryadjustmentid: stPoId,
@@ -287,6 +288,22 @@ define([
             objIC: objIC
         } = request.parameters;
 
+        /*if(!stPageMode){
+            stPageMode = request.parameters.custpage_cwgp_pagemode
+            stUserId = request.parameters.custpage_cwgp_userid;
+            stAccessType = request.parameters.custpage_cwgp_accesstype;
+            stStep = request.parameters.custpage_cwgp_step
+        } 
+
+        log.debug('ic params2', JSON.stringify({
+            stPageMode,
+            stUserId,
+            stPoId,
+            stAccessType,
+            stTranId,
+            stStep,
+            objIC
+        }))*/
         log.debug('ic params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
@@ -369,6 +386,7 @@ define([
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
             custpage_cwgp_adjustmentsubtype: stSubType,
+            custpage_cwgp_itemlist: itemsublist
 
         } = request.parameters;
 
@@ -377,7 +395,8 @@ define([
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType
+            custpage_cwgp_adjustmentsubtype: stSubType,
+            custpage_cwgp_itemlist: itemsublist
         }));
 
         let idRec = null;
@@ -391,6 +410,9 @@ define([
                 idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
             }else if(stRecType == 'inventorycount'){
                 idRec = txnLib.createRetailInventoryAdjustment(request);
+                //log.debug('itemsublist',itemsublist);
+                /*log.debug('inventorycount create', stRecType);
+                renderInventoryCount(request, response);*/
             }
         }
 
