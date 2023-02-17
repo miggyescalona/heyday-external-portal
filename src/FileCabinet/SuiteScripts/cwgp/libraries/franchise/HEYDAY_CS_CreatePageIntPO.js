@@ -80,7 +80,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_adjustmentreason',
                     line: x
                 });
-                if(intDiscrepancy > 0 && !stAdjustmentReason){
+                if(intDiscrepancy != 0 && !stAdjustmentReason){
                     arrHasDiscrepancy.push(x+1);
                 }
             }
@@ -1282,7 +1282,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
             item: []
         };
 
-        const stBodyFields = ['custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_location','custpage_cwgp_customer','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary']
+        const stBodyFields = ['custpage_cwgp_scanbtnhtml','custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_location','custpage_cwgp_customer','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary']
         if(stStep == 1){
             for(let x = 0; x < stBodyFields.length;x++){
                 objIC.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);

@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
+            ID: 'customscript_cwgp_sl_franchisepages2',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
         }
     };
     /**
@@ -701,13 +701,13 @@ define([
     };
 
     const buildItemPerLocationSearch = (stCustomer) => {
-        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
 
-        ssItemPerLocation.filters.push(search.createFilter({
+        /*ssItemPerLocation.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
             operator: 'anyof',
             values: stCustomer,
-        }));
+        }));*/
 
         return ssItemPerLocation;
     };
