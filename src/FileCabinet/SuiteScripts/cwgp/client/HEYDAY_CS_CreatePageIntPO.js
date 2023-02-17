@@ -29,12 +29,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const stPageMode = objParams.get('pageMode');
         const stStep = objParams.get('step');
 
-
-        /*if(stSubType == 'damagetestertheft'){
-            jQuery('#custpage_cwgp_totaladjustment_fs_lbl').hide();
-            jQuery('#custpage_cwgp_itemsummary_fs_lbl').hide();
-        }*/
-
         if(stRecType == 'intercompanypo' && stPageMode == 'create'){
             let messageUI = message.create({
                 title: 'Reminder',
@@ -43,9 +37,13 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             });
             messageUI.show(); // will disappear after 20s
         }
-        if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep == '2'){
-            console.log(sessionStorage.getItem("objIC"));
-        }
+        /*if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep != '1'){
+            var currentRecord = context.currentRecord;
+            console.log('session val'+ sessionStorage.getItem("objIC"));
+            //const stBodyFields = ['custpage_cwgp_scanbtnhtml','custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary','custpage_cwgp_businessline','custpage_cwgp_adjustmentlocation',]
+            let objIC = sessionStorage.getItem("objIC");
+
+        }*/
     };
 
      const saveRecord = (context) => {
@@ -1150,7 +1148,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
     };
 
-    function nextStep(stUserId,stAccessType,stStep, objICprevious, stRecType){
+    function nextStep(stUserId,stAccessType,stStep, objICprevious, objDefaultValues,stRecType){
         console.log('nextStep');
 
         const blReturnError = validateInventoryCount(stStep);
@@ -1165,9 +1163,14 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             item: []
         };
 
-        const stBodyFields = ['custpage_cwgp_scanbtnhtml','custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary','custpage_cwgp_businessline','custpage_cwgp_adjustmentlocation',]
+        /*console.log(objDefaultValues);
+        console.log(JSON.stringify(objDefaultValues));*/
+
+        objIC.body = objDefaultValues;
+        const stBodyFields = ['custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain']
         if(stStep == 1){
             for(let x = 0; x < stBodyFields.length;x++){
+                console.log(stBodyFields[x]+'|'+currRec.getValue(stBodyFields[x]));
                 objIC.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
             }
         }
@@ -1177,8 +1180,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             }
             objICprevious.body['custpage_cwgp_adjustmentsubtypeid'] = 1;
         }
+
+        console.log(JSON.stringify(objDefaultValues));
        
-        
         const intICLineCount = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items');
         for(let x = 0; x < intICLineCount;x++){
             currRec.selectLine({
@@ -1266,7 +1270,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             accesstype: stAccessType,
             rectype: stRecType,
             step: parseInt(stStep)+1,
-            objIC: JSON.stringify(objIC)
+            objIC: objIC
         }));
 
         sessionStorage.setItem("objIC", JSON.stringify(objIC));

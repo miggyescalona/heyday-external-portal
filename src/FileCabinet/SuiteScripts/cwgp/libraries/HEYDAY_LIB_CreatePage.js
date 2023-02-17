@@ -1663,9 +1663,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stAccessType,
             stStep,
             objOperator,
-            objIC
+            objIC,
+            requestParams
         } = options;
 
+        log.debug('requestParams',requestParams);
+        log.debug('stStep',stStep);
 
         log.debug('objIC',objIC);
         let objICparsed;
@@ -1733,6 +1736,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stOperatorId,
             stStep
         });
+
+        log.debug('objDefaultValues',objDefaultValues);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -1903,7 +1908,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             form.addButton({
                 id: 'custpage_next_button',
                 label: stNextButton,
-                functionName: `nextStep(${stUserId}, ${stAccessType}, ${stStep}, ${JSON.stringify(objICparsed)},'inventorycount')`
+                functionName: `nextStep(${stUserId}, ${stAccessType}, ${stStep}, ${JSON.stringify(objICparsed)}, ${JSON.stringify(objDefaultValues)},'inventorycount')`
             });
         }
 
@@ -1912,7 +1917,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
-
         response.writePage(form);
     };
 
