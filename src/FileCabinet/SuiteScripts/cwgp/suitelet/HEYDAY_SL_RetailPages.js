@@ -277,7 +277,7 @@ define([
         }
     };
 
-    const renderInventoryCount = (request, response) => {
+    const renderInventoryCount = (request, response, objVal) => {
         let {
             pageMode: stPageMode,
             userId: stUserId,
@@ -287,28 +287,20 @@ define([
             step: stStep,
             objIC: objIC
         } = request.parameters;
+        
 
-        /*if(!stPageMode){
-            stPageMode = request.parameters.custpage_cwgp_pagemode
-            stUserId = request.parameters.custpage_cwgp_userid;
-            stAccessType = request.parameters.custpage_cwgp_accesstype;
-            stStep = request.parameters.custpage_cwgp_step
-        } 
+       /* if(objVal){
+            stPageMode = objVal.custpage_cwgp_pagemode;
+            stUserId = objVal.custpage_cwgp_userid;
+            stAccessType = objVal.custpage_cwgp_accesstype;
+        }*/
 
-        log.debug('ic params2', JSON.stringify({
-            stPageMode,
-            stUserId,
-            stPoId,
-            stAccessType,
-            stTranId,
-            stStep,
-            objIC
-        }))*/
         log.debug('ic params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objInventoryCountSearch = buildInventoryCountSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const requestParams = request.parameters;
 
         switch (stPageMode) {
             case 'list':
@@ -335,7 +327,8 @@ define([
                     stAccessType,
                     stStep,
                     objOperator,
-                    objIC
+                    objIC,
+                    requestParams
                 });
 
                 break;
@@ -366,7 +359,8 @@ define([
 
         log.debug('itemp per loc params',request.parameters);
         const stLocation = getLocation(stUserId);
-        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary);
 
         listPage.renderItemPerLocation({
             request,
@@ -380,24 +374,25 @@ define([
 
 
     const handleIntercompanyPOTxn = (request, response) => {
-        const {
+        let  {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType,
-            custpage_cwgp_itemlist: itemsublist
 
         } = request.parameters;
+
+        //log.debug(objVal);
+       // objVal.stStep = parseInt(request.parameters.custpage_cwgp_step)+1;
 
         log.debug('params handleIntercompanyPOTxn',JSON.stringify({
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType,
-            custpage_cwgp_itemlist: itemsublist
         }));
+
+
 
         let idRec = null;
 
@@ -409,10 +404,12 @@ define([
             }else if(stRecType == 'inventoryadjustment'){
                 idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
             }else if(stRecType == 'inventorycount'){
-                idRec = txnLib.createRetailInventoryAdjustment(request);
+                log.debug('request line count',request.getLineCount('custpage_inventoryadjustmentinventorycount_items'));
+                //idRec = txnLib.createRetailInventoryAdjustment(request);
                 //log.debug('itemsublist',itemsublist);
-                /*log.debug('inventorycount create', stRecType);
-                renderInventoryCount(request, response);*/
+                /*log.debug('inventorycount create', stRecType);*/
+                //renderInventoryCount(request,response,objVal);
+                idRec = txnLib.createRetailInventoryAdjustment(request);
             }
         }
 
@@ -578,13 +575,20 @@ define([
         return ssItemReceipt;
     };
 
-    const buildItemPerLocationSearch = (stLocation) => {
-        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+    const buildItemPerLocationSearch = (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "623", type: "transaction" });
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
             operator: 'anyof',
+            join: 'item',
             values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
         }));
 
         return ssItemPerLocation;
