@@ -56,7 +56,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         let stRecType = objParams.get('rectype');
         let stPageMode = objParams.get('pageMode');
         let stStep = objParams.get('step');
-        
+
 
         if(stRecType == 'inventorycount' && stPageMode == 'create'){
             if(stStep == '4'){
@@ -129,7 +129,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 alert('You cannot set a Deliver By Date before or on Transaction Date.');
                 return false;
             }
-            return true    ;  
         }
 
 
@@ -147,6 +146,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         if(intPoLineCount > 0){
             let blAllZeroQuantity = [];
+            let blEmptyQuantity = [];
             for(let x = 0; x < intPoLineCount; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_interpo_items',
@@ -159,12 +159,21 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 if(intQuantity == 0 || intQuantity < 0){
                     blAllZeroQuantity.push(x+1);
                 }
+                if(!intQuantity){
+                    blEmptyQuantity.push(x+1);
+                }
                 console.log(intQuantity);
                 console.log(blAllZeroQuantity);
                 console.log(blAllZeroQuantity.length);
+                console.log(blEmptyQuantity);
+                console.log(blEmptyQuantity.length);
             }
             if(blAllZeroQuantity.length > 0){
                 alert('You have a zero/negative quantity entered at line/s: '+blAllZeroQuantity.toString()+ '\nPlease enter only non-zero/positive values for quantity.')
+                return false;
+            }
+            if(blEmptyQuantity.length > 0){
+                alert('You have no quantity at line/s: '+blEmptyQuantity.toString());
                 return false;
             }
             return true;

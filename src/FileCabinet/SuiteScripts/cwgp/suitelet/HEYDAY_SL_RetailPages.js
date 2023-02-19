@@ -374,11 +374,12 @@ define([
 
 
     const handleIntercompanyPOTxn = (request, response) => {
-        let  {
+        const  {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
+            custpage_cwgp_adjustmentsubtype: stSubType
 
         } = request.parameters;
 
@@ -390,6 +391,7 @@ define([
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
+            custpage_cwgp_adjustmentsubtype: stSubType
         }));
 
 

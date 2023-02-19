@@ -574,9 +574,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                         name: 'custpage_cwgp_itemid',
                         line: i
                     }),
-                    quantity: request.getSublistValue({
+                    /*quantity: request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_quantity',
+                        line: i
+                    }),*/
+                    quantity: request.getSublistValue({
+                        group: 'custpage_itemreceipt_items',
+                        name: 'custpage_cwgp_variance',
                         line: i
                     }),
                 });
