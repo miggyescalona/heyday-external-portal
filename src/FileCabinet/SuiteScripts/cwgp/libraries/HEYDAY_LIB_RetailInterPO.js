@@ -667,12 +667,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 line: i
             })
 
-            let dtDateTime = new Date(request.getSublistValue({
+            /*let dtDateTime = new Date(request.getSublistValue({
                 group: subTypeSublist,
                 name: 'custpage_cwgp_datetime',
                 line: i
-            }))
-
+            }))*/
             
             const stAdjustmentType = request.getSublistValue({
                 group: subTypeSublist,
@@ -715,8 +714,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
                     custcol_cwgp_roomnumber: stRoomNum,
-                    custcol_cwgp_stassignment:stAssign,
-                    custcol_cwgp_datetime: dtDateTime,
+                    custcol_cwgp_stassignment:stAssign
                 })
             }
             else if(stSubType == 'damagetestertheft'){
@@ -727,7 +725,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
-                    custcol_cwgp_datetime: dtDateTime,
                 })
             }
             else{

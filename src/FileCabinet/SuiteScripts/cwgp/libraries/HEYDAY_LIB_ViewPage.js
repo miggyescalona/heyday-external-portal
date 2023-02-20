@@ -700,11 +700,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         label: 'Business Line',
                         displayType: 'hidden'
                     },
-                    DATE_TIME: {
+                    /*DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
@@ -771,11 +771,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
                     },
-                    DATE_TIME: {
+                    /*DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,

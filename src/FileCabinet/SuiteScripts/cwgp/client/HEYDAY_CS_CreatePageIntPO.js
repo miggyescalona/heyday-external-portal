@@ -372,22 +372,22 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_roomnumber'
                 });
 
-                let stAssign = currentRecord.getCurrentSublistValue({
+                /*let stAssign = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_stassignment'
-                });
+                });*/
 
-                let dtDateTime = currentRecord.getCurrentSublistValue({
+                /*let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentReason = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustmentreason'
                 });
 
-                if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                if(!stRoomNum || !stAdjustmentReason || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -435,10 +435,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
 
-                let dtDateTime = currentRecord.getCurrentSublistValue({
+                /*let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -467,7 +467,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     })
                 });
 
-                if(!dtDateTime || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stAdjustmentReason || !stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 

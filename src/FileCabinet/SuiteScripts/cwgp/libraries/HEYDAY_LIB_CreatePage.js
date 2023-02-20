@@ -812,13 +812,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     ST_ASSIGNMENT: {
                         id: 'custpage_cwgp_stassignment',
                         type: serverWidget.FieldType.TEXT,
-                        label: '*St Assignment',
+                        label: 'St Assignment',
                     },
-                    DATE_TIME: {
+                    /*DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: '*Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -880,11 +880,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Location',
                         displayType: 'hidden'
                     },
-                    DATE_TIME: {
+                   /* DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: '*Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
