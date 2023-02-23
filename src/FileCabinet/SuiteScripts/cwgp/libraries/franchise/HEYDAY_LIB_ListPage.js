@@ -64,6 +64,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.SELECT,
                         label: 'For Receiving',
                         displayType: 'inline'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
                     }
                 },
                 itemreceipt: {
@@ -81,6 +86,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Date'
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
                     }
                 },
                 inventoryadjustment: {
@@ -121,6 +131,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Internal SKU',
                     },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                    },
                     ON_HAND: {
                         id: 'custpage_cwgp_onhand',
                         type: serverWidget.FieldType.TEXT,
@@ -140,6 +155,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_damage',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damage'
+                    },
+                    QUANTITY_SOLD: {
+                        id: 'custpage_cwgp_sold',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Sold'
                     },
                     QUANTITY_DISCREPANCY: {
                         id: 'custpage_cwgp_discrepancy',
@@ -185,6 +205,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_damage_total',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damage'
+                    },
+                    QUANTITY_SOLD_TOTAL: {
+                        id: 'custpage_cwgp_sold_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Sold'
                     },
                     QUANTITY_DISCREPANCY_TOTAL: {
                         id: 'custpage_cwgp_discrepancy_total',
@@ -538,6 +563,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stType,
             stAccessType,
             stUserId,
+            stSubsidiary,
+            stCustomer,
             objSearch
         } = options;
 
@@ -547,7 +574,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
-        
+        log.debug('stSubsidiary',stSubsidiary);
+        log.debug('stCustomer',stCustomer);
         //add body fields
         const fldHtml = form.addField({
             id: 'custpage_cwgp_htmlcss',
@@ -556,8 +584,30 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         });
         fldHtml.defaultValue = htmlCss();
 
+
+        form.addFieldGroup({
+            id: 'custpage_franchise_itemperloc_grp',
+            label: ' '
+        });
+        const fldSubsidiary = form.addField({
+            id: 'custpage_cwgp_subsidiary',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Subsidiary',
+            source: 'subsidiary',
+            container: 'custpage_franchise_itemperloc_grp'
+        });
+        fldSubsidiary.defaultValue = stSubsidiary;
+        fldSubsidiary.updateDisplayType({displayType:'inline'});
+        const fldCustomer= form.addField({
+            id: 'custpage_cwgp_customer',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Customer',
+            source: 'customer',
+            container: 'custpage_franchise_itemperloc_grp'
+        });
+        fldCustomer.defaultValue = stCustomer;
+        fldCustomer.updateDisplayType({displayType:'inline'});
         //totals tab
-        const stCustomer = util.getCustomer(stUserId);
         form.addSubtab({
             id: _CONFIG.TAB['itemperlocationtotal'],
             label: 'Totals'
@@ -585,59 +635,37 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 label
             });
         });
-
-        /*
-        ON_HAND_TOTAL: {
-            id: 'custpage_cwgp_onhand_total',
-            type: serverWidget.FieldType.TEXT,
-            label: 'On Hand'
-        },
-        QUANTITY_TESTER_TOTAL: {
-            id: 'custpage_cwgp_tester_total',
-            type: serverWidget.FieldType.TEXT,
-            label: 'Tester'
-        },
-        QUANTITY_BACKBAR_TOTAL: {
-            id: 'custpage_cwgp_backbar_total',
-            type: serverWidget.FieldType.TEXT,
-            label: 'Backbar'
-        },
-        QUANTITY_DAMAGE_TOTAL: {
-            id: 'custpage_cwgp_damage_total',
-            type: serverWidget.FieldType.TEXT,
-            label: 'Damage'
-        },
-        QUANTITY_DISCREPANCY_TOTAL: {
-            id: 'custpage_cwgp_discrepancy_total',
-            type: serverWidget.FieldType.TEXT,
-            label: 'Discrepancy'
-        },
-        */
-
+        
+        const totalColumn = util.getItemPerLocationTotalColumns(stCustomer);
         sbtotal.setSublistValue({
             id: 'custpage_cwgp_onhand_total',
             line: 0,
-            value: parseInt(util.getTotalQtyFranchise(stCustomer)) || '0'
+            value: parseInt(totalColumn.onhand) || '0'
         });
 
         sbtotal.setSublistValue({
             id: 'custpage_cwgp_tester_total',
             line: 0,
-            value: parseInt(util.getTotalQtyPerAdjustmentTypeFranchise(stCustomer,4)) || '0'
+            value: parseInt(totalColumn.tester) || '0'
         });
 
         sbtotal.setSublistValue({
             id: 'custpage_cwgp_backbar_total',
             line: 0,
-            value: parseInt(util.getTotalQtyPerAdjustmentTypeFranchise(stCustomer,2)) || '0'
+            value: parseInt(totalColumn.backbar) || '0'
         });
 
         sbtotal.setSublistValue({
             id: 'custpage_cwgp_damage_total',
             line: 0,
-            value: parseInt(util.getTotalQtyPerAdjustmentTypeFranchise(stCustomer,3)) || '0'
+            value: parseInt(totalColumn.damage) || '0'
         });
 
+        sbtotal.setSublistValue({
+            id: 'custpage_cwgp_sold_total',
+            line: 0,
+            value: parseInt(totalColumn.sold) || '0'
+        });
 
         
         form.addSubtab({

@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages2',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
+            ID: 'customscript_cwgp_sl_franchisepages',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
         }
     };
     /**
@@ -78,7 +78,7 @@ define([
 
 
             } else {
-                handleFranchiseTxn(request);
+                handleFranchiseTxn(request,response);
             }
         } catch (error) {
             log.error('ERROR', error);
@@ -336,6 +336,8 @@ define([
 
         log.debug('itemp per loc params',request.parameters);
         
+        
+        const stSubsidiary = getSubsidiary(stUserId);
         const stCustomer = getCustomer(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer);
 
@@ -345,6 +347,8 @@ define([
             stType: 'itemperlocation',
             stAccessType,
             stUserId,
+            stSubsidiary,
+            stCustomer,
             objSearch: objItemPerLocationSearch
         });
     };
@@ -353,9 +357,9 @@ define([
         const {
             pageMode: stPageMode,
             userId: stUserId,
-            inventoryadjustmentid: stPoId,
+            tranid: stPoId,
             accesstype: stAccessType,
-            tranid: stTranId,
+            //tranid: stTranId,
             step: stStep,
             objIC: objIC
         } = request.parameters;
@@ -404,7 +408,7 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    //stTranId
                 });
 
                 break;
@@ -564,7 +568,7 @@ define([
 
     
     
-    const handleFranchiseTxn = (request) => {
+    const handleFranchiseTxn = (request,response) => {
         log.debug('params handleIntercompanyPOTxn', request.parameters)
         const {
             custpage_cwgp_pagemode: stPageMode,
@@ -577,22 +581,51 @@ define([
         let idRec = null;
         log.debug('stPageMode', stPageMode);
         log.debug('stRecType', stRecType);
-        switch (stRecType) {
-            case 'franchisepo':
-                idRec = txnLib.createFranchisePO(request);
-                break;
-            case 'itemreceipt':
-                idRec = txnLib.createFranchiseIR(request);
-                break;
-            case 'inventoryadjustment':
-                idRec = txnLib.createFranchiseIA(request);
-                break;
-            case 'inventorycount':
-                idRec = txnLib.createFranchiseIC(request);
-                break;
-            default:
-                throw 'Page Not Found';
+        if (stPageMode == 'create') {
+            switch (stRecType) {
+                case 'franchisepo':
+                    idRec = txnLib.createFranchisePO(request);
+                    break;
+                case 'itemreceipt':
+                    idRec = txnLib.createFranchiseIR(request);
+                    break;
+                case 'inventoryadjustment':
+                    idRec = txnLib.createFranchiseIA(request);
+                    break;
+                case 'inventorycount':
+                    const stStep = request.parameters.custpage_cwgp_step;
+                    log.debug('stRecType', stRecType);
+                    if(stStep == '1'){
+                        log.debug('Go to Step 2', stRecType);
+                        createPage.renderInventoryCountSecond(request,response);
+                    }
+                    else if(stStep == '2'){
+                        log.debug('Create IC', stRecType);
+                        createPage.renderInventoryCountFinal(request,response);
+                    }
+                    else if(stStep == '3'){
+                        idRec = txnLib.createFranchiseIC(request);
+                        redirect.toSuitelet({
+                            scriptId: _CONFIG.SCRIPT.ID,
+                            deploymentId: _CONFIG.SCRIPT.DEPLOY,
+                            isExternal: true,
+                            parameters: {
+                                pageMode: 'view',
+                                userId: stUserId,
+                                accesstype: stAccessType,
+                                rectype: stRecType,
+                                tranid: idRec
+                            }
+                        });
+                    }
+                    
+                    //idRec = txnLib.createFranchiseIC(request);
+                    break;
+                default:
+                    throw 'Page Not Found';
+            }
         }
+        
 
         /*if (stPageMode == 'create') {
             if(stRecType == 'franchisepo'){
@@ -659,7 +692,7 @@ define([
                 }
             });
         }
-        else if(stRecType == 'inventorycount'){
+        /*else if(stRecType == 'inventorycount'){
             redirect.toSuitelet({
                 scriptId: _CONFIG.SCRIPT.ID,
                 deploymentId: _CONFIG.SCRIPT.DEPLOY,
@@ -672,7 +705,7 @@ define([
                     inventoryadjustmentid: idRec
                 }
             });
-        }
+        }*/
         
     };
     
