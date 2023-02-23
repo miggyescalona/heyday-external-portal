@@ -19,7 +19,13 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
      */
     
     const pageInit = (context) => {
-        ClientEPLib.getAuthenticationScript();
+
+        console.log(window.location.href);
+        
+        if(!window.location.href.endsWith("scriptlet.nl")){
+            ClientEPLib.getAuthenticationScript();
+        }
+        //
         ClientEPLib.setScanBtnOnClick();
 
         const stQuery = window.location.search;
@@ -62,7 +68,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         let stAdjustmentReason;
         let intTotalDiscrepancy = 0;
 
-        if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep == '4'){
+        if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep == '2'){
             let arrHasDiscrepancy = [];
 
             const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
@@ -80,7 +86,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_adjustmentreason',
                     line: x
                 });
-                if(intDiscrepancy != 0 && !stAdjustmentReason){
+                if((intDiscrepancy > 0 || intDiscrepancy < 0) && !stAdjustmentReason){
                     arrHasDiscrepancy.push(x+1);
                 }
             }
@@ -364,6 +370,11 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     line: x
                 });
+
+                let stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustmentbackbar_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
                 let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
@@ -374,7 +385,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_roomnumber'
                 });
 
-                let stAssign = currentRecord.getCurrentSublistValue({
+                /*let stAssign = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_stassignment'
                 });
@@ -382,14 +393,15 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentReason = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustmentreason'
                 });
 
-                if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                //if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                if(!stItem || !stRoomNum || !stAdjustmentReason || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -432,15 +444,14 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     line: x
                 });
+                let stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
                 let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
-
-                let dtDateTime = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_datetime'
-                });
 
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -469,7 +480,8 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     })
                 });
 
-                if(!dtDateTime || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                //if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
