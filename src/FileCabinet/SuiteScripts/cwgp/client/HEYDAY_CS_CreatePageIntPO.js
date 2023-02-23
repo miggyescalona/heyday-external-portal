@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/runtime'], (https, util, url, ClientEPLib, currentRecord, message, runtime) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record'], (https, util, url, ClientEPLib, currentRecord, message, record) => {
     
     /**
      * Function to be executed after page is initialized.
@@ -19,7 +19,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      * @param {Object} context
      */
     const pageInit = (context) => {
-        ClientEPLib.getAuthenticationScript();
+        console.log(window.location.href);
+
+        if(!window.location.href.endsWith("scriptlet.nl")){
+            console.log('auth');
+            ClientEPLib.getAuthenticationScript();
+        }
         ClientEPLib.setScanBtnOnClick();
 
         const stQuery = window.location.search;
@@ -56,7 +61,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         let stRecType = objParams.get('rectype');
         let stPageMode = objParams.get('pageMode');
         let stStep = objParams.get('step');
-        
+
 
         if(stRecType == 'inventorycount' && stPageMode == 'create'){
             if(stStep == '4'){
@@ -129,7 +134,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 alert('You cannot set a Deliver By Date before or on Transaction Date.');
                 return false;
             }
-            return true    ;  
         }
 
 
@@ -147,6 +151,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
         if(intPoLineCount > 0){
             let blAllZeroQuantity = [];
+            let blEmptyQuantity = [];
             for(let x = 0; x < intPoLineCount; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_interpo_items',
@@ -159,12 +164,21 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 if(intQuantity == 0 || intQuantity < 0){
                     blAllZeroQuantity.push(x+1);
                 }
+                if(!intQuantity){
+                    blEmptyQuantity.push(x+1);
+                }
                 console.log(intQuantity);
                 console.log(blAllZeroQuantity);
                 console.log(blAllZeroQuantity.length);
+                console.log(blEmptyQuantity);
+                console.log(blEmptyQuantity.length);
             }
             if(blAllZeroQuantity.length > 0){
                 alert('You have a zero/negative quantity entered at line/s: '+blAllZeroQuantity.toString()+ '\nPlease enter only non-zero/positive values for quantity.')
+                return false;
+            }
+            if(blEmptyQuantity.length > 0){
+                alert('You have no quantity at line/s: '+blEmptyQuantity.toString());
                 return false;
             }
             return true;
@@ -363,22 +377,22 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_roomnumber'
                 });
 
-                let stAssign = currentRecord.getCurrentSublistValue({
+                /*let stAssign = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_stassignment'
-                });
+                });*/
 
-                let dtDateTime = currentRecord.getCurrentSublistValue({
+                /*let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentReason = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustmentreason'
                 });
 
-                if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                if(!stRoomNum || !stAdjustmentReason || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -426,10 +440,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
 
-                let dtDateTime = currentRecord.getCurrentSublistValue({
+                /*let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -458,7 +472,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     })
                 });
 
-                if(!dtDateTime || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stAdjustmentReason || !stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -1007,6 +1021,36 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         return stQtyOnHand;
     };
 
+    const getInventoryCountItems = (stLocation,stSubsidiary,objItemFlds) =>{
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+        
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                itemlocation: stLocation,
+                itemsubsidiary: stSubsidiary,
+                objitemflds: objItemFlds,
+                type: 'retail'
+
+            }
+        });
+
+        const objResponse = https.get({
+            url: stCreateIntPOBaseUrl,
+        });
+
+        alert(objResponse.body);
+
+        const arrItems  = JSON.parse(objResponse.body);
+
+        alert(arrItems);
+
+        return arrItems;
+    };
+
     const back = (stUserId, stAccessType, stRecType) =>{
    
         const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
@@ -1148,7 +1192,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
     };
 
-    function nextStep(stUserId,stAccessType,stStep, objICprevious, objDefaultValues,stRecType){
+    function nextStep(stUserId,stAccessType,stLocation,stSubsidiary,stStep,objBodyDefaultValues,customRecordId,stRecType){
         console.log('nextStep');
 
         const blReturnError = validateInventoryCount(stStep);
@@ -1163,25 +1207,34 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             item: []
         };
 
-        /*console.log(objDefaultValues);
-        console.log(JSON.stringify(objDefaultValues));*/
+        let objBodyFlds = {};
+        let objItemFlds = [];
+        let objRecord;
+        let objRecordId;
 
-        objIC.body = objDefaultValues;
+        objIC.body = objBodyDefaultValues;
+        objBodyFlds = objBodyDefaultValues;
         const stBodyFields = ['custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain']
         if(stStep == 1){
             for(let x = 0; x < stBodyFields.length;x++){
-                console.log(stBodyFields[x]+'|'+currRec.getValue(stBodyFields[x]));
-                objIC.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+                objBodyFlds[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
             }
         }
         else{
+            objRecord = record.load({
+                type: 'customrecord_cwgp_icobjectstorage',
+                id: customRecordId,
+                isDynamic: true,
+            });
+
+            objBodyFlds = JSON.parse(objRecord.getValue('custrecord_cwgp_icobjectstorage_field1'));
+            objItemFlds = JSON.parse(objRecord.getValue('custrecord_cwgp_icobjectstorage_field2'));
             for(let x = 0; x < stBodyFields.length;x++){
-                objICprevious.body[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
+                objBodyFlds[stBodyFields[x]] = currRec.getValue(stBodyFields[x]);
             }
-            objICprevious.body['custpage_cwgp_adjustmentsubtypeid'] = 1;
+            objBodyFlds['custpage_cwgp_adjustmentsubtypeid'] = 1;
         }
 
-        console.log(JSON.stringify(objDefaultValues));
        
         const intICLineCount = currRec.getLineCount('custpage_inventoryadjustmentinventorycount_items');
         for(let x = 0; x < intICLineCount;x++){
@@ -1190,7 +1243,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 line: x
             });
             if(stStep == 1){
-                objIC.item.push({
+                objItemFlds.push({
                     custpage_cwgp_item: parseInt(currRec.getCurrentSublistValue({
                         sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                         fieldId: 'custpage_cwgp_item'
@@ -1207,6 +1260,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                         fieldId: 'custpage_cwgp_upccode'
                     }),
+                    custpage_cwgp_adjustqtyby: parseInt(currRec.getCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_adjustqtyby'
+                    }))
                 })
             }
             else if(stStep == 2){
@@ -1214,47 +1271,26 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
-                const stItemId = objICprevious.item[x].custpage_cwgp_item;
+                  const stItemId = objICprevious.item[x].custpage_cwgp_item;
                 const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
-                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
-                objICprevious.item[x].custpage_cwgp_hasdiscrepancy = parseInt(getItemQtyOnHand(stItemId, stLocation)) != stQty ? 'Yes' : 'No';
+                objItemFlds[x].custpage_cwgp_adjustqtyby = stQty;
+                objItemFlds[x].custpage_cwgp_hasdiscrepancy = parseInt(getItemQtyOnHand(stItemId, stLocation)) != stQty ? 'Yes' : 'No';
             }
             else if(stStep == 3){
                 const stFinalQty = parseInt(currRec.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                     fieldId: 'custpage_cwgp_newquantity'
                 }));
-                const stItemId = objICprevious.item[x].custpage_cwgp_item;
-                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;
+
+                const stItemId = objItemFlds.custpage_cwgp_item;
+                const stLocation = objBodyFlds.custpage_cwgp_adjustmentlocation;
 
                 if(!isNaN(stFinalQty)){
-                    objICprevious.item[x].custpage_cwgp_adjustqtyby = stFinalQty;
+                    objItemFlds.custpage_cwgp_adjustqtyby = stFinalQty;
                 }
 
-                objICprevious.item[x].custpage_cwgp_enteredcount=  objICprevious.item[x].custpage_cwgp_adjustqtyby ;
-                objICprevious.item[x].custpage_cwgp_discrepancy =  objICprevious.item[x].custpage_cwgp_adjustqtyby - parseInt(getItemQtyOnHand(stItemId, stLocation));
-            }
-            else if(stStep == 4){
-                const stQty = parseInt(currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
-                    fieldId: 'custpage_cwgp_adjustqtyby'
-                }));
-                /*const stItemId = objICprevious.item[x].custpage_cwgp_item;
-                const stLocation = objICprevious.body.custpage_cwgp_adjustmentlocation;*/
-                
-                objICprevious.item[x].custpage_cwgp_businessline = objICprevious.body.custpage_cwgp_businessline;;
-                objICprevious.item[x].custpage_cwgp_location = objICprevious.body.custpage_cwgp_adjustmentlocation;
-                objICprevious.item[x].custpage_cwgp_adjustmenttype = 1;
-                objICprevious.item[x].custpage_cwgp_adjustmentsubtypeid= 1;
-                objICprevious.item[x].custpage_cwgp_adjustqtyby = stQty;
-                objICprevious.item[x].custpage_cwgp_adjustmentreason = currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
-                    fieldId: 'custpage_cwgp_adjustmentreason'
-                });                
-                objICprevious.item[x].custpage_cwgp_discrepancy = currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentinventorycount_items',
-                    fieldId: 'custpage_cwgp_discrepancy'
-                });
+                objItemFlds.custpage_cwgp_enteredcount=  objItemFlds.custpage_cwgp_adjustqtyby ;
+                objItemFlds.custpage_cwgp_discrepancy =  objItemFlds.custpage_cwgp_adjustqtyby - parseInt(getItemQtyOnHand(stItemId, stLocation));
             }
         }
 
@@ -1273,7 +1309,33 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             objIC: objIC
         }));
 
-        sessionStorage.setItem("objIC", JSON.stringify(objIC));
+
+        if(stStep == 1){
+            objRecord = record.create({
+                type: 'customrecord_cwgp_icobjectstorage',
+                isDynamic: true
+            });
+            objItemFlds = getInventoryCountItems(stLocation,stSubsidiary,objItemFlds);
+        }
+        
+
+        console.log('objBodyFlds'+ JSON.stringify(objBodyFlds));
+        console.log('objItemFlds' + JSON.stringify(objItemFlds));
+
+        objRecord.setValue({
+            fieldId: 'custrecord_cwgp_icobjectstorage_field1',
+            value: JSON.stringify(objBodyFlds)
+        });
+
+        objRecord.setValue({
+            fieldId: 'custrecord_cwgp_icobjectstorage_field2',
+            value: JSON.stringify(objItemFlds)
+        });
+
+        objRecordId = objRecord.save();
+        
+
+        //sessionStorage.setItem("objIC", JSON.stringify(objIC));
 
         let stRetailUrl = url.resolveScript({
             deploymentId        : objRetailUrl.DEPLOY_ID,
@@ -1285,7 +1347,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 accesstype  : stAccessType,
                 rectype     : stRecType,
                 step: parseInt(stStep)+1,
-                objIC: JSON.stringify(objIC)
+                customRecordId: objRecordId
             }
         });
 

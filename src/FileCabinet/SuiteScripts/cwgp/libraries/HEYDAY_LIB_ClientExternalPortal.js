@@ -12,7 +12,7 @@
  * @NModuleScope Public
  */
 
-define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js'], (currentRecord, dialog, url, ConfEPLib) => {
+define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPortal.js','N/search'], (currentRecord, dialog, url, ConfEPLib, search) => {
 
     const _CONFIG = ConfEPLib._CONFIG;
 
@@ -831,7 +831,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
     }
 
     //END SCANNER FUNCTIONS
-
     return {
         _CONFIG,
         getAuthenticationScript,

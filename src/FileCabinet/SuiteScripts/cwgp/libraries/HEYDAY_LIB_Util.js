@@ -1405,8 +1405,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     }
     
 
-    const setSublistValues = (sbl, objPO) => {
-        const arrListValues = objPO.item;
+    const setSublistValues = (sbl, objPO, stType) => {
+        const arrListValues = stType == 'inventorycount' ? objPO : objPO.item;
         log.debug('arrListValues', arrListValues);
         log.debug('sbl',sbl);
 
@@ -1420,7 +1420,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     });
                 }
                 else if(Number.isInteger(value)){
-                    log.debug('integer', value +'|'+fieldId)
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
@@ -1564,6 +1563,45 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
         return d;
     }
+
+    const buildInventoryCountItemSearch = (stLocation,stSubsidiary) => {
+        const ssInventoryCountItem = search.load({ id: "626", type: "item" });
+        let arrInventoryCountItem = [];
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+
+        var searchResultCount = ssInventoryCountItem.runPaged().count;
+        log.debug('buildInventoryCountItemSearch count', searchResultCount);
+
+        ssInventoryCountItem.run().each(function(result){
+            if(result.getValue(result.columns[4]) == 0){
+                arrInventoryCountItem.push({
+                    custpage_cwgp_item: result.getValue({name: "itemid"}),
+                    custpage_cwgp_description: result.getValue({name: "purchasedescription"}),
+                    custpage_cwgp_internalsku: result.getValue({name: "custitem_heyday_sku"}),
+                    custpage_cwgp_upccode: result.getValue({name: "custitemheyday_upccode"}),
+                    custpage_cwgp_adjustqtyby: result.getValue(result.columns[4])
+                });			
+            }
+            return true;	
+        })
+
+
+        return arrInventoryCountItem;
+    };
+
+
     
 
     return {
@@ -1589,6 +1627,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         setSublistValues,
         getPOValues,
         lookUpItem,
-        setDeliverByDate
+        setDeliverByDate,
+        buildInventoryCountItemSearch
     }
 });
