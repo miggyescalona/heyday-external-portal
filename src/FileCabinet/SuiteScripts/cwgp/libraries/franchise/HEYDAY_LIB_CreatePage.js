@@ -979,12 +979,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         label: 'UPC Code',
                         displayType:'disabled'
                     },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity',
+                        //displayType: 'hidden'
+                        isHidden: ['1','2']
+                    },
                     FIRST_COUNT: {
                         id: 'custpage_cwgp_firstcount',
                         type: serverWidget.FieldType.INTEGER,
                         label: '*First Count',
                         //isInline: ['3','4'],
-                        isHidden: ['2','3'],
+                        isHidden: ['3'],
                         isEntry: ['1']
                     },
                     SECOND_COUNT: {
@@ -994,6 +1001,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         //isInline: ['3','4'],
                         isHidden: ['1','3'],
                         isEntry: ['2']
+                    },
+                    ENTERED_QUANTITY: {
+                        id: 'custpage_cwgp_enteredquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Entered Qty',
+                        //isInline: ['3','4'],
+                        isHidden: ['1','2'],
+                        //isEntry: ['3']
                     },
                     FINAL_COUNT: {
                         id: 'custpage_cwgp_finalquantity',
@@ -1031,12 +1046,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         displayType: 'inline',
                         isHidden: ['1','2']
                     },
-                    QTY_ON_HAND: {
-                        id: 'custpage_cwgp_qtyonhand',
-                        type: serverWidget.FieldType.INTEGER,
-                        label: 'Starting Quantity',
-                        //displayType: 'hidden'
-                    },
+                    
                     /*NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
@@ -2425,20 +2435,34 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         let inCounter = 0;
         for(var i=0; i<results.length; i++){
             var result = results[i];
-            var item = result.getValue(result.columns[0]);
+            var stItem = result.getValue(result.columns[0]);
             var intQtyOnhand = result.getValue(result.columns[2]);
             var stDesc = result.getValue(result.columns[3]);
             var stSku = result.getValue(result.columns[4]);
             var stUpc = result.getValue(result.columns[5]);
             
-            var index = arrItemFirstCount.indexOf(item);
+            var index = arrItemFirstCount.indexOf(stItem);
             
             if((index == -1 && intQtyOnhand > 0) || (index != -1 && intQtyOnhand != arrQtyFirstCount[index])){
+
+                if(index != -1){
+
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: arrQtyFirstCount[index]
+                    });
+                }
                 
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_item',
                     line : inCounter,
-                    value: item
+                    value: stItem
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: stItem
                 });
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_description',
@@ -2486,6 +2510,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 line: i
             });
 
+            var inFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            });
+
             var intQtyOnhand = rec.getSublistValue({
                 group: 'custpage_inventoryadjustmentinventorycount_items',
                 name: 'custpage_cwgp_qtyonhand',
@@ -2520,6 +2550,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     value: stItem
                 });
                 itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: stItem
+                });
+                itemLines.setSublistValue({
                     id : 'custpage_cwgp_description',
                     line : inCounter,
                     value: stDesc || ' '
@@ -2541,11 +2576,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     value: intQtyOnhand
                 });
 
-                itemLines.setSublistValue({
-                    id : 'custpage_cwgp_discrepancy',
+                
+
+                /*itemLines.setSublistValue({
+                    id : 'custpage_cwgp_enteredquantity',
                     line : inCounter,
-                    value: inSecondCount - intQtyOnhand
-                });
+                    value: inSecondCount
+                });*/
 
                 if(inSecondCount){
                     itemLines.setSublistValue({
@@ -2553,13 +2590,45 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         line : inCounter,
                         value: inSecondCount
                     });
-                    
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_enteredquantity',
+                        line : inCounter,
+                        value: inSecondCount
+                    });
+
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: inSecondCount - intQtyOnhand
+                    });
+                }
+                else if(!inSecondCount && inFirstCount){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
+                        value: inFirstCount
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_enteredquantity',
+                        line : inCounter,
+                        value: inFirstCount
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: inFirstCount - intQtyOnhand
+                    });
                 }
                 else{
                     itemLines.setSublistValue({
                         id : 'custpage_cwgp_finalquantity',
                         line : inCounter,
                         value: intQtyOnhand
+                    }); 
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: 0
                     });
                 }
                 inCounter++;
