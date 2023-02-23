@@ -335,7 +335,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     type: serverWidget.FieldType.TEXT,
                     label: 'accessType',
                     displayType: 'hidden'
-                }, 
+                },
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 CUSTOMER: {
                     id: 'custpage_cwgp_customer',
                     type: serverWidget.FieldType.SELECT,
@@ -612,11 +619,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'St Assignment',
                     },
-                    DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
@@ -671,11 +673,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
-                    },
-                    DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Date/Time (M/D/YYYY hhmm)',
                     },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
@@ -1467,7 +1464,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        
+        objPO.body.custpage_cwgp_adjustmenttype = 'Inventory Recount';
         //log.debug('objPO', objPO);
 
         //render body fields

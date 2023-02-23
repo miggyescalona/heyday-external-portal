@@ -19,7 +19,13 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
      */
     
     const pageInit = (context) => {
-        ClientEPLib.getAuthenticationScript();
+
+        console.log(window.location.href);
+        
+        if(!window.location.href.endsWith("scriptlet.nl")){
+            ClientEPLib.getAuthenticationScript();
+        }
+        //
         ClientEPLib.setScanBtnOnClick();
 
         const stQuery = window.location.search;
@@ -54,16 +60,104 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         //console.log('mode: ' + JSON.stringify(context.mode));
         let stQuery = window.location.search;
         let objParams = new URLSearchParams(stQuery);
-        let stRecType = objParams.get('rectype');
-        let stPageMode = objParams.get('pageMode');
-        let stStep = objParams.get('step');
+        let stRecType = currentRecord.getValue('custpage_cwgp_rectype');
+        let stPageMode = currentRecord.getValue('custpage_cwgp_pagemode');
+        let stStep = currentRecord.getValue('custpage_cwgp_step');
         
         let intDiscrepancy;
         let stAdjustmentReason;
         let intTotalDiscrepancy = 0;
 
-        if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep == '4'){
-            let arrHasDiscrepancy = [];
+        if(stRecType == 'inventorycount' && stPageMode == 'create'){
+            const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
+            if(intICLineCount == 0){
+                alert('You cannot save a submit without adding at least one line.');
+                return false;
+            }
+            
+
+            if(stStep == '1' || stStep == '2'){
+                let stCountField;
+                let objHasDuplicates = [];
+                let stHasDuplicates = 'You have entered duplicate items for: ';
+                let blHasDuplicates = false;
+                if(stStep == '1'){
+                    stCountField = 'custpage_cwgp_firstcount';
+                }
+                else if(stStep == '2'){
+                    stCountField = 'custpage_cwgp_secondcount';
+                }
+                for(let x = 0; x < intICLineCount;x++){
+                    let inCount = parseInt(currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: stCountField,
+                        line: x
+                    }));
+                    if(inCount<0){
+                        alert('You cannot set a negative value for Count.');
+                        return false;
+
+                    }
+                    if(stStep == '1'){
+                        let stItemName= currentRecord.getSublistText({
+                            sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                            fieldId: 'custpage_cwgp_item',
+                            line: x
+                        });
+                        objHasDuplicates.push({
+                            itemName: stItemName,
+                        });
+                    }
+                    
+                }
+                if(stStep == '1'){
+                    //Fine duplicate items
+                    var valueArr = objHasDuplicates.map(function(item){ return item.itemName });
+                    valueArr.some(function(item, idx){ 
+                    if(valueArr.indexOf(item) != idx){
+                        stHasDuplicates += '\n' + item;
+                        blHasDuplicates = true;
+                        }
+                    });
+                    console.log('objHasDuplicates '+JSON.stringify(objHasDuplicates));
+                    console.log('valueArr '+JSON.stringify(valueArr));
+                    if(blHasDuplicates){
+                        alert(stHasDuplicates);
+                        return false;
+                    }
+                }
+
+                
+            }
+            else if(stStep == '3'){
+                let arrHasDiscrepancy = [];
+                for(let x = 0; x < intICLineCount;x++){
+
+                    let inDiscrepancy = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_discrepancy',
+                        line: x
+                    });
+                    if(inDiscrepancy != 0){
+                        let stAdjustmentReason = currentRecord.getSublistValue({
+                            sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                            fieldId: 'custpage_cwgp_adjustmentreason',
+                            line: x
+                        });
+                        if(stAdjustmentReason.trim() == ''){
+                            arrHasDiscrepancy.push(x+1);
+                        }
+                    }
+                    
+                }
+                if(arrHasDiscrepancy.length > 0){
+                    alert('Please enter an adjustment reason for line/s: ' + arrHasDiscrepancy.toString())
+                    return false;
+                }
+
+            }
+
+            /*let arrHasDiscrepancy = [];
 
             const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
             for(let x = 0; x < intICLineCount;x++){
@@ -80,7 +174,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_adjustmentreason',
                     line: x
                 });
-                if(intDiscrepancy != 0 && !stAdjustmentReason){
+                if((intDiscrepancy > 0 || intDiscrepancy < 0) && !stAdjustmentReason){
                     arrHasDiscrepancy.push(x+1);
                 }
             }
@@ -88,7 +182,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 alert('Please enter an adjustment reason for line/s: ' + arrHasDiscrepancy.toString())
                 return false;
             }
-            currentRecord.setValue('custpage_cwgp_totaldiscrepancy', intTotalDiscrepancy);
+            currentRecord.setValue('custpage_cwgp_totaldiscrepancy', intTotalDiscrepancy);*/
         }
 
 
@@ -364,6 +458,11 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     line: x
                 });
+
+                let stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventorayadjustmentbackbar_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
                 let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
@@ -374,7 +473,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_roomnumber'
                 });
 
-                let stAssign = currentRecord.getCurrentSublistValue({
+                /*let stAssign = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_stassignment'
                 });
@@ -382,14 +481,15 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 let dtDateTime = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_datetime'
-                });
+                });*/
 
                 let stAdjustmentReason = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventorayadjustmentbackbar_items',
                     fieldId: 'custpage_cwgp_adjustmentreason'
                 });
 
-                if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                //if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
+                if(!stItem || !stRoomNum || !stAdjustmentReason || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -432,15 +532,14 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     line: x
                 });
+                let stItem = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_item'
+                });
                 let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
-
-                let dtDateTime = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_datetime'
-                });
 
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -469,7 +568,8 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     })
                 });
 
-                if(!dtDateTime || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                //if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
