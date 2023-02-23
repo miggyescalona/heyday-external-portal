@@ -65,6 +65,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     type: serverWidget.FieldType.TEXT,
                     label: 'Internal SKU',
                 },
+                UPC_CODE: {
+                    id: 'custpage_cwgp_upccode',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'UPC Code',
+                },
                 QUANTITY_TESTER: {
                     id: 'custpage_cwgp_tester',
                     type: serverWidget.FieldType.TEXT,
@@ -79,6 +84,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     id: 'custpage_cwgp_damage',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Damage'
+                },
+                QUANTITY_SOLD: {
+                    id: 'custpage_cwgp_sold',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Sold'
                 },
                 QUANTITY_DISCREPANCY: {
                     id: 'custpage_cwgp_discrepancy',
@@ -129,6 +139,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stDateCreated = result.getValue({ name: 'datecreated' });
             const stStatus = result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' });
             const stReceivable = result.getValue({ name: 'custbody_cwgp_canreceive' });
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             const stDocumentStatus = result.getValue({ name: 'statusref' });
             const stID = result.id;
             const stTranId = result.getValue({ name: 'tranid' });
@@ -146,6 +157,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
                 [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus,
                 [_CONFIG.COLUMN.LIST.FOR_RECEiVING.id]: stForReceiving,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
             })
         });
         return arrMapIntercompanyPO;
@@ -166,14 +178,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stDate = result.getValue({ name: 'custrecord_cwgp_fr_date' });
             const stCustomer = result.getText({ name: 'custrecord_cwgp_fr_customer' });
             const stTranId = result.getValue({ name: 'tranid' });
-            
+            const stOperator = result.getValue({ name: 'custrecord_cwgp_fr_operator' });
             const stID = result.id;
             const stUrl =  `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=itemreceipt`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt# ${stID}</a>`;
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDate,
-                [_CONFIG.COLUMN.LIST.CUSTOMER.id]: stCustomer
+                [_CONFIG.COLUMN.LIST.CUSTOMER.id]: stCustomer,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
             })
         });
         return arrMapIntercompanyPO;
@@ -245,7 +258,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stOperator = result.getValue({ name: 'custrecord_cwgp_fic_operator' });
-            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventorycount&tranid=${stTranId}`;
+            const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&rectype=inventorycount&tranid=${stID}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stID}</a>`;
 
             arrMapInventoryAdjustment.push({
@@ -265,14 +278,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         arrPagedData.forEach((result, index) => {
             const stItemName = result.getValue({ name: 'itemid'});
             const stSKU= result.getValue({ name: 'custitem_heyday_sku' });
-            
+            const stUPC= result.getValue({ name: 'custitemheyday_upccode' });
+
+            const itemPerLocColumns = getItemPerLocationColumns(result.id,stCustomer);
             arrMapItemperLocation.push({
                 [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                 [_CONFIG.COLUMN.LIST.INTERNAL_SKU.id]: stSKU,
-                [_CONFIG.COLUMN.LIST.ON_HAND.id]: parseInt(getQtyOnHandFranchise(result.id,stCustomer)) || '0',
-                [_CONFIG.COLUMN.LIST.QUANTITY_TESTER.id]: parseInt(getQtyPerAdjustmentTypeFranchise(result.id,stCustomer,4)) || '0',
-                [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR.id]: parseInt(getQtyPerAdjustmentTypeFranchise(result.id,stCustomer,2)) || '0',
-                [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE.id]: parseInt(getQtyPerAdjustmentTypeFranchise(result.id,stCustomer,3)) || '0',
+                [_CONFIG.COLUMN.LIST.UPC_CODE.id]: stUPC,
+                [_CONFIG.COLUMN.LIST.ON_HAND.id]: parseInt(itemPerLocColumns.onhand) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_TESTER.id]: parseInt(itemPerLocColumns.tester) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR.id]: parseInt(itemPerLocColumns.backbar) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE.id]: parseInt(itemPerLocColumns.damage) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(itemPerLocColumns.sold) || '0',
+                //[_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(getQtyCashSaleTypeFranchise(result.id,stCustomer)) || '0',
                 //[_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
                 //[_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
                 //[_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
@@ -286,31 +304,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
     const getCustomer = (stId) => {
         const ssCredentials = search.create({
             type: 'customrecord_cwgp_externalsl_creds',
-            filters:
-                [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: parseInt(stId)
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'custrecord_cwgp_customer' })
-                ]
-        }).run().getRange({
-            start: 0,
-            end: 1
-        });
-
-        if (ssCredentials.length > 0) {
-            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_customer' });
-        }
-    };
-
-    const getItemPerLocationColumns = (stId) => {
-        const ssCredentials = search.create({
-            type: _CONFIG.RECORD.CREDENTIALS,
             filters:
                 [
                     search.createFilter({
@@ -1253,6 +1246,134 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
     };
 
+    const getQtyCashSaleTypeFranchise  = (stItem,stCustomer) => {
+
+        var qtyOnHand = 0;
+
+        var IRLineSearch = search.create({
+            type: "customrecord_cwgp_franchise_tranline",
+            filters:
+            [
+               ["custrecord_cwgp_ftl_item","anyof",stItem], 
+               "AND", 
+               ["custrecord_cwgp_ftl_customer","anyof",stCustomer],
+               "AND", 
+               ["custrecord_cwgp_ftl_type","anyof",3]
+            ],
+            columns:
+            [
+               search.createColumn({
+                  name: "custrecord_cwgp_ftl_actualqty",
+                  summary: "SUM",
+                  label: "Quantity"
+               })
+            ]
+         });
+         IRLineSearch.run().each(function(result){
+            // .run().each has a limit of 4,000 results
+            
+            var qtyIR = result.getValue({
+                name: 'custrecord_cwgp_ftl_actualqty',
+                summary: "SUM"
+            });
+            if(!isNaN(qtyIR) && qtyIR != ''){
+                qtyOnHand += parseFloat(qtyIR);
+            }
+            
+            return true;
+         });
+
+         return qtyOnHand;
+
+    };
+
+    const getItemPerLocationColumns = (stItem, stCustomer) => {
+        let inOnhand = 0;
+        let inTester = 0;
+        let inBackbar = 0;
+        let inDamage = 0;
+        let inTheft = 0;
+        let inSold = 0;
+
+        const ssItemPerLocTotal = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
+
+        ssItemPerLocTotal.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        ssItemPerLocTotal.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_item',
+            operator: 'anyof',
+            values: stItem,
+        }));
+
+        ssItemPerLocTotal.run().each(function(result){
+            // .run().each has a limit of 4,000 results
+            inOnhand = result.getValue(result.columns[2]);
+            inTester = result.getValue(result.columns[3]);
+            inBackbar = result.getValue(result.columns[4]);
+            inDamage = result.getValue(result.columns[5]);
+            inTheft = result.getValue(result.columns[6]);
+            inSold = result.getValue(result.columns[7]);
+
+
+            return true;
+         });
+         
+
+         return {
+            'onhand': inOnhand,
+            'tester': inTester,
+            'backbar': inBackbar,
+            'damage': inDamage,
+            'theft': inTheft,
+            'sold': inSold,
+          };
+    };
+
+
+    const getItemPerLocationTotalColumns = (stCustomer) => {
+        let inOnhand = 0;
+        let inTester = 0;
+        let inBackbar = 0;
+        let inDamage = 0;
+        let inTheft = 0;
+        let inSold = 0;
+
+        const ssItemPerLocTotal = search.load({ id: "customsearch_cwgp_franchise_itemperloct", type: "customrecord_cwgp_franchise_tranline" });
+
+        ssItemPerLocTotal.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        ssItemPerLocTotal.run().each(function(result){
+            // .run().each has a limit of 4,000 results
+            inOnhand = result.getValue(result.columns[1]);
+            inTester = result.getValue(result.columns[2]);
+            inBackbar = result.getValue(result.columns[3]);
+            inDamage = result.getValue(result.columns[4]);
+            inTheft = result.getValue(result.columns[5]);
+            inSold = result.getValue(result.columns[6]);
+
+
+            return true;
+         });
+         
+
+         return {
+            'onhand': inOnhand,
+            'tester': inTester,
+            'backbar': inBackbar,
+            'damage': inDamage,
+            'theft': inTheft,
+            'sold': inSold,
+          };
+    };
+
     const getTotalQtyFranchise  = (stCustomer) => {
 
         var qtyOnHand = 0;
@@ -1460,6 +1581,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         addOptionsAdjusmentTypeFiltered,
         getCustomer,
         getTotalQtyPerAdjustmentTypeFranchise,
-        getTotalQtyFranchise
+        getTotalQtyFranchise,
+        getItemPerLocationColumns,
+        getItemPerLocationTotalColumns
     }
 });
