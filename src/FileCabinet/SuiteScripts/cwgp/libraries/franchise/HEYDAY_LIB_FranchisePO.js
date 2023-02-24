@@ -837,7 +837,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                         line: i
                     }),
                     'custrecord_cwgp_ftl_actualqty': inActualQty,
-                    'custrecord_cwgp_ftl_displayqty': inEndingQty,
+                    'custrecord_cwgp_ftl_displayqty': inActualQty,
                     'custrecord_cwgp_ftl_endingqty': inEndingQty,
                     'custrecord_cwgp_ftl_type' : 4,
                     'custrecord_cwgp_ftl_discrepancy': request.getSublistValue({
@@ -855,7 +855,21 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                         name: 'custpage_cwgp_adjustmenttype',
                         line: i
                     }),
-                    
+                    'custrecord_cwgp_ftl_enteredqty': request.getSublistValue({
+                        group: stSublistName,
+                        name: 'custpage_cwgp_enteredquantity',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_finalqty': request.getSublistValue({
+                        group: stSublistName,
+                        name: 'custpage_cwgp_finalquantity',
+                        line: i
+                    }),
+                    'custrecord_cwgp_ftl_startingqty': request.getSublistValue({
+                        group: stSublistName,
+                        name: 'custpage_cwgp_qtyonhand',
+                        line: i
+                    }),
                 });
             }
             
