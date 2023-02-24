@@ -1688,19 +1688,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //Add scanner UI for step 2 and 3 only	
-        if(stStep == 2 || stStep == 3){	
-            var {	
-                objItemResultSet,	
-                objUpcMap,	
-            }= EPLib.initScanner({	
-                stType,	
-                stSubsidiary,	
-                _CONFIG	
-            })	
-        }	
-        else{	
-            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
-        }
+        // if(stStep == 2 || stStep == 3){	
+        var {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+        // }	
+        // else{	
+        //     var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
+        // }
         
         let stUpcMap = ''
         if(objUpcMap){
@@ -1963,7 +1963,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         log.debug('stStep', stStep);
         var stUserId = rec.parameters.custpage_cwgp_userid;
         log.debug('stUserId', stUserId);
-        var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
+        // var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         log.debug('stAccessType', stAccessType);
         var stPageMode = rec.parameters.custpage_cwgp_pagemode;
@@ -1978,6 +1978,20 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -2704,8 +2718,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         }
         else if(stType == 'inventorycount'){
             scanbhtml = EPLib.getScanButtonCss({
-                stPageType: stType,
-                stStep
+                stPageType: stType
             });
             stMapVendor = 19082;
             log.debug('scanbhtml', scanbhtml)
@@ -2722,7 +2735,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             custpage_cwgp_userid        : stUserId,
             custpage_cwgp_accesstype    : stAccessType,
             custpage_cwgp_htmlcss       : htmlCss(),
-            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`}),
+            custpage_cwgp_scanbtnhtml   : scanbhtml,
             custpage_cwgp_upccodemap    : stUpcMap,
             custpage_cwgp_date          : new Date(),
             custpage_cwgp_deliverbydate : addBusinessDays(new Date(),6),

@@ -24,7 +24,8 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         ENDING          : 'custpage_cwgp_endingqty_scan_btn',
         BACKBAR         : 'custpage_cwgp_backbar_scan_btn',
         DTT             : 'custpage_cwgp_dtt_scan_btn',
-        COUNT           : 'custpage_cwgp_count_scan_btn',
+        COUNT_FIRST     : 'custpage_cwgp_count_scan_btn',
+        COUNT_SECOND    : 'custpage_cwgp_count_scan_btn',
         
     }
 
@@ -168,6 +169,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             stScanType,
             stRecType,
             stSubType,
+            stStep,
             recCurrent
         } = options;
 
@@ -247,13 +249,19 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     }
                 }
                 break;
-            case 'inventorycount':   
+            case 'inventorycount':
                 UI_CONFIG = {
                     SUBLIST_ID      : 'custpage_inventoryadjustmentinventorycount_items',
                     SUBLIST_FIELDS  : {
                         ITEM_ID : 'custpage_cwgp_itemid',
-                        QTY     : 'custpage_cwgp_adjustqtyby',
+                        ITEM    : 'custpage_cwgp_item',
                     }
+                }
+                if(stStep == 1){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_firstcount'
+                }
+                else if(stStep == 2){
+                    UI_CONFIG.SUBLIST_FIELDS['QTY'] = 'custpage_cwgp_secondcount'
                 }
                 break;
             }
@@ -267,6 +275,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 stPageType,
                 objCurrItemLine,
                 stScanType,
+                stStep,
                 UI_CONFIG
             } = options;
 
@@ -570,11 +579,135 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
             else if(stPageType == 'inventorycount'){
 
-                let index = recCurrent.findSublistLineWithValue({
-                    sublistId   : UI_CONFIG.SUBLIST_ID,
-                    fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
-                    value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                })
+                console.log('inventorycount')
+                console.log('stStep', stStep)
+                console.log('UI_CONFIG', UI_CONFIG)
+                console.log('UI_CONFIG.SUBLIST_FIELDS.ITEM_ID', UI_CONFIG.SUBLIST_FIELDS.ITEM_ID)
+                console.log('UI_CONFIG', UI_CONFIG)
+                if(stStep == 1){
+                    let index = recCurrent.findSublistLineWithValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    })
+                    let intQty = 0;
+                    let intScannedQty = 0;
+    
+                    //If line already exists, just update it
+                    if(index > -1){
+                        recCurrent.selectLine({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            line        : index
+    
+                        })
+                        intQty = recCurrent.getCurrentSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        });
+                    }
+                    else{
+                        recCurrent.selectNewLine({ 
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                        })
+                        recCurrent.setCurrentSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
+                            value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                        });
+                    }
+    
+                    try{
+                        intQty          = parseInt(intQty)
+                        intScannedQty   = parseInt(objCurrItemLine.qty)
+                        
+                        //Default all falsy values to 0
+                        if(!intScannedQty){
+                            intScannedQty = 0;
+                        }
+                        if(!intQty){
+                            intQty = 0;
+                        }
+                    }
+                    catch(e){
+                        console.error(e)
+                        throw {
+                            name    : 'CANNOT_PROCESS_QTY',
+                            message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                        }
+                    }
+                    recCurrent.setCurrentSublistValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                        value       : intQty + intScannedQty
+                    });
+                    recCurrent.commitLine({
+                        sublistId   : UI_CONFIG.SUBLIST_ID
+                    })
+                }
+                else if(stStep == 2){
+                    let index = recCurrent.findSublistLineWithValue({
+                        sublistId   : UI_CONFIG.SUBLIST_ID,
+                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM_ID,
+                        value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
+                    })
+                    if(index > -1){                    
+                        let intQty = recCurrent.getSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                            line        : index
+                        });
+    
+                        let intScannedQty = objCurrItemLine.qty
+    
+                        try{
+                            intQty          = parseInt(intQty)
+                            intScannedQty   = parseInt(intScannedQty)
+                            
+                            //Default all falsy values to 0
+                            if(!intMaxQty){
+                                intMaxQty = 0;
+                            }
+                            if(!intQty){
+                                intQty = 0;
+                            }
+                        }
+                        catch(e){
+                            throw {
+                                name    : 'CANNOT_PROCESS_QTY',
+                                message : 'Quantity, scanned quantity, and/or quantity remaining is/are invalid.'
+                            }
+                        }
+                        let intNewQty = intScannedQty + intQty;
+    
+                        // console.table({
+                        //     intMaxQty,
+                        //     intQty,
+                        //     intScannedQty,
+                        //     intNewQty,
+                        //     intQtyToSet
+                        // })
+    
+                        recCurrent.selectLine({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            line        : index
+                        });
+    
+                        recCurrent.setCurrentSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                            value       : intNewQty,
+                        });
+                        recCurrent.commitLine({
+                            sublistId   : UI_CONFIG.SUBLIST_ID
+                        })
+                    }
+                    else{
+                        throw {
+                            name    : 'NO_ITEM_LINE_MATCH',
+                            message : 'The scanned code does not match any item for counting. Otherwise, verify that the UPC Code is not shared by other items.'
+                        }
+                    }
+                }
 
                 // console.table({
                 //     intItem: objUpcToItemIdMap[objCurrItemLine.upc_code],
@@ -582,63 +715,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 // })
                 
 
-                if(index > -1){                    
-                    let intQty = recCurrent.getSublistValue({
-                        sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        line        : index
-                    });
-
-                    let intScannedQty = objCurrItemLine.qty
-
-                    try{
-                        intQty          = parseInt(intQty)
-                        intScannedQty   = parseInt(intScannedQty)
-                        
-                        //Default all falsy values to 0
-                        if(!intMaxQty){
-                            intMaxQty = 0;
-                        }
-                        if(!intQty){
-                            intQty = 0;
-                        }
-                    }
-                    catch(e){
-                        throw {
-                            name    : 'CANNOT_PROCESS_QTY',
-                            message : 'Quantity, scanned quantity, and/or quantity remaining is/are invalid.'
-                        }
-                    }
-                    let intNewQty = intScannedQty + intQty;
-
-                    // console.table({
-                    //     intMaxQty,
-                    //     intQty,
-                    //     intScannedQty,
-                    //     intNewQty,
-                    //     intQtyToSet
-                    // })
-
-                    recCurrent.selectLine({
-                        sublistId   : UI_CONFIG.SUBLIST_ID,
-                        line        : index
-                    });
-
-                    recCurrent.setCurrentSublistValue({
-                        sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        value       : intNewQty,
-                    });
-                    recCurrent.commitLine({
-                        sublistId   : UI_CONFIG.SUBLIST_ID
-                    })
-                }
-                else{
-                    throw {
-                        name    : 'NO_ITEM_LINE_MATCH',
-                        message : 'The scanned code does not match any item for counting. Otherwise, verify that the UPC Code is not shared by other items.'
-                    }
-                }
+                
                 
             }
         }
@@ -666,6 +743,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                         stPageType,
                         objCurrItemLine,
                         stScanType,
+                        stStep,
                         UI_CONFIG
                     })
                 }
@@ -751,8 +829,9 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 stUpcMap,
                 stScannerInput,
                 stScanType,
-                stRecType: urlParams.get('rectype'),
-                stSubType: urlParams.get('subtype'),
+                stRecType   : urlParams.get('rectype'),
+                stSubType   : urlParams.get('subtype'),
+                stStep      : urlParams.get('step'),
                 recCurrent
             })
 
@@ -787,9 +866,19 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         try{
             const stQuery = window.location.search;
             const objParams = new URLSearchParams(stQuery);
-            let stRecType  = objParams.get('rectype')
-            let stSubType  = objParams.get('subtype')
-            let stStep     = objParams.get('step')
+            let stRecType
+            let stSubType
+            let stStep
+            // 
+            if(new URL(window.location).pathname.endsWith('scriptlet.nl') && !(objParams.has('script'))){
+                stRecType  = 'inventorycount'
+                stStep     = 2
+            }
+            else{
+                stRecType  = objParams.get('rectype')
+                stSubType  = objParams.get('subtype')
+                stStep     = objParams.get('step')
+            }
 
             console.log('stRecType', stRecType)
             console.log('stSubType', stSubType)
@@ -820,8 +909,13 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 addBtnListener({stBtnAction: 'DTT'})
                 console.log('Damage/Tester/Theft Scan Button Set')
             }
-            else if(stPageType == 'inventorycount' && (stStep == 2 || stStep == 3)){
-                addBtnListener({stBtnAction: 'COUNT'})
+            else if(stPageType == 'inventorycount'){
+                if(stStep == 1){
+                    addBtnListener({stBtnAction: 'COUNT_FIRST'})
+                }
+                else if(stStep == 2){
+                    addBtnListener({stBtnAction: 'COUNT_SECOND'})
+                }
                 console.log('Inventory Count Scan Button Set')
             }
         }catch(e){
