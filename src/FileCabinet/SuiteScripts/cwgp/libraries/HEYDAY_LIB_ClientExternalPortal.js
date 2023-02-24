@@ -579,11 +579,6 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             }
             else if(stPageType == 'inventorycount'){
 
-                console.log('inventorycount')
-                console.log('stStep', stStep)
-                console.log('UI_CONFIG', UI_CONFIG)
-                console.log('UI_CONFIG.SUBLIST_FIELDS.ITEM_ID', UI_CONFIG.SUBLIST_FIELDS.ITEM_ID)
-                console.log('UI_CONFIG', UI_CONFIG)
                 if(stStep == 1){
                     let index = recCurrent.findSublistLineWithValue({
                         sublistId   : UI_CONFIG.SUBLIST_ID,
@@ -664,28 +659,18 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                             intScannedQty   = parseInt(intScannedQty)
                             
                             //Default all falsy values to 0
-                            if(!intMaxQty){
-                                intMaxQty = 0;
-                            }
                             if(!intQty){
                                 intQty = 0;
                             }
                         }
                         catch(e){
+                            console.log(e)
                             throw {
                                 name    : 'CANNOT_PROCESS_QTY',
                                 message : 'Quantity, scanned quantity, and/or quantity remaining is/are invalid.'
                             }
                         }
                         let intNewQty = intScannedQty + intQty;
-    
-                        // console.table({
-                        //     intMaxQty,
-                        //     intQty,
-                        //     intScannedQty,
-                        //     intNewQty,
-                        //     intQtyToSet
-                        // })
     
                         recCurrent.selectLine({
                             sublistId   : UI_CONFIG.SUBLIST_ID,
@@ -822,16 +807,29 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         let stScannerInput = recCurrent.getValue({fieldId: 'custpage_cwgp_scanupccodes'})
         let stUpcMap = recCurrent.getValue({fieldId: 'custpage_cwgp_upccodemap'})
         if(stScannerInput){
-
-            let urlParams = new URL(window.location).searchParams;
+            const stQuery = window.location.search;
+            const objParams = new URLSearchParams(stQuery);
+            let stRecType
+            let stSubType
+            let stStep
+            // 
+            if(window.location.href.endsWith("scriptlet.nl")){
+                stRecType  = 'inventorycount'
+                stStep     = 2
+            }
+            else{
+                stRecType  = objParams.get('rectype')
+                stSubType  = objParams.get('subtype')
+                stStep     = objParams.get('step')
+            }
 
             let stFailedCodes = addScannedItemsToLines({
                 stUpcMap,
                 stScannerInput,
                 stScanType,
-                stRecType   : urlParams.get('rectype'),
-                stSubType   : urlParams.get('subtype'),
-                stStep      : urlParams.get('step'),
+                stRecType,
+                stSubType,
+                stStep,
                 recCurrent
             })
 
@@ -870,7 +868,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             let stSubType
             let stStep
             // 
-            if(new URL(window.location).pathname.endsWith('scriptlet.nl') && !(objParams.has('script'))){
+            if(window.location.href.endsWith("scriptlet.nl")){
                 stRecType  = 'inventorycount'
                 stStep     = 2
             }

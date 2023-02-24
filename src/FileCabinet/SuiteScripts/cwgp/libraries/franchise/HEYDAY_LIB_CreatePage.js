@@ -2024,7 +2024,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stUserId,
             stAccessType,
             stType,
-            //stUpcMap,
+            stUpcMap,
             stOperator,
             //stOperatorId,
             stStep,
@@ -2241,6 +2241,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         var stMemo = rec.parameters.custpage_cwgp_memomain;
         var stType = rec.parameters.custpage_cwgp_rectype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
+        // var stUpcMap = rec.parameters.custpage_cwgp_upccodemap;
         log.debug('stOperator', stOperator);
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Count'});
 
@@ -2277,7 +2278,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stUserId,
             stAccessType,
             stType,
-            //stUpcMap,
+            // stUpcMap,
             stOperator,
             //stOperatorId,
             stStep,
