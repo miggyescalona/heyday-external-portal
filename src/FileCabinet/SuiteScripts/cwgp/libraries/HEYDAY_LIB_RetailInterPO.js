@@ -152,6 +152,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
     const createRetailInventoryAdjustment = (request, stSubType) => {
 
         log.debug('createRetailInventoryAdjustment', '===createRetailInventoryAdjustment===');
+        log.debug('createRetailInventoryAdjustment stSubType', stSubType);
         const recIA = record.create({
             type: record.Type.INVENTORY_ADJUSTMENT,
             isDynamic: true
@@ -433,7 +434,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
             custbody_cwgp_itemsummary: stTotalAdjustment,
-            custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
+           // custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
             custbody_cwgp_totaldiscrepancy: stTotalDiscrepancy
 
         };
@@ -754,7 +755,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             
         }
 
-        log.debug('arrMapSblFields', )
+        log.debug('arrMapSblFields', arrMapSblFields);
         return arrMapSblFields;
     };
 

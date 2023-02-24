@@ -454,17 +454,62 @@ define([
 
 
         let idRec = null;
+        let stTranId 
 
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
         if (stPageMode == 'create') {
             switch (stRecType) {
                 case 'intercompanypo':
                     idRec = txnLib.createRetailPurchaseOrder(request);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            poid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId
+                        }
+                    });
                     break;
                 case 'itemreceipt':
                     idRec = txnLib.createRetailItemReceipt(request);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            itemreceiptid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId,
+                        }
+                    });
                     break;
                 case 'inventoryadjustment':
-                    idRec = txnLib.createRetailInventoryAdjustment(request);
+                    const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+                    idRec = txnLib.createRetailInventoryAdjustment(request,stAdjustmentSubType);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            inventoryadjustmentid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId
+                        }
+                    });
                     break;
                 case 'inventorycount':
                     const stStep = request.parameters.custpage_cwgp_step;
@@ -480,8 +525,7 @@ define([
                     }
                     else if(stStep == '3'){
                         idRec = txnLib.createRetailInventoryAdjustment(request);
-                        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-                        let stTranId = getTranIdSearch(idRec,stRecType);
+                        stTranId = getTranIdSearch(idRec,stRecType);
                         redirect.toSuitelet({
                             scriptId: objRetailUrl.SCRIPT_ID,
                             deploymentId: objRetailUrl.DEPLOY_ID,
@@ -502,24 +546,6 @@ define([
             }
         }
         
-
-       /* if (stPageMode == 'create') {
-            if(stRecType == 'intercompanypo'){
-                idRec = txnLib.createRetailPurchaseOrder(request);
-            }else if(stRecType == 'itemreceipt'){
-                idRec = txnLib.createRetailItemReceipt(request);
-            }else if(stRecType == 'inventoryadjustment'){
-                idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
-            }else if(stRecType == 'inventorycount'){
-                 //idRec = txnLib.createRetailInventoryAdjustment(request);
-                const stStep = request.parameters.custpage_cwgp_step;
-                if(stStep == '1'){
-                    log.debug('Go to Step 2', stRecType);
-                    createPage.renderInventoryCountSecondCount(request,response);
-                }
-            }
-        }*/
-
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
                 idRec = editInterPO(request);
@@ -530,8 +556,7 @@ define([
 
 
         if(stPageMode == 'view'){
-            const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-            let stTranId = getTranIdSearch(idRec,stRecType);
+            stTranId = getTranIdSearch(idRec,stRecType);
             if(stRecType == 'intercompanypo'){
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,

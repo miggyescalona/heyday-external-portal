@@ -1225,7 +1225,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return merged;
     };
 
-    const mapInventoryAdjustmentValues = (stPoId) => {
+    const mapInventoryAdjustmentValues = (stPoId,stSubType) => {
         let objPO = {
             body: {},
             item: []
@@ -1274,7 +1274,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         objDiscrepancySummary = objInventoryAdjustment.getText('custbody_cwgp_totaldiscrepancy');
 
-        if(objDiscrepancySummary){
+        if(stSubType == 'inventorycount'){
+            objPO.body.custpage_cwgp_totaladjustment = Math.abs(parseInt(objDiscrepancySummary));
+        }
+        else if(objDiscrepancySummary){
             let stTextAreaVal = '';
 
             stTextAreaVal += '<div><br><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'

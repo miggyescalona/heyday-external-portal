@@ -19,6 +19,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      * @param {Object} context
      */
     const pageInit = (context) => {
+        const { currentRecord } = context;
         console.log(window.location.href);
 
         if(!window.location.href.endsWith("scriptlet.nl")){
@@ -42,13 +43,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             });
             messageUI.show(); // will disappear after 20s
         }
-        /*if(stRecType == 'inventorycount' && stPageMode == 'create' && stStep != '1'){
-            var currentRecord = context.currentRecord;
-            console.log('session val'+ sessionStorage.getItem("objIC"));
-            //const stBodyFields = ['custpage_cwgp_scanbtnhtml','custpage_cwgp_userid','custpage_cwgp_htmlcss','custpage_cwgp_pagemode','custpage_cwgp_accesstype','custpage_cwgp_rectype','custpage_cwgp_adjustmentaccount','custpage_cwgp_date','custpage_cwgp_memomain','custpage_cwgp_operator','custpage_cwgp_operatorhidden','custpage_cwgp_subsidiary','custpage_cwgp_businessline','custpage_cwgp_adjustmentlocation',]
-            let objIC = sessionStorage.getItem("objIC");
-
-        }*/
+        if(currentRecord.getValue('custpage_cwgp_rectype') == 'inventorycount' && nlapiGetFieldValue('custpage_cwgp_pagemode') == 'create'){
+            if(currentRecord.getValue('custpage_cwgp_step') == 1){
+                jQuery('#fg_custpage_inventoryadjustmentinventorycountinitial_totalsku_grp').hide()
+                jQuery('#custpage_cwgp_itemsummary_fs_lbl_uir_label').hide()
+            }
+        }
     };
 
      const saveRecord = (context) => {
@@ -63,8 +63,61 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         let stStep = objParams.get('step');
 
 
-        if(stRecType == 'inventorycount' && stPageMode == 'create'){
-            if(stStep == '4'){
+        if(currentRecord.getValue('custpage_cwgp_rectype') == 'inventorycount' && currentRecord.getValue('custpage_cwgp_pagemode') == 'create'){
+            const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
+            
+            if(currentRecord.getValue('custpage_cwgp_step') == '1'){
+                let intFirstQty;
+                let stItemName;
+                let stItemText;
+                let arrIsNegative = [];
+                let objHasDuplicates = [];
+                let blHasDuplicates = false;
+                let stHasDuplicates = 'You have entered duplicate items for: ';
+                for(let x = 0; x < intICLineCount;x++){
+                    
+                    intFirstQty = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_firstcount',
+                        line: x
+                    });
+
+                    stItemName = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    stItemText = currentRecord.getSublistText({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    if(intFirstQty < 0 && stItemName){
+                        arrIsNegative.push(x+1);
+                    }
+                    objHasDuplicates.push({ itemName: stItemText});
+                }
+                var valueArr = objHasDuplicates.map(function(item){ return item.itemName });
+                valueArr.some(function(item, idx){ 
+                    if(valueArr.indexOf(item) != idx){
+                        stHasDuplicates += '\n' + item;
+                        blHasDuplicates = true;
+                    }
+                });
+
+                //If has discrepancy
+                if(arrIsNegative.length > 0){
+                    alert('You cannot enter a negative quantity at line/s: ' + arrIsNegative.toString())
+                    return false;
+                }
+                if(blHasDuplicates){
+                    alert(stHasDuplicates);
+                    return false;
+                }
+            }
+            if(currentRecord.getValue('custpage_cwgp_step') == '3'){
                 let intDiscrepancy;
                 let stAdjustmentReason;
                 let stItemId;
@@ -72,7 +125,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 let intTotalDiscrepancy = 0;
                 let arrHasDiscrepancy = [];
 
-                const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
                 for(let x = 0; x < intICLineCount;x++){
                     
                     stItemId = currentRecord.getSublistValue({
@@ -113,6 +165,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 }
                 currentRecord.setValue('custpage_cwgp_totaldiscrepancy', intTotalDiscrepancy);
             }
+            
         }
 
 
@@ -143,8 +196,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         const intIaLineCountStandard= currentRecord.getLineCount('custpage_inventorayadjustment_items');
         const intIaLineCountBackbar= currentRecord.getLineCount('custpage_inventorayadjustmentbackbar_items');
         const intIaLineCountDamageTesterTheft = currentRecord.getLineCount('custpage_inventoryadjustmentdamagetestertheft_items');
+        const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
 
-        if(intPoLineCount == 0 || intIaLineCountStandard == 0 || intIaLineCountBackbar == 0 || intIaLineCountDamageTesterTheft == 0){
+        if(intPoLineCount == 0 || intIaLineCountStandard == 0 || intIaLineCountBackbar == 0 || intIaLineCountDamageTesterTheft == 0 || intICLineCount == 0){
             alert('Please enter a line before saving.')
             return false;
         }

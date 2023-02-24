@@ -437,7 +437,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 TOTAL_DISCREPANCY_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: ' ',
+                    label: 'Total No. of Items With Discrepancy',
                     container: 'TOTAL_DISCREPANCY',
                     displayType:'inline'
                 },
@@ -961,7 +961,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 },
                 TOTAL_DISCREPANCY: {
                     id: 'custpage_inventoryadjustmentinventorycountinitial_total_grp',
-                    label: 'Total Discrepancy'
+                    label: 'Discrepancy'
                 },
             },
         },
@@ -1399,7 +1399,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : 'Damage/Tester/Theft'
+        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
         objPO.body.custpage_cwgp_adjustmenttype = subType;
         
         //log.debug('objPO', objPO);
@@ -1527,7 +1527,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 label
             });
         });
-        let objPO = utilLib.mapInventoryAdjustmentValues(stPoId);
+        let objPO = utilLib.mapInventoryAdjustmentValues(stPoId,'inventorycount');
+        objPO.body.custpage_cwgp_adjustmenttype = 'Inventory Count';
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
