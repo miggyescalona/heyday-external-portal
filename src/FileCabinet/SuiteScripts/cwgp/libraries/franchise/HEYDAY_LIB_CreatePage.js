@@ -1687,9 +1687,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        //Add scanner UI for step 2 and 3 only	
-        // if(stStep == 2 || stStep == 3){	
-        var {	
+        const {	
             objItemResultSet,	
             objUpcMap,	
         }= EPLib.initScanner({	
@@ -1697,11 +1695,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stSubsidiary,	
             _CONFIG	
         })	
-        // }	
-        // else{	
-        //     var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
-        // }
-        
+
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)

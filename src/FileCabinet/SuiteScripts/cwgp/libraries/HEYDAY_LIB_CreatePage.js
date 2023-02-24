@@ -1729,21 +1729,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        //Add scanner UI for step 2 and 3 only
-        if(stStep == 2 || stStep == 3){
-            var {
-                objItemResultSet,
-                objUpcMap,
-            }= EPLib.initScanner({
-                stType,
-                stSubsidiary,
-                _CONFIG
-            })
-        }
-        else{
-            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
-        }
-            
+        const {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
@@ -2030,12 +2024,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const stOperator = rec.parameters.custpage_cwgp_operator;
         const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
 
-        //Add scanner UI for step 2 and 3 only
-
-        const objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
-        log.debug('objItemResultSet',objItemResultSet);
-            
-
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
         log.debug('second count params',JSON.stringify({
             intAdjustmentAccount: intAdjustmentAccount,
@@ -2051,6 +2039,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }));
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -2083,7 +2085,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stUserId,
             stAccessType,
             stType,
-            //stUpcMap,
+            stUpcMap,
             stOperator,
             stOperatorId,
             stStep,
