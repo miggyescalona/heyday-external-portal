@@ -896,6 +896,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         objPO.body.custpage_cwgp_operator = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_operator' });
         objPO.body.custpage_cwgp_subsidiary = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_subsidiary' });
         objPO.body.custpage_cwgp_location = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_location' });
+        objPO.body.custpage_cwgp_totaldiscrepancy = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fic_totaldiscrepancy' });
         objDiscrepancySummary = objItemReceipt.getText('custrecord_cwgp_fic_totaldiscrepancy');
 
         if(objDiscrepancySummary){
@@ -943,8 +944,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                  search.createColumn({name: "custrecord_cwgp_ftl_displayqty"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_endingqty"}),
                  search.createColumn({name: "custrecord_cwgp_ftl_discrepancy"}),
-                 
-                 
+                 search.createColumn({name: "custrecord_cwgp_ftl_enteredqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_finalqty"}),
+                 search.createColumn({name: "custrecord_cwgp_ftl_startingqty"}),
         	   ]
         	});
         franchiseIRLineSearch.run().each(function(result){
@@ -961,8 +963,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_discrepancy: result.getValue({ name: 'custrecord_cwgp_ftl_discrepancy' }),
                 custpage_cwgp_adjustmenttype: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmenttype' }),
                 custpage_cwgp_adjustmentreason: result.getValue({ name: 'custrecord_cwgp_ftl_adjustmentreason' }),
-                custpage_cwgp_enteredcount: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
-                custpage_cwgp_icfinalqty: result.getValue({ name: 'custrecord_cwgp_ftl_displayqty' }),
+                custpage_cwgp_enteredcount: result.getValue({ name: 'custrecord_cwgp_ftl_enteredqty' }),
+                custpage_cwgp_icfinalqty: result.getValue({ name: 'custrecord_cwgp_ftl_finalqty' }),
+                custpage_cwgp_qtyonhand: result.getValue({ name: 'custrecord_cwgp_ftl_startingqty' }),
                 
             });
         	   // .run().each has a limit of 4,000 results
