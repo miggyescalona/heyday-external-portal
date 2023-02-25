@@ -422,13 +422,22 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     container: 'ITEM_SUMMARY',
                     displayType: 'inline'
                 },
-                TOTAL_DISCREPANCY_HTMLHIDDEN: {
+                /*TOTAL_DISCREPANCY_HTMLHIDDEN: {
                     id: 'custpage_cwgp_totaldiscrepancy',
                     type: serverWidget.FieldType.LONGTEXT,
                     label: 'Total Discrepancy Hidden',
                     container: 'PRIMARY',
                     displayType: 'hidden'
+                },*/
+                TOTAL_DISCREPANCY: {
+                    id: 'custpage_cwgp_totaldiscrepancy',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Total No. of Items with Discrepancy',
+                    container: 'DISCREPANCY',
+                    displayType: 'inline',
+                    isHidden: ['1']
                 },
+                
             }
         },
         COLUMN: {
@@ -1005,7 +1014,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     ENTERED_QUANTITY: {
                         id: 'custpage_cwgp_enteredquantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Entered Qty',
+                        label: 'Entered Quantity',
                         //isInline: ['3','4'],
                         isHidden: ['1','2'],
                         //isEntry: ['3']
@@ -1013,7 +1022,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     FINAL_COUNT: {
                         id: 'custpage_cwgp_finalquantity',
                         type: serverWidget.FieldType.INTEGER,
-                        label: 'Final Qty',
+                        label: 'Final Quantity',
                         //isInline: ['3','4'],
                         isHidden: ['1','2'],
                         //isEntry: ['3']
@@ -1141,12 +1150,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             },
             inventorycount: {
                 PRIMARY: {
-                    id: 'custpage_inventoryadjustmentinventorycountinitial_pi_grp',
+                    id: 'custpage_inventoryadjustmentinventorycount_pi_grp',
                     label: 'Primary Information'
                 },
                 CLASS: {
-                    id: 'custpage_inventoryadjustmentinventorycountinitial_class_grp',
+                    id: 'custpage_inventoryadjustmentinventorycount_class_grp',
                     label: 'Classification'
+                },
+                DISCREPANCY: {
+                    id: 'custpage_inventoryadjustmentinventorycount_discrepancy_grp',
+                    label: 'Discrepancy'
                 },
             }
         },
@@ -1674,21 +1687,15 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        //Add scanner UI for step 2 and 3 only	
-        if(stStep == 2 || stStep == 3){	
-            var {	
-                objItemResultSet,	
-                objUpcMap,	
-            }= EPLib.initScanner({	
-                stType,	
-                stSubsidiary,	
-                _CONFIG	
-            })	
-        }	
-        else{	
-            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
-        }
-        
+        const {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
@@ -1744,6 +1751,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 defaultValue,
                 displayType,
                 isInline,
+                isHidden
             } = objBodyFields[stCol];
 
 
@@ -1764,7 +1772,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-           
+            
 
 
             
@@ -1788,6 +1796,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     }
                 }
             }
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
 
         });
 
@@ -1944,7 +1957,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         log.debug('stStep', stStep);
         var stUserId = rec.parameters.custpage_cwgp_userid;
         log.debug('stUserId', stUserId);
-        var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
+        // var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         log.debug('stAccessType', stAccessType);
         var stPageMode = rec.parameters.custpage_cwgp_pagemode;
@@ -1959,6 +1972,20 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {
+            objItemResultSet,
+            objUpcMap,
+        }= EPLib.initScanner({
+            stType,
+            stSubsidiary,
+            _CONFIG
+        })
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -1991,7 +2018,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stUserId,
             stAccessType,
             stType,
-            //stUpcMap,
+            stUpcMap,
             stOperator,
             //stOperatorId,
             stStep,
@@ -2011,6 +2038,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 defaultValue,
                 displayType,
                 isInline,
+                isHidden
             } = objBodyFields[stCol];
 
 
@@ -2044,7 +2072,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
-
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
             /*if(objICparsed && stStep != 1){
                 if (objICparsed.body[fld.id] != 'undefined') {
                     if(id != 'custpage_cwgp_date'){
@@ -2147,7 +2179,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             }
         });
         
-        populateSecondCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl);
+        populateSecondCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl,form);
 
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
@@ -2203,6 +2235,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         var stMemo = rec.parameters.custpage_cwgp_memomain;
         var stType = rec.parameters.custpage_cwgp_rectype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
+        // var stUpcMap = rec.parameters.custpage_cwgp_upccodemap;
         log.debug('stOperator', stOperator);
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Count'});
 
@@ -2239,7 +2272,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stUserId,
             stAccessType,
             stType,
-            //stUpcMap,
+            // stUpcMap,
             stOperator,
             //stOperatorId,
             stStep,
@@ -2259,6 +2292,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 defaultValue,
                 displayType,
                 isInline,
+                isHidden
             } = objBodyFields[stCol];
 
 
@@ -2292,7 +2326,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
-
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
             /*if(objICparsed && stStep != 1){
                 if (objICparsed.body[fld.id] != 'undefined') {
                     if(id != 'custpage_cwgp_date'){
@@ -2396,7 +2434,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         });
         
         //populateFinalCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl);
-        populateFinalCountLines(request,sbl);
+        populateFinalCountLines(request,sbl,form);
         form.addSubmitButton({ label: 'Submit - Final Review' });
 
         form.addButton({
@@ -2407,7 +2445,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         response.writePage(form);
     };
 
-    const populateSecondCountLines = (stCustomer,arrItemFirstCount,arrQtyFirstCount,itemLines) => {
+    const populateSecondCountLines = (stCustomer,arrItemFirstCount,arrQtyFirstCount,itemLines,form) => {
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemperlocic", type: "customrecord_cwgp_franchise_tranline" });
 
         ssItemPerLocationIC.filters.push(search.createFilter({
@@ -2491,9 +2529,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         }
 
 
+        var fldTotalDiscrepancy = form.getField({
+            id : 'custpage_cwgp_totaldiscrepancy'
+        });
+        fldTotalDiscrepancy.defaultValue = inCounter;
+
     };
 
-    const populateFinalCountLines = (request,itemLines) => {
+    const populateFinalCountLines = (request,itemLines,form) => {
         var rec = request;
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
@@ -2628,6 +2671,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     itemLines.setSublistValue({
                         id : 'custpage_cwgp_discrepancy',
                         line : inCounter,
+                        value: 0 - intQtyOnhand
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
                         value: 0
                     });
                 }
@@ -2635,7 +2683,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             }
             
         }
-
+        var fldTotalDiscrepancy = form.getField({
+            id : 'custpage_cwgp_totaldiscrepancy'
+        });
+        fldTotalDiscrepancy.defaultValue = inCounter;
 
     };
     
@@ -2662,8 +2713,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         }
         else if(stType == 'inventorycount'){
             scanbhtml = EPLib.getScanButtonCss({
-                stPageType: stType,
-                stStep
+                stPageType: stType
             });
             stMapVendor = 19082;
             log.debug('scanbhtml', scanbhtml)
@@ -2680,7 +2730,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             custpage_cwgp_userid        : stUserId,
             custpage_cwgp_accesstype    : stAccessType,
             custpage_cwgp_htmlcss       : htmlCss(),
-            custpage_cwgp_scanbtnhtml   : EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`}),
+            custpage_cwgp_scanbtnhtml   : scanbhtml,
             custpage_cwgp_upccodemap    : stUpcMap,
             custpage_cwgp_date          : new Date(),
             custpage_cwgp_deliverbydate : addBusinessDays(new Date(),6),

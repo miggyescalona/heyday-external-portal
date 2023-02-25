@@ -390,13 +390,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'inline'
                 },
-                TOTAL_DISCREPANCY_HTML: {
+                TOTAL_DISCREPANCY: {
+                    id: 'custpage_cwgp_totaldiscrepancy',
+                    type: serverWidget.FieldType.INTEGER,
+                    label: 'Total No. of Items with Discrepancy',
+                    container: 'DISCREPANCY',
+                    displayType: 'inline',
+                    isHidden: ['1']
+                },
+                /*TOTAL_DISCREPANCY_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
                     label: ' ',
                     container: 'TOTAL_DISCREPANCY',
                     displayType:'inline'
-                },
+                },*/
             },
         },
         COLUMN: {
@@ -752,12 +760,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Starting Quantity',
-                        displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_enteredcount',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Entered Count'
+                        label: 'Entered Quantity'
                     },
                     DISREPANCY: {
                         id: 'custpage_cwgp_discrepancy',
@@ -767,13 +774,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     FINAL_QTY: {
                         id: 'custpage_cwgp_icfinalqty',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Final Quantity At Location'
+                        label: 'Final Quantity'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
                         label: 'Adjustment Reason'
-                    }
+                    },
+                    TOTAL_DISCREPANCY: {
+                        id: 'custpage_cwgp_totaldiscrepancy',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Total No. of Items with Discrepancy',
+                        container: 'DISCREPANCY',
+                        displayType: 'inline',
+                        isHidden: ['1']
+                    },
                 },
             }
         },
@@ -851,9 +866,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_inventoryadjustmentinventorycount_class_grp',
                     label: 'Classification'
                 },
-                TOTAL_DISCREPANCY: {
-                    id: 'custpage_inventoryadjustmentinventorycountinitial_total_grp',
-                    label: 'Total Discrepancy'
+                DISCREPANCY: {
+                    id: 'custpage_inventoryadjustmentinventorycount_discrepancy_grp',
+                    label: 'Discrepancy'
                 },
             },
         },
