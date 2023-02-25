@@ -145,6 +145,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label: 'Theft'
                 },
+                QUANTITY_SOLD_TOTAL: {
+                    id: 'custpage_cwgp_sold_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Quantity Sold'
+                },
             }
         },
         SCRIPT:{
@@ -168,6 +173,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         if(blItermPerLocTotal){
             newStType = 'itemperlocationtotal'
         }
+        log.debug('newStType',newStType);
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
@@ -397,7 +403,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
-
+        log.debug('mapItemPerLocation');
         let arrMapItemperLocation= [];
 
         arrPagedData.forEach((result, index) => {
@@ -431,20 +437,24 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
     const mapItemPerLocationTotal = (stUserId, stAccessType, arrPagedData) => {
-
+        log.debug('mapItemPerLocationTotal',arrPagedData);
         let arrMapItemperLocation= [];
         let intOnHand = 0;
         let intBackbar = 0;
         let intDamage = 0;
         let intTester = 0;
         let intTheft = 0;
+        let intQuantitySold = 0;
 
-        arrPagedData.forEach((result, index) => {
-             intOnHand += parseInt(result.getValue(result.columns[5]));
-             intBackbar += parseInt(result.getValue(result.columns[6]));
-             intDamage += parseInt(result.getValue(result.columns[7]));
-             intTester += parseInt(result.getValue(result.columns[8]));
-             intTheft += parseInt(result.getValue(result.columns[9]));
+        //arrPagedData.forEach((result, index) => {
+        arrPagedData.run().each(function(result) {
+             log.debug(result);
+             intOnHand += parseInt(result.getValue(result.columns[0]));
+             intBackbar += parseInt(result.getValue(result.columns[1]));
+             intDamage += parseInt(result.getValue(result.columns[2]));
+             intTester += parseInt(result.getValue(result.columns[3]));
+             intTheft += parseInt(result.getValue(result.columns[4]));
+             intQuantitySold += parseInt(result.getValue(result.columns[5]));
         });
 
         arrMapItemperLocation.push({
@@ -453,6 +463,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: intBackbar,
             [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: intDamage,
             [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: intTheft,
+            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold
         })
 
         return arrMapItemperLocation;

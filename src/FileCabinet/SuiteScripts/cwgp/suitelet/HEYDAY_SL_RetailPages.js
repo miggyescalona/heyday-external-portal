@@ -418,6 +418,7 @@ define([
         const stLocation = getLocation(stUserId);
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary);
+        const objItemPerLocationTotalSearch = buildItemPerLocationTotalSearch(stLocation,stSubsidiary);
 
         listPage.renderItemPerLocation({
             request,
@@ -425,7 +426,10 @@ define([
             stType: 'itemperlocation',
             stAccessType,
             stUserId,
-            objSearch: objItemPerLocationSearch
+            stSubsidiary,
+            stLocation,
+            objSearch: objItemPerLocationSearch,
+            objSearchTotal: objItemPerLocationTotalSearch
         });
     };
 
@@ -727,6 +731,27 @@ define([
 
         return ssItemPerLocation;
     };
+
+        
+    const buildItemPerLocationTotalSearch = (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloctotal", type: "transaction" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            join: 'item',
+            values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        return ssItemPerLocation;
+    };
+
 
 
     const getSubsidiary = (stId) => {
