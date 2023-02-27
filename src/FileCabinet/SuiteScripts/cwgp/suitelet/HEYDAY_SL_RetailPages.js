@@ -20,8 +20,9 @@ define([
     '../libraries/HEYDAY_LIB_EditPage.js',
     '../libraries/HEYDAY_LIB_RetailInterPO.js',
     '../libraries/HEYDAY_LIB_ExternalPortal',
-    'N/file'
-], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file) => {
+    'N/file',
+    'N/runtime'
+], (search, redirect, listPage, createPage, viewPage, editPage, txnLib, EPLib,file,runtime) => {
     const _CONFIG = {
         RECORD: {
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
@@ -276,22 +277,86 @@ define([
         }
     };
 
-    const renderInventoryCount = (request, response) => {
-        const {
-            pageMode: stPageMode,
-            userId: stUserId,
-            inventoryadjustmentid: stPoId,
-            accesstype: stAccessType,
-            tranid: stTranId,
-            step: stStep,
-            objIC: objIC
-        } = request.parameters;
+    const renderInventoryCount = (request, response, objVal) => {
+
+        let stPageMode,stUserId,stPoId,stAccessType,stTranId,stStep,objIC,customRecordId
+        
+        if(request.method === 'GET'){
+             ({
+                pageMode: stPageMode,
+                userId: stUserId,
+                inventoryadjustmentid: stPoId,
+                accesstype: stAccessType,
+                tranid: stTranId,
+                step: stStep,
+                objIC: objIC,
+                customRecordId: customRecordId
+            } = request.parameters)
+        }
+        else{
+             ({
+                custpage_cwgp_pagemode: stPageMode,
+                custpage_cwgp_userid: stUserId,
+                custpage_cwgp_accesstype: stAccessType,
+                custpage_cwgp_step: stStep
+            } = request.parameters)
+
+            log.debug('IC lineCount', request.getLineCount('custpage_inventoryadjustmentinventorycount_items'));
+
+            var fileObj = file.create({
+                name: 'test1.txt',
+                fileType: file.Type.PLAINTEXT,
+                contents: JSON.stringify(request.parameters)
+            });
+            fileObj.folder = -15;
+            var id = fileObj.save();
+
+            var fileObj2 = file.create({
+                name: 'test2.txt',
+                fileType: file.Type.PLAINTEXT,
+                contents: JSON.stringify(response)
+            });
+            fileObj2.folder = -15;
+            var id = fileObj2.save();
+        }
+        
+
+        log.debug('params',JSON.stringify({
+            stPageMode: stPageMode,
+            stUserId: stUserId,
+            stPoId: stPoId,
+            stAccessType: stAccessType,
+            stTranId: stTranId,
+            stStep: stStep
+        }));
+
+        log.debug('stStep',stStep);
+
+        /*if(stStep!=1){
+            var fileObj = file.create({
+                name: 'test1.txt',
+                fileType: file.Type.PLAINTEXT,
+                contents: JSON.stringify(request.parameters)
+            });
+            fileObj.folder = -15;
+            var id = fileObj.save();
+
+            var fileObj2 = file.create({
+                name: 'test2.txt',
+                fileType: file.Type.PLAINTEXT,
+                contents: JSON.stringify(response)
+            });
+            fileObj2.folder = -15;
+            var id = fileObj2.save();
+        }*/
+
 
         log.debug('ic params',request.parameters);
         const stSubsidiary = getSubsidiary(stUserId);
         const stLocation = getLocation(stUserId);
         const objInventoryCountSearch = buildInventoryCountSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const requestParams = request.parameters;
 
         switch (stPageMode) {
             case 'list':
@@ -318,7 +383,9 @@ define([
                     stAccessType,
                     stStep,
                     objOperator,
-                    objIC
+                    objIC,
+                    requestParams,
+                    customRecordId
                 });
 
                 break;
@@ -349,7 +416,9 @@ define([
 
         log.debug('itemp per loc params',request.parameters);
         const stLocation = getLocation(stUserId);
-        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation);
+        const stSubsidiary = getSubsidiary(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary);
+        const objItemPerLocationTotalSearch = buildItemPerLocationTotalSearch(stLocation,stSubsidiary);
 
         listPage.renderItemPerLocation({
             request,
@@ -357,20 +426,26 @@ define([
             stType: 'itemperlocation',
             stAccessType,
             stUserId,
-            objSearch: objItemPerLocationSearch
+            stSubsidiary,
+            stLocation,
+            objSearch: objItemPerLocationSearch,
+            objSearchTotal: objItemPerLocationTotalSearch
         });
     };
 
 
     const handleIntercompanyPOTxn = (request, response) => {
-        const {
+        const  {
             custpage_cwgp_pagemode: stPageMode,
             custpage_cwgp_userid: stUserId,
             custpage_cwgp_accesstype: stAccessType,
             custpage_cwgp_rectype: stRecType,
-            custpage_cwgp_adjustmentsubtype: stSubType,
+            custpage_cwgp_adjustmentsubtype: stSubType
 
         } = request.parameters;
+
+        //log.debug(objVal);
+       // objVal.stStep = parseInt(request.parameters.custpage_cwgp_step)+1;
 
         log.debug('params handleIntercompanyPOTxn',JSON.stringify({
             custpage_cwgp_pagemode: stPageMode,
@@ -380,20 +455,101 @@ define([
             custpage_cwgp_adjustmentsubtype: stSubType
         }));
 
-        let idRec = null;
 
+
+        let idRec = null;
+        let stTranId 
+
+        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
         if (stPageMode == 'create') {
-            if(stRecType == 'intercompanypo'){
-                idRec = txnLib.createRetailPurchaseOrder(request);
-            }else if(stRecType == 'itemreceipt'){
-                idRec = txnLib.createRetailItemReceipt(request);
-            }else if(stRecType == 'inventoryadjustment'){
-                idRec = txnLib.createRetailInventoryAdjustment(request,stSubType);
-            }else if(stRecType == 'inventorycount'){
-                idRec = txnLib.createRetailInventoryAdjustment(request);
+            switch (stRecType) {
+                case 'intercompanypo':
+                    idRec = txnLib.createRetailPurchaseOrder(request);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            poid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId
+                        }
+                    });
+                    break;
+                case 'itemreceipt':
+                    idRec = txnLib.createRetailItemReceipt(request);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            itemreceiptid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId,
+                        }
+                    });
+                    break;
+                case 'inventoryadjustment':
+                    const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+                    idRec = txnLib.createRetailInventoryAdjustment(request,stAdjustmentSubType);
+                    stTranId = getTranIdSearch(idRec,stRecType);
+                    redirect.toSuitelet({
+                        scriptId: objRetailUrl.SCRIPT_ID,
+                        deploymentId: objRetailUrl.DEPLOY_ID,
+                        isExternal: true,
+                        parameters: {
+                            pageMode: 'view',
+                            userId: stUserId,
+                            inventoryadjustmentid: idRec,
+                            accesstype: stAccessType,
+                            rectype: stRecType,
+                            tranid: stTranId
+                        }
+                    });
+                    break;
+                case 'inventorycount':
+                    const stStep = request.parameters.custpage_cwgp_step;
+                    log.debug('stRecType', stRecType);
+                    log.debug('stStep', stStep);
+                    if(stStep == '1'){
+                        log.debug('Go to Step 2', stRecType);
+                        createPage.renderInventoryCountSecond(request,response);
+                    }
+                    else if(stStep == '2'){
+                        log.debug('Create IC', stRecType);
+                        createPage.renderInventoryCountFinal(request,response);
+                    }
+                    else if(stStep == '3'){
+                        idRec = txnLib.createRetailInventoryAdjustment(request);
+                        stTranId = getTranIdSearch(idRec,stRecType);
+                        redirect.toSuitelet({
+                            scriptId: objRetailUrl.SCRIPT_ID,
+                            deploymentId: objRetailUrl.DEPLOY_ID,
+                            isExternal: true,
+                            parameters: {
+                                pageMode: 'view',
+                                userId: stUserId,
+                                inventoryadjustmentid: idRec,
+                                accesstype: stAccessType,
+                                rectype: stRecType,
+                                tranid: stTranId
+                            }
+                        });
+                    }
+                    break;
+                default:
+                    throw 'Page Not Found';
             }
         }
-
+        
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
                 idRec = editInterPO(request);
@@ -402,70 +558,71 @@ define([
             }
         }
 
-        
-        const objRetailUrl = EPLib._CONFIG.RETAIL_PAGE[EPLib._CONFIG.ENVIRONMENT]
-        let stTranId = getTranIdSearch(idRec,stRecType);
 
-        if(stRecType == 'intercompanypo'){
-            redirect.toSuitelet({
-                scriptId: objRetailUrl.SCRIPT_ID,
-                deploymentId: objRetailUrl.DEPLOY_ID,
-                isExternal: true,
-                parameters: {
-                    pageMode: 'view',
-                    userId: stUserId,
-                    poid: idRec,
-                    accesstype: stAccessType,
-                    rectype: stRecType,
-                    tranid: stTranId
-                }
-            });
+        if(stPageMode == 'view'){
+            stTranId = getTranIdSearch(idRec,stRecType);
+            if(stRecType == 'intercompanypo'){
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        poid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
+            }
+            else if(stRecType == 'itemreceipt'){
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        itemreceiptid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId,
+                    }
+                });
+            }
+            else if(stRecType == 'inventoryadjustment'){
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        inventoryadjustmentid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
+            }
+            else if(stRecType == 'inventorycount'){
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        inventoryadjustmentid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
+            }
         }
-        else if(stRecType == 'itemreceipt'){
-            redirect.toSuitelet({
-                scriptId: objRetailUrl.SCRIPT_ID,
-                deploymentId: objRetailUrl.DEPLOY_ID,
-                isExternal: true,
-                parameters: {
-                    pageMode: 'view',
-                    userId: stUserId,
-                    itemreceiptid: idRec,
-                    accesstype: stAccessType,
-                    rectype: stRecType,
-                    tranid: stTranId,
-                }
-            });
-        }
-        else if(stRecType == 'inventoryadjustment'){
-            redirect.toSuitelet({
-                scriptId: objRetailUrl.SCRIPT_ID,
-                deploymentId: objRetailUrl.DEPLOY_ID,
-                isExternal: true,
-                parameters: {
-                    pageMode: 'view',
-                    userId: stUserId,
-                    inventoryadjustmentid: idRec,
-                    accesstype: stAccessType,
-                    rectype: stRecType,
-                    tranid: stTranId
-                }
-            });
-        }
-        else if(stRecType == 'inventorycount'){
-            redirect.toSuitelet({
-                scriptId: objRetailUrl.SCRIPT_ID,
-                deploymentId: objRetailUrl.DEPLOY_ID,
-                isExternal: true,
-                parameters: {
-                    pageMode: 'view',
-                    userId: stUserId,
-                    inventoryadjustmentid: idRec,
-                    accesstype: stAccessType,
-                    rectype: stRecType,
-                    tranid: stTranId
-                }
-            });
-        }
+        log.debug('===handleIntercompanyPOTxn===', 'End Of handleIntercompanyPOTxn');
     };
 
     const getTranIdSearch = (recId, stRecType) => {
@@ -556,17 +713,45 @@ define([
         return ssItemReceipt;
     };
 
-    const buildItemPerLocationSearch = (stLocation) => {
-        const ssItemPerLocation = search.load({ id: "589", type: "inventoryitem" });
+    const buildItemPerLocationSearch = (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "623", type: "transaction" });
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
             operator: 'anyof',
+            join: 'item',
             values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
         }));
 
         return ssItemPerLocation;
     };
+
+        
+    const buildItemPerLocationTotalSearch = (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloctotal", type: "transaction" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            join: 'item',
+            values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        return ssItemPerLocation;
+    };
+
 
 
     const getSubsidiary = (stId) => {

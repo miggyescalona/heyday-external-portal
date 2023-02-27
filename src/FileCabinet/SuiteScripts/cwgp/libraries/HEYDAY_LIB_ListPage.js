@@ -31,14 +31,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             itemreceipt: 'custpage_ir_listtab_retail',
             inventoryadjustment: 'custpage_ia_listtab_retail',
             inventorycount: 'custpage_ic_listtab_retail',
-            itemperlocation: 'custpage_ipl_listtab_retail'
+            itemperlocation: 'custpage_ipl_listtab_retail',
+            itemperlocationtotal: 'custpage_ipltotal_listtab_retail'
         },
         SUBLIST: {
             intercompanypo: 'custpage_interpo_list_retail',
             itemreceipt: 'custpage_ir_list_retail',
             inventoryadjustment: 'custpage_ia_list_retail',
             inventorycount: 'custpage_ic_list_retail',
-            itemperlocation: 'custpage_ipl_list_retail'
+            itemperlocation: 'custpage_ipl_list_retail',
+            itemperlocationtotal: 'custpage_ipltotal_list_retail'
         },
         COLUMN: {
             LIST: {
@@ -126,27 +128,83 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Item Name'
                     },
+                    SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Internal SKU'
+                    },
+                    UPC:{
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'UPC Code'
+                    },
                     LOCATION: {
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.TEXT,
                         label:  'Location'
                     },
-                    AVAILABLE: {
-                        id: 'custpage_cwgp_available',
+                    SUBSIDIARY:{
+                        id: 'custpage_cwgp_subsidiary',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Available'
+                        label:  'Subsidiary'
                     },
                     ON_HAND: {
                         id: 'custpage_cwgp_onhand',
                         type: serverWidget.FieldType.TEXT,
                         label: 'On Hand'
                     },
-                    COMMITTED: {
-                        id: 'custpage_cwgp_committed',
+                    TESTER:{
+                        id: 'custpage_cwgp_tester',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Committed'
+                        label:  'Tester'
                     },
-
+                    BACKBAR:{
+                        id: 'custpage_cwgp_backbar',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Backbar'
+                    },
+                    DAMAGE:{
+                        id: 'custpage_cwgp_damage',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Damage'
+                    },
+                    THEFT:{
+                        id: 'custpage_cwgp_theft',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Theft'
+                    },
+                },
+                itemperlocationtotal: {
+                    ON_HAND_TOTAL: {
+                        id: 'custpage_cwgp_onhand_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'On Hand'
+                    },
+                    QUANTITY_TESTER_TOTAL: {
+                        id: 'custpage_cwgp_tester_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Tester'
+                    },
+                    QUANTITY_BACKBAR_TOTAL: {
+                        id: 'custpage_cwgp_backbar_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Backbar'
+                    },
+                    QUANTITY_DAMAGE_TOTAL: {
+                        id: 'custpage_cwgp_damage_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Damage'
+                    },
+                    QUANTITY_THEFT_TOTAL: {
+                        id: 'custpage_cwgp_theft_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Theft'
+                    },
+                    QUANTITY_SOLD_TOTAL: {
+                        id: 'custpage_cwgp_sold_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Quantity Sold'
+                    },
                 }
             }
         }
@@ -535,7 +593,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stType,
             stAccessType,
             stUserId,
-            objSearch
+            objSearch,
+            objSearchTotal,
+            stSubsidiary,
+            stLocation
         } = options;
 
 
@@ -552,12 +613,69 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             label: 'HTMLCSS'
         });
         fldHtml.defaultValue = htmlCss();
-        
+
+        form.addFieldGroup({
+            id: 'custpage_retail_itemperloc_grp',
+            label: 'Primary Information'
+        });
+        const fldSubsidiary = form.addField({
+            id: 'custpage_cwgp_subsidiary',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Subsidiary',
+            source: 'subsidiary',
+            container: 'custpage_retail_itemperloc_grp'
+        });
+        fldSubsidiary.defaultValue = stSubsidiary;
+        fldSubsidiary.updateDisplayType({displayType:'inline'});
+
+        const fldLocation= form.addField({
+            id: 'custpage_cwgp_location',
+            type: serverWidget.FieldType.SELECT,
+            label: 'Location',
+            source: 'location',
+            container: 'custpage_retail_itemperloc_grp'
+        });
+        fldLocation.defaultValue = stLocation;
+        fldLocation.updateDisplayType({displayType:'inline'});
+
+
+
+        //add total sublist
+
         form.addSubtab({
-            id: _CONFIG.TAB[stType],
-            label: ' '
+            id: _CONFIG.TAB['itemperlocationtotal'],
+            label: 'Totals'
         });
 
+        const sbtotal = form.addSublist({
+            id: _CONFIG.SUBLIST['itemperlocationtotal'],
+            label: 'Total',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB['itemperlocationtotal']
+        });
+
+        const objListColsTotal = _CONFIG.COLUMN.LIST['itemperlocationtotal'];
+
+        const arrColsTotal = Object.keys(objListColsTotal);
+        log.debug('arrColsTotal', arrColsTotal);
+
+        arrColsTotal.forEach((stCol) => {
+            const { id, type, label } = objListColsTotal[stCol];
+
+            sbtotal.addField({
+                id,
+                type,
+                label
+            });
+        });
+
+        let blItermPerLocTotal = true;
+
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+        
         const fldPage = form.addField({
             id: 'custpage_cwgp_page',
             type: serverWidget.FieldType.SELECT,
@@ -565,6 +683,48 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             container: _CONFIG.TAB[stType]  
         });
         fldPage.defaultValue = intPage;
+
+        const fldAsOf = form.addField({
+            id: 'custpage_cwgp_asof',
+            type: serverWidget.FieldType.DATE,
+            label: 'As Of',
+            container: _CONFIG.TAB[stType]  
+        });
+
+        const fldFrom = form.addField({
+            id: 'custpage_cwgp_from',
+            type: serverWidget.FieldType.DATE,
+            label: 'From',
+            container: _CONFIG.TAB[stType]  
+        });
+
+        const fldTo = form.addField({
+            id: 'custpage_cwgp_to',
+            type: serverWidget.FieldType.DATE,
+            label: 'To',
+            container: _CONFIG.TAB[stType]  
+        });
+
+
+
+        setListValues({
+            objSearch,
+            objSearchTotal,
+            fldPage,
+            intPage,
+            sbtotal,
+            stType,
+            stAccessType,
+            stUserId,
+            blItermPerLocTotal
+        });
+
+        blItermPerLocTotal = false;
+
+
+        log.debug('stType',stType);
+
+    
 
         //add sublist values
         const sbl = form.addSublist({
@@ -591,6 +751,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
 
         setListValues({
             objSearch,
+            objSearchTotal,
+            blItermPerLocTotal,
             fldPage,
             intPage,
             sbl,
@@ -608,7 +770,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, fldPage, intPage, stType, stApprovalStatus) => {
+    const getPageData = (objSearch, objSearchTotal, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus) => {
         if(stType == 'intercompanypo' && stApprovalStatus){
             objSearch.filters.push(search.createFilter({
                 name: 'approvalstatus',
@@ -622,25 +784,32 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stPageSize = 30;
         }
         
-        const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
-        log.debug('objPagedData',objPagedData);
-        log.debug("inventoryadjustmentSearchObj result count",objPagedData.count);
-
-        objPagedData.pageRanges.map((objPageResult) => {
-            fldPage.addSelectOption({
-                //value: objPageResult.index + 1,
-                value: objPageResult.index,
-                text: `${objPageResult.index + 1} of ${objPagedData.pageRanges.length}`
-            });
-        });
-
+        let objPagedData;
         let objPage;
-        if(objPagedData.count!=0){
-             objPage = objPagedData.fetch({ index: intPage });
+        if(blItermPerLocTotal){
+            log.debug('blItermPerLocTotal',blItermPerLocTotal);
+            objPage = objSearchTotal;
+        }else{
+            log.debug('blItermPerLocTotal',blItermPerLocTotal);
+            objPagedData = objSearch.runPaged({ pageSize: stPageSize });
+
+            objPagedData.pageRanges.map((objPageResult) => {
+                fldPage.addSelectOption({
+                    //value: objPageResult.index + 1,
+                    value: objPageResult.index,
+                    text: `${objPageResult.index + 1} of ${objPagedData.pageRanges.length}`
+                });
+            });
+
+           if(objPagedData.count!=0){
+                objPage = objPagedData.fetch({ index: intPage });
+           }
+           else{
+                objPage = null;
+           }
+    
         }
-        else{
-             objPage = null;
-        }
+        log.debug('objPage',objPage);
 
         return objPage;
     };
@@ -648,22 +817,28 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
     const setListValues = (options) => {
         const {
             objSearch,
+            objSearchTotal,
             fldPage,
             intPage,
             sbl,
+            sbtotal,
             stType,
             stAccessType,
             stUserId,
             stApprovalStatus,
-            blForReceiving
+            blForReceiving,
+            blItermPerLocTotal
         } = options;
 
 
-        const objPagedData = getPageData(objSearch, fldPage, intPage, stType, stApprovalStatus);
+        const objPagedData = getPageData(objSearch, objSearchTotal, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus);
         log.debug('objPagedData',objPagedData)
         
         if(objPagedData){
-            const arrPagedData = objPagedData.data;
+            let arrPagedData;
+            if(!blItermPerLocTotal){
+             arrPagedData = objPagedData.data;
+            }else{arrPagedData = objPagedData;}
             log.debug('arrPagedData', arrPagedData);
 
             const arrListValues = util.mapValues({
@@ -672,23 +847,40 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 stUserId,
                 arrPagedData,
                 blForReceiving,
-                stApprovalStatus
+                stApprovalStatus,
+                blItermPerLocTotal
             });
             log.debug('arrListValues', arrListValues);
 
-            arrListValues.forEach((value, i) => {
-                const arrListValue = Object.keys(value);
+            if(!blItermPerLocTotal){
+                arrListValues.forEach((value, i) => {
+                    const arrListValue = Object.keys(value);
 
-                arrListValue.forEach((fieldId) => {
-                    sbl.setSublistValue({
-                        id: fieldId,
-                        line: i,
-                        value: value[fieldId] || ' '
+                    arrListValue.forEach((fieldId) => {
+                        sbl.setSublistValue({
+                            id: fieldId,
+                            line: i,
+                            value: value[fieldId] || ' '
+                        });
                     });
                 });
-            });
+            }
+            else{
+                arrListValues.forEach((value, i) => {
+                    const arrListValue = Object.keys(value);
+
+                    arrListValue.forEach((fieldId) => {
+                        sbtotal.setSublistValue({
+                            id: fieldId,
+                            line: i,
+                            value: value[fieldId] || 0
+                        });
+                    });
+                });
+            }
         }
     };
+
 
     const htmlCss = () => {
         const stHtmlCss = `<style>

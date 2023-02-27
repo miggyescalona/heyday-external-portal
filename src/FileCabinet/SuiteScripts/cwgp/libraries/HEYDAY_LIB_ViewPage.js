@@ -434,6 +434,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
+                TOTAL_DISCREPANCY_HTML: {
+                    id: 'custpage_cwgp_totaladjustment',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: 'Total No. of Items With Discrepancy',
+                    container: 'TOTAL_DISCREPANCY',
+                    displayType:'inline'
+                },
             },
         },
         COLUMN: {
@@ -693,11 +700,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         label: 'Business Line',
                         displayType: 'hidden'
                     },
-                    DATE_TIME: {
+                    /*DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
@@ -764,11 +771,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
                     },
-                    DATE_TIME: {
+                    /*DATE_TIME: {
                         id: 'custpage_cwgp_datetime',
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
+                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -858,20 +865,25 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
-                        id: 'custpage_cwgp_adjustqtyby',
+                        id: 'custpage_cwgp_enteredcount',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Adjust Inventory Quantity'
+                        label: 'Entered Count'
+                    },
+                    DISREPANCY: {
+                        id: 'custpage_cwgp_discrepancy',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Discrepancy'
+                    },
+                    FINAL_QTY: {
+                        id: 'custpage_cwgp_icfinalqty',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Final Quantity At Location'
                     },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Business Line',
                         displayType:'hidden'
-                    },
-                    ADJUSTMENT_TYPE: {
-                        id: 'custpage_cwgp_adjustmenttype',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Adjustment Type'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
@@ -946,6 +958,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 CLASS: {
                     id: 'custpage_inventoryadjustmentinventorycount_class_grp',
                     label: 'Classification'
+                },
+                TOTAL_DISCREPANCY: {
+                    id: 'custpage_inventoryadjustmentinventorycountinitial_total_grp',
+                    label: 'Discrepancy'
                 },
             },
         },
@@ -1383,7 +1399,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : 'Damage/Tester/Theft'
+        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
         objPO.body.custpage_cwgp_adjustmenttype = subType;
         
         //log.debug('objPO', objPO);
@@ -1511,7 +1527,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 label
             });
         });
-        let objPO = utilLib.mapInventoryAdjustmentValues(stPoId);
+        let objPO = utilLib.mapInventoryAdjustmentValues(stPoId,'inventorycount');
+        objPO.body.custpage_cwgp_adjustmenttype = 'Inventory Count';
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType

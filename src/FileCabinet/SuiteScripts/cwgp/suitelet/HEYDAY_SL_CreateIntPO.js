@@ -24,8 +24,10 @@ define(['N/search'], (search) => {
         if (context.request.method === 'GET') { 
             const stItem = request.parameters['item'];
             const stLocation = request.parameters['itemlocation'];
+            const stSubsidiary = request.parameters['itemsubsidiary'];
             const stType = request.parameters['type'];
             const stCustomer = request.parameters['customer'];
+            const objitemflds = request.parameters['customer'];
 
             if(stType == 'retail'){
                 log.debug('retail')
@@ -38,6 +40,12 @@ define(['N/search'], (search) => {
                     const stQtyOnHand = getQtyOnHand(stItem,stLocation);
 
                     response.write(JSON.stringify({ stQtyOnHand: stQtyOnHand }))
+                }
+                if(!stItem){
+                    const arrItems = buildInventoryCountItemSearch(stLocation,stSubsidiary,objitemflds);
+                    log.debug('arrItems',arrItems);
+
+                    response.write(JSON.stringify(arrItems))
                 }
             }
             else{
@@ -85,10 +93,16 @@ define(['N/search'], (search) => {
             columns:
             [
                search.createColumn({name: "locationquantityonhand", label: "Location On Hand"}),
+               search.createColumn({
+                name: "formulanumeric",
+                formula: "nvl({locationquantityonhand},0)",
+                label: "Formula (Numeric)"
+             })
             ]
          });
          itemSearchObj.run().each(function(result){
-            stQtyOnHand = result.getValue({ name: 'locationquantityonhand' })
+           //stQtyOnHand = result.getValue({ name: 'locationquantityonhand' })
+           stQtyOnHand = result.getValue({ name: 'formulanumeric' })
             return true;
          });
          return stQtyOnHand;
@@ -110,7 +124,7 @@ define(['N/search'], (search) => {
                   name: "custrecord_cwgp_ftl_actualqty",	
                   summary: "SUM",	
                   label: "Quantity"	
-               })	
+               })
             ]	
          });	
          IRLineSearch.run().each(function(result){	
@@ -123,7 +137,7 @@ define(['N/search'], (search) => {
             log.debug("qtyIR",qtyIR);	
             if(!isNaN(qtyIR) && qtyIR != ''){	
                 qtyOnHand += parseFloat(qtyIR);	
-            }	
+            }
             	
             return true;	
          });	
@@ -162,6 +176,48 @@ define(['N/search'], (search) => {
         log.debug("franchisePrice",franchisePrice);	
         return franchisePrice;	
     };	
+
+    
+    const buildInventoryCountItemSearch = (stLocation,stSubsidiary,objItemFlds) => {
+        const ssInventoryCountItem = search.load({ id: "626", type: "item" });
+        let arrInventoryCountItem = [];
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+
+        var searchResultCount = ssInventoryCountItem.runPaged().count;
+        log.debug('buildInventoryCountItemSearch count', searchResultCount);
+
+        ssInventoryCountItem.run().each(function(result){
+            if(result.getValue(result.columns[4]) == 0){
+                arrInventoryCountItem.push({
+                    custpage_cwgp_item: result.getValue({name: "itemid"}),
+                    custpage_cwgp_description: result.getValue({name: "purchasedescription"}),
+                    custpage_cwgp_internalsku: result.getValue({name: "custitem_heyday_sku"}),
+                    custpage_cwgp_upccode: result.getValue({name: "custitemheyday_upccode"}),
+                    custpage_cwgp_adjustqtyby: result.getValue(result.columns[4])
+                });			
+            }
+            return true;	
+        })
+
+        Array.prototype.push.apply(arrInventoryCountItem,objItemFlds); 
+
+        log.debug('arrInventoryCountItem',JSON.stringify(arrInventoryCountItem));
+
+        return arrInventoryCountItem;
+    };
+
 
 
     return { onRequest };

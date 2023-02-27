@@ -84,7 +84,72 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     id: 'custpage_cwgp_operator',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Operator'
-                }
+                },
+                SKU: {
+                    id: 'custpage_cwgp_internalsku',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Internal SKU'
+                },
+                UPC:{
+                    id: 'custpage_cwgp_upccode',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'UPC Code'
+                },
+                SUBSIDIARY:{
+                    id: 'custpage_cwgp_subsidiary',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Subsidiary'
+                },
+                BACKBAR:{
+                    id: 'custpage_cwgp_backbar',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Backbar'
+                },
+                DAMAGE:{
+                    id: 'custpage_cwgp_damage',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Damage'
+                },
+                TESTER:{
+                    id: 'custpage_cwgp_tester',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Tester'
+                },
+                THEFT:{
+                    id: 'custpage_cwgp_theft',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Theft'
+                },
+                ON_HAND_TOTAL: {
+                    id: 'custpage_cwgp_onhand_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'On Hand'
+                },
+                QUANTITY_TESTER_TOTAL: {
+                    id: 'custpage_cwgp_tester_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Tester'
+                },
+                QUANTITY_BACKBAR_TOTAL: {
+                    id: 'custpage_cwgp_backbar_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Backbar'
+                },
+                QUANTITY_DAMAGE_TOTAL: {
+                    id: 'custpage_cwgp_damage_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Damage'
+                },
+                QUANTITY_THEFT_TOTAL: {
+                    id: 'custpage_cwgp_theft_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Theft'
+                },
+                QUANTITY_SOLD_TOTAL: {
+                    id: 'custpage_cwgp_sold_total',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Quantity Sold'
+                },
             }
         },
         SCRIPT:{
@@ -100,17 +165,24 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             stUserId,
             arrPagedData,
             blForReceiving,
-            stApprovalStatus
+            stApprovalStatus,
+            blItermPerLocTotal
         } = options;
+        let newStType = stType;
 
+        if(blItermPerLocTotal){
+            newStType = 'itemperlocationtotal'
+        }
+        log.debug('newStType',newStType);
         const MAP_VALUES = {
             'intercompanypo': mapIntercompanyPO,
             'itemreceipt': mapItemReceipt,
             'inventoryadjustment': mapInventoryAdjustment,
             'itemperlocation': mapItemPerLocation,
-            'inventorycount': mapInventoryCount
+            'inventorycount': mapInventoryCount,
+            'itemperlocationtotal': mapItemPerLocationTotal
         };
-        const mapValues = MAP_VALUES[stType];
+        const mapValues = MAP_VALUES[newStType];
 
         return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus);
     };
@@ -331,24 +403,68 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
-
+        log.debug('mapItemPerLocation');
         let arrMapItemperLocation= [];
 
         arrPagedData.forEach((result, index) => {
-            const stItemName = result.getValue({ name: 'itemid' });
-            const stLocation = result.getText({ name: 'inventorylocation' });
-            const stAvailable = result.getValue({ name: 'locationquantityavailable' });
-            const stOnHand = result.getValue({ name: 'locationquantityonhand' });
-            const stCommitted = result.getValue({ name: 'locationquantitycommitted' });
+            const stItemName = result.getText({ name: 'item' , summary: 'GROUP'});
+            const stLocation = result.getText({ name: 'inventorylocation', join: 'item', summary: 'GROUP' });
+            const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
+            const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
+            const stSubsidiary = result.getText({ name: 'subsidiary', summary: 'GROUP' });
+            const stOnHand = result.getValue(result.columns[5]);
+            const stBackbar = result.getValue(result.columns[6]);
+            const stDamage = result.getValue(result.columns[7]);
+            const stTester = result.getValue(result.columns[8]);
+            const stTheft = result.getValue(result.columns[9]);
+
           
             arrMapItemperLocation.push({
                 [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                 [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
-                [_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
+                [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
+                [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
+                [_CONFIG.COLUMN.LIST.SUBSIDIARY.id]: stSubsidiary,
                 [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
-                [_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted
+                [_CONFIG.COLUMN.LIST.BACKBAR.id]: stBackbar,
+                [_CONFIG.COLUMN.LIST.DAMAGE.id]: stDamage,
+                [_CONFIG.COLUMN.LIST.TESTER.id]: stTester,
+                [_CONFIG.COLUMN.LIST.THEFT.id]: stTheft,
             })
         });
+
+        return arrMapItemperLocation;
+    };
+
+    const mapItemPerLocationTotal = (stUserId, stAccessType, arrPagedData) => {
+        log.debug('mapItemPerLocationTotal',arrPagedData);
+        let arrMapItemperLocation= [];
+        let intOnHand = 0;
+        let intBackbar = 0;
+        let intDamage = 0;
+        let intTester = 0;
+        let intTheft = 0;
+        let intQuantitySold = 0;
+
+        //arrPagedData.forEach((result, index) => {
+        arrPagedData.run().each(function(result) {
+             log.debug(result);
+             intOnHand += parseInt(result.getValue(result.columns[0]));
+             intBackbar += parseInt(result.getValue(result.columns[1]));
+             intDamage += parseInt(result.getValue(result.columns[2]));
+             intTester += parseInt(result.getValue(result.columns[3]));
+             intTheft += parseInt(result.getValue(result.columns[4]));
+             intQuantitySold += parseInt(result.getValue(result.columns[5]));
+        });
+
+        arrMapItemperLocation.push({
+            [_CONFIG.COLUMN.LIST.ON_HAND_TOTAL.id]: intOnHand,
+            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: intTester,
+            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: intBackbar,
+            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: intDamage,
+            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: intTheft,
+            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold
+        })
 
         return arrMapItemperLocation;
     };
@@ -1120,12 +1236,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return merged;
     };
 
-    const mapInventoryAdjustmentValues = (stPoId) => {
+    const mapInventoryAdjustmentValues = (stPoId,stSubType) => {
         let objPO = {
             body: {},
             item: []
         };
         let objItemSummary;
+        let objDiscrepancySummary;
         let subType;
         let intAdjQtyBy;
         let stDateTime 
@@ -1144,7 +1261,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_businessline = objInventoryAdjustment.getText('class');
         objPO.body.custpage_cwgp_adjustmentlocation = objInventoryAdjustment.getText('adjlocation');
         objPO.body.custpage_cwgp_operator = objInventoryAdjustment.getText('custbody_cwgp_externalportaloperator');
-        
+      
+
         objItemSummary = objInventoryAdjustment.getValue('custbody_cwgp_itemsummary');
         subType = objInventoryAdjustment.getValue('custbody_cwgp_adjustmentsubtype');
 
@@ -1161,6 +1279,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
             }
             stTextAreaVal += '</div></table>'
+
+            objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
+        }
+
+        objDiscrepancySummary = objInventoryAdjustment.getText('custbody_cwgp_totaldiscrepancy');
+
+        if(stSubType == 'inventorycount'){
+            objPO.body.custpage_cwgp_totaladjustment = Math.abs(parseInt(objDiscrepancySummary));
+        }
+        else if(objDiscrepancySummary){
+            let stTextAreaVal = '';
+
+            stTextAreaVal += '<div><br><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Total Discrepancy</td></tr>';
+            stTextAreaVal+= '<tr><td style="padding:3px">'+ objDiscrepancySummary+'</td></tr>';
+            stTextAreaVal += '</table></div><br>'
 
             objPO.body.custpage_cwgp_totaladjustment = stTextAreaVal;
         }
@@ -1225,6 +1359,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     line: x
                 })) || '0',
                 custpage_cwgp_adjustqtyby: intAdjQtyBy,
+                custpage_cwgp_finalqty: intAdjQtyBy,
+                custpage_cwgp_discrepancy:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_discrepancy',
+                    line: x
+                }),
+                custpage_cwgp_enteredcount:  objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
+                custpage_cwgp_icfinalqty: objInventoryAdjustment.getSublistValue({
+                    sublistId: 'inventory',
+                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                    line: x
+                }),
                 custpage_cwgp_newquantity: parseInt(objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'newquantity',
@@ -1269,9 +1419,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     }
     
 
-    const setSublistValues = (sbl, objPO) => {
-        const arrListValues = objPO.item;
+    const setSublistValues = (sbl, objPO, stType) => {
+        const arrListValues = stType == 'inventorycount' ? objPO : objPO.item;
         log.debug('arrListValues', arrListValues);
+        log.debug('sbl',sbl);
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
@@ -1283,7 +1434,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     });
                 }
                 else if(Number.isInteger(value)){
-                    log.debug('integer', value +'|'+fieldId)
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
@@ -1427,6 +1577,45 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
         return d;
     }
+
+    const buildInventoryCountItemSearch = (stLocation,stSubsidiary) => {
+        const ssInventoryCountItem = search.load({ id: "626", type: "item" });
+        let arrInventoryCountItem = [];
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssInventoryCountItem.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+
+        var searchResultCount = ssInventoryCountItem.runPaged().count;
+        log.debug('buildInventoryCountItemSearch count', searchResultCount);
+
+        ssInventoryCountItem.run().each(function(result){
+            if(result.getValue(result.columns[4]) == 0){
+                arrInventoryCountItem.push({
+                    custpage_cwgp_item: result.getValue({name: "itemid"}),
+                    custpage_cwgp_description: result.getValue({name: "purchasedescription"}),
+                    custpage_cwgp_internalsku: result.getValue({name: "custitem_heyday_sku"}),
+                    custpage_cwgp_upccode: result.getValue({name: "custitemheyday_upccode"}),
+                    custpage_cwgp_adjustqtyby: result.getValue(result.columns[4])
+                });			
+            }
+            return true;	
+        })
+
+
+        return arrInventoryCountItem;
+    };
+
+
     
 
     return {
@@ -1452,6 +1641,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         setSublistValues,
         getPOValues,
         lookUpItem,
-        setDeliverByDate
+        setDeliverByDate,
+        buildInventoryCountItemSearch
     }
 });
