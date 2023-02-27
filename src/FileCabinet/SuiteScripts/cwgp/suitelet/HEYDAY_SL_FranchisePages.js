@@ -340,6 +340,8 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const stCustomer = getCustomer(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer);
+        const stStatus = request.parameters['approvalstatus'] ? request.parameters['approvalstatus'] : '';
+        const stReceiving = request.parameters['isreceiving'] ? request.parameters['isreceiving'] : '';
 
         listPage.renderItemPerLocation({
             request,
@@ -349,7 +351,8 @@ define([
             stUserId,
             stSubsidiary,
             stCustomer,
-            objSearch: objItemPerLocationSearch
+            objSearch: objItemPerLocationSearch,
+
         });
     };
 
