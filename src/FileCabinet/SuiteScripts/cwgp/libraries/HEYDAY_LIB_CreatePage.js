@@ -340,6 +340,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
+                TOTAL_ESTIMATED_RECPLACEMENT_VALUE_HTML: {
+                    id: 'custpage_cwgp_totalestimatedreplacementvalue',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: '   ',
+                    container: 'TOTAL_ESTIMATED_REPLACEMENT_VALUE',
+                    displayType:'inline'
+                },
                 TOTAL_ADJUSTMENT_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
@@ -897,6 +904,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.INTEGER,
                         label: '*Quantity Removed'
                     },
+                    ESTIMATED_REPLACEMENT_VALUE:{
+                        id: 'custpage_cwgp_estimatedreplacementvalue',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Estimated Replacement Value',
+                        displayType: 'disabled'
+                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -972,7 +985,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.INTEGER,
                         label: '*First Count',
                         //isInline: ['3','4'],
-                        isHidden: ['2','3'],
+                        isHidden: ['3'],
                         isEntry: ['1']
                     },
                     SECOND_COUNT: {
@@ -1093,6 +1106,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 TOTAL_ADJUSTMENT: {
                     id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
                     label: 'Total Quantity by Adjustment Type Summary'
+                },
+                TOTAL_ESTIMATED_REPLACEMENT_VALUE: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_totalestreplacementval_grp',
+                    label: 'Total Estimated Replacement Value'
                 },
                 ITEM_SUMMARY: {
                     id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
@@ -1228,6 +1245,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
+
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType } = objItemCols[stCol];
@@ -1614,6 +1632,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType+'_'+stSubType];
 
         const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];

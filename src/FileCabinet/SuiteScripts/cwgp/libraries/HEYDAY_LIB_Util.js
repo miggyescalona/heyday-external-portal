@@ -558,21 +558,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let intDiscrepancyTotal = 0;
 
         arrPagedData.forEach((result, index) => {
-             intBackbar += parseInt(result.getValue(result.columns[0]));
-             intDamage += parseInt(result.getValue(result.columns[1]));
-             intTester += parseInt(result.getValue(result.columns[2]));
-             intTheft += parseInt(result.getValue(result.columns[3]));
-             intQuantitySold += parseInt(result.getValue(result.columns[4]));
-             intDiscrepancyTotal += parseInt(result.getValue(result.columns[5]));
+             intBackbar = Math.abs(parseInt(result.getValue(result.columns[0]))).toFixed(0);
+             intDamage = Math.abs(parseInt(result.getValue(result.columns[1]))).toFixed(0);
+             intTester = Math.abs(parseInt(result.getValue(result.columns[3]))).toFixed(0);
+             intTheft = Math.abs(parseInt(result.getValue(result.columns[2]))).toFixed(0);
+             intQuantitySold = Math.abs(parseInt(result.getValue(result.columns[4]))).toFixed(0);
+             intDiscrepancyTotal = Math.abs(parseInt(result.getValue(result.columns[5]))).toFixed(0);
         });
 
         arrMapItemperLocation.push({
-            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: Math.abs(intTester),
-            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: Math.abs(intBackbar),
-            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: Math.abs(intDamage),
-            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: Math.abs(intTheft),
+            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: intTester,
+            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: intBackbar,
+            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: intDamage,
+            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: intTheft,
             [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold,
-            [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY_TOTAL.id]: Math.abs(intDiscrepancyTotal)
+            [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY_TOTAL.id]: intDiscrepancyTotal
         })
 
         arrPagedQoH.forEach((result, index) => {

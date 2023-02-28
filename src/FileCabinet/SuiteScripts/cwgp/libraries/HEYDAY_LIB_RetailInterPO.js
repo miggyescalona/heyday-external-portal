@@ -161,6 +161,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const objPOBodyFields = mapRetailInventoryAdjustmentBodyFields(request);
 
         util.each(objPOBodyFields, (value, fieldId) => {
+            log.debug('fieldId | value', fieldId +' | '+value);
             recIA.setValue({
                 fieldId: fieldId,
                 value: value
@@ -420,8 +421,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
-        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
-        log.debug('stTotalDiscrepancy',stTotalDiscrepancy);
+        let stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        const stType = request.parameters.custpage_cwgp_rectype;
+        const stItemSummary = request.parameters.custpage_cwgp_itemsummary;
+        if(stType == 'inventorycount'){
+            stTotalDiscrepancy = stItemSummary;
+        }
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),

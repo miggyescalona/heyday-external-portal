@@ -303,6 +303,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let blNotReceived= true;
             let pageMode = getParameterFromURL('pageMode');
             let intDamagedAccountLine = [];
+            let itemSummary = [];
 
                 function getParameterFromURL(param){
                     var query = window.location.search.substring(1);
@@ -342,6 +343,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     sublistId: 'custpage_itemreceipt_items',
                     fieldId: 'custpage_cwgp_damagedadjustingaccount'
                 });
+
 
                 if(intDamagedQuantity && !intDamagedAdjustingAccount){
                     intDamagedAccountLine.push(x+1);
@@ -1108,7 +1110,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             'custpage_cwgp_amount': item.franchiseprice || 0,
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
             'custpage_cwgp_upccode': item.custitemheyday_upccode,
-            'custpage_cwgp_itemid': item.internalid[0].value
+            'custpage_cwgp_itemid': item.internalid[0].value,
+            'custpage_cwgp_estimatedreplacementvalue': 1*item.franchiseprice
         };
     };
 
@@ -1191,9 +1194,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
        const intIaLineCountDamageTesterTheft = currRec.getLineCount('custpage_inventoryadjustmentdamagetestertheft_items');
        let qtyByType = [];
        let itemSummary = [];
+       let flTotalEstimatedReplacementValue = 0;
 
        for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
-        currRec.selectLine({
+            currRec.selectLine({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                 line: x
             });
@@ -1234,6 +1238,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 })),
                 intFinalOnHand: qtyTempQtyOnHand-qtyTempIntQty
+            });
+
+            flTotalEstimatedReplacementValue += currRec.getCurrentSublistValue({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_estimatedreplacementvalue'
             });
         }
           console.log(JSON.stringify(qtyByType));
@@ -1303,6 +1312,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             stTextAreaVal += '</div></table>'
 
             currRec.setValue('custpage_cwgp_itemsummary',stTextAreaVal)
+        }
+        
+        if(flTotalEstimatedReplacementValue){
+            currRec.setValue('custpage_cwgp_totalestimatedreplacementvalue',flTotalEstimatedReplacementValue)
         }
     };
 
