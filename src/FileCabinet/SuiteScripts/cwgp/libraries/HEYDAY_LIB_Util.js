@@ -85,6 +85,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label: 'Operator'
                 },
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type'
+                },
                 SKU: {
                     id: 'custpage_cwgp_internalsku',
                     type: serverWidget.FieldType.TEXT,
@@ -120,6 +125,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label:  'Theft'
                 },
+                SOLD:{
+                    id: 'custpage_cwgp_sold',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Sold'
+                },
+                DISCREPANCY:{
+                    id: 'custpage_cwgp_discrepancy',
+                    type: serverWidget.FieldType.TEXT,
+                    label:  'Discrepancy'
+                },
                 ON_HAND_TOTAL: {
                     id: 'custpage_cwgp_onhand_total',
                     type: serverWidget.FieldType.TEXT,
@@ -150,6 +165,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label: 'Quantity Sold'
                 },
+                QUANTITY_DISCREPANCY_TOTAL: {
+                    id: 'custpage_cwgp_sold_discrepancy',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Discrepancy'
+                },
             }
         },
         SCRIPT:{
@@ -164,6 +184,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             stAccessType, 
             stUserId,
             arrPagedData,
+            arrPagedQoH,
             blForReceiving,
             stApprovalStatus,
             blItermPerLocTotal
@@ -184,7 +205,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         };
         const mapValues = MAP_VALUES[newStType];
 
-        return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus);
+        return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus,arrPagedQoH);
     };
 
     const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus) => {
@@ -213,13 +234,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&poid=${stID}&rectype=intercompanypo&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Purchase Order# ${stTranId}</a>`;
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
 
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.SO_INTERCOID.id]: stPairedIntercoId,
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
                 [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus,
-                [_CONFIG.COLUMN.LIST.PO_STATUSREF.id]: stStatusRef
+                [_CONFIG.COLUMN.LIST.PO_STATUSREF.id]: stStatusRef,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
             });
         });
 
@@ -328,11 +351,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stID = result.id;
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&itemreceiptid=${stID}&rectype=itemreceipt&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Item Receipt # ${stTranId}</a>`;
+            const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
 
             arrMapItemReceipt.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.CREATED_FROM.id]: stCreatedFrom,
-                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated
+                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
             })
         });
 
@@ -359,11 +384,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventoryadjustment&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
+            const stAdjustmentType = result.getValue({ name: 'custbody_cwgp_adjustmentsubtype' });
 
             arrMapInventoryAdjustment.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
-                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
+                [_CONFIG.COLUMN.LIST.ADJUSTMENT_TYPE.id]: stAdjustmentType == 'backbar' ? 'Backbar' : stAdjustmentType == 'standard' ? 'Standard' : 'Damage/Tester/Theft'
             })
         });
 
@@ -402,69 +429,157 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
 
-    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH) => {
         log.debug('mapItemPerLocation');
-        let arrMapItemperLocation= [];
+        log.debug('mapItemPerLocation arrPagedData', arrPagedData); 
+        log.debug('mapItemPerLocation arrPagedQoH', arrPagedQoH);
+        let arrMapItemperLocation = [];
+        let arrMapItemQoH = [];
+        let arrFinalItemPerLocation;
+        const keysCheck = ['custpage_cwgp_onhand','custpage_cwgp_backbar','custpage_cwgp_damage','custpage_cwgp_tester','custpage_cwgp_theft','custpage_cwgp_sold','custpage_cwgp_discrepancy'];
 
-        arrPagedData.forEach((result, index) => {
-            const stItemName = result.getText({ name: 'item' , summary: 'GROUP'});
-            const stLocation = result.getText({ name: 'inventorylocation', join: 'item', summary: 'GROUP' });
-            const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
-            const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
-            const stSubsidiary = result.getText({ name: 'subsidiary', summary: 'GROUP' });
-            const stOnHand = result.getValue(result.columns[5]);
-            const stBackbar = result.getValue(result.columns[6]);
-            const stDamage = result.getValue(result.columns[7]);
-            const stTester = result.getValue(result.columns[8]);
-            const stTheft = result.getValue(result.columns[9]);
+        if(arrPagedData){
+            arrPagedData.forEach((result, index) => {
+                const stItemName = result.getText({ name: 'item' , summary: 'GROUP'});
+                const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
+                const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
+                const stBackbar =result.getValue(result.columns[3]);
+                const stDamage = result.getValue(result.columns[4]);
+                const stTester = result.getValue(result.columns[5]);
+                const stTheft = result.getValue(result.columns[6]);
+                const stSold = result.getValue(result.columns[7]);
+                const stDiscrepancy = result.getValue(result.columns[8]);
+    
 
-          
-            arrMapItemperLocation.push({
-                [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
-                [_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
-                [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
-                [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
-                [_CONFIG.COLUMN.LIST.SUBSIDIARY.id]: stSubsidiary,
-                [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
-                [_CONFIG.COLUMN.LIST.BACKBAR.id]: stBackbar,
-                [_CONFIG.COLUMN.LIST.DAMAGE.id]: stDamage,
-                [_CONFIG.COLUMN.LIST.TESTER.id]: stTester,
-                [_CONFIG.COLUMN.LIST.THEFT.id]: stTheft,
-            })
+            
+                arrMapItemperLocation.push({
+                    [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                    [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
+                    [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
+                    [_CONFIG.COLUMN.LIST.BACKBAR.id]: stBackbar != '0' ? Math.abs(parseInt(stBackbar)) : '0',
+                    [_CONFIG.COLUMN.LIST.DAMAGE.id]: stDamage != '0' ? Math.abs(parseInt(stDamage)) : '0',
+                    [_CONFIG.COLUMN.LIST.TESTER.id]: stTester != '0' ? Math.abs(parseInt(stTester)) : '0',
+                    [_CONFIG.COLUMN.LIST.THEFT.id]: stTheft != '0' ? Math.abs(parseInt(stTheft)) : '0',
+                    [_CONFIG.COLUMN.LIST.SOLD.id]: stSold,
+                    [_CONFIG.COLUMN.LIST.DISCREPANCY.id]: stDiscrepancy != 0 ? Math.abs(parseInt(stDiscrepancy)) : '0',
+                })
+            });
+        }
+
+        if(arrPagedQoH){
+            arrPagedQoH.forEach((result, index) => {
+                const stItemName = result.getText(result.columns[0]);
+                const stOnHand = result.getValue(result.columns[1]);
+                const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
+                const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
+                
+                arrMapItemQoH.push({
+                    [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                    [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                    [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
+                    [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
+                    
+                    
+                })
+                //arrMapItemperLocation[index][_CONFIG.COLUMN.LIST.ON_HAND.id] = stOnHand
+            
+            });
+        }
+
+        if(arrMapItemperLocation && arrMapItemQoH){
+            log.debug('arrMapItemperLocation',arrMapItemperLocation);
+            log.debug('arrMapItemQoH',arrMapItemQoH);
+            let map = new Map();
+            arrMapItemperLocation.forEach(item => map.set(item.custpage_cwgp_name, item));
+            arrMapItemQoH.forEach(item => map.set(item.custpage_cwgp_name, {...map.get(item.custpage_cwgp_name), ...item}));
+            arrFinalItemPerLocation = Array.from(map.values());
+
+
+            arrFinalItemPerLocation.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                        arrFinalItemPerLocation[index][keysCheck[x]] = "0";
+                       // log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+        }else if(arrMapItemperLocation){
+            arrFinalItemPerLocation = arrMapItemperLocation;
+            arrFinalItemPerLocation.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                        arrFinalItemPerLocation[index][keysCheck[x]] = "0";
+                       // log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+        }
+        else if(arrMapItemQoH){
+            arrFinalItemPerLocation = arrMapItemQoH;
+            arrFinalItemPerLocation.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                        arrFinalItemPerLocation[index][keysCheck[x]] = "0";
+                      //  log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+        }
+
+       /* let fileObj = file.create({
+            name: 'arrFinalItemPerLocation.txt',
+            fileType: file.Type.PLAINTEXT,
+            contents: JSON.stringify(arrFinalItemPerLocation)
         });
+    
+        fileObj.folder = -15;
+    
+        // Save the file
+        fileObj.save();*/
 
-        return arrMapItemperLocation;
+        log.debug('arrFinalItemPerLocation',arrFinalItemPerLocation);
+
+        return arrFinalItemPerLocation;
     };
 
-    const mapItemPerLocationTotal = (stUserId, stAccessType, arrPagedData) => {
+    const mapItemPerLocationTotal = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH) => {
         log.debug('mapItemPerLocationTotal',arrPagedData);
         let arrMapItemperLocation= [];
+        let arrMapItemQoH = [];
         let intOnHand = 0;
         let intBackbar = 0;
         let intDamage = 0;
         let intTester = 0;
         let intTheft = 0;
         let intQuantitySold = 0;
+        let intDiscrepancyTotal = 0;
 
-        //arrPagedData.forEach((result, index) => {
-        arrPagedData.run().each(function(result) {
-             log.debug(result);
-             intOnHand += parseInt(result.getValue(result.columns[0]));
-             intBackbar += parseInt(result.getValue(result.columns[1]));
-             intDamage += parseInt(result.getValue(result.columns[2]));
-             intTester += parseInt(result.getValue(result.columns[3]));
-             intTheft += parseInt(result.getValue(result.columns[4]));
-             intQuantitySold += parseInt(result.getValue(result.columns[5]));
+        arrPagedData.forEach((result, index) => {
+             intBackbar += parseInt(result.getValue(result.columns[0]));
+             intDamage += parseInt(result.getValue(result.columns[1]));
+             intTester += parseInt(result.getValue(result.columns[2]));
+             intTheft += parseInt(result.getValue(result.columns[3]));
+             intQuantitySold += parseInt(result.getValue(result.columns[4]));
+             intDiscrepancyTotal += parseInt(result.getValue(result.columns[5]));
         });
 
         arrMapItemperLocation.push({
-            [_CONFIG.COLUMN.LIST.ON_HAND_TOTAL.id]: intOnHand,
-            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: intTester,
-            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: intBackbar,
-            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: intDamage,
-            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: intTheft,
-            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold
+            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: Math.abs(intTester),
+            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: Math.abs(intBackbar),
+            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: Math.abs(intDamage),
+            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: Math.abs(intTheft),
+            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold,
+            [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY_TOTAL.id]: Math.abs(intDiscrepancyTotal)
         })
+
+        arrPagedQoH.forEach((result, index) => {
+            intOnHand += parseInt(result.getValue(result.columns[0]));
+        });
+
+        arrMapItemperLocation[0]['custpage_cwgp_onhand_total'] = intOnHand;
 
         return arrMapItemperLocation;
     };

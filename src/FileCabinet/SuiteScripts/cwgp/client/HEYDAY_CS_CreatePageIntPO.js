@@ -74,6 +74,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 let objHasDuplicates = [];
                 let blHasDuplicates = false;
                 let stHasDuplicates = 'You have entered duplicate items for: ';
+
+                let arrIsEmpty = [];
+                let stHasEmptyValues = 'You have empty values for lines/s: ';
+
                 for(let x = 0; x < intICLineCount;x++){
                     
                     intFirstQty = currentRecord.getSublistValue({
@@ -93,6 +97,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         fieldId: 'custpage_cwgp_item',
                         line: x
                     });
+
+                    if(!intFirstQty){
+                        arrIsEmpty.push(x+1);
+                    }
 
                     if(intFirstQty < 0 && stItemName){
                         arrIsNegative.push(x+1);
@@ -116,6 +124,58 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     alert(stHasDuplicates);
                     return false;
                 }
+                if(arrIsEmpty.length > 0){
+                    alert(stHasEmptyValues + arrIsEmpty.toString());
+                    return false;
+                }
+            }
+            if(currentRecord.getValue('custpage_cwgp_step') == '2'){
+                let intFirstQty;
+                let stItemName;
+                let stItemText;
+                let arrIsNegative = [];
+
+                /*let arrIsEmpty = [];
+                let stHasEmptyValues = 'You have empty values for lines/s: ';*/
+
+                for(let x = 0; x < intICLineCount;x++){
+                    
+                    intSecondQty = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_secondcount',
+                        line: x
+                    });
+
+                    stItemName = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    stItemText = currentRecord.getSublistText({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    /*if(!intFirstQty){
+                        arrIsEmpty.push(x+1);
+                    }*/
+
+                    if(intSecondQty < 0 && stItemName){
+                        arrIsNegative.push(x+1);
+                    }
+                }
+
+                //If has discrepancy
+                if(arrIsNegative.length > 0){
+                    alert('You cannot enter a negative quantity at line/s: ' + arrIsNegative.toString())
+                    return false;
+                }
+                /*if(arrIsEmpty.length > 0){
+                    alert(stHasEmptyValues + arrIsEmpty.toString());
+                    return false;
+                }*/
             }
             if(currentRecord.getValue('custpage_cwgp_step') == '3'){
                 let intDiscrepancy;

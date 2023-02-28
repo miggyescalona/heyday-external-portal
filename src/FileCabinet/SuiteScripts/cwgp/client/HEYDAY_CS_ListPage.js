@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/search'], (url, dialog, ClientEPLib, search) => {
+define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/search'], (currentRecord, url, dialog, ClientEPLib, search) => {
     /**
      * Function to be executed after page is initialized.
      *
@@ -26,6 +26,10 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
      *
      * @param {Object} context
      */
+
+    
+
+
     const fieldChanged = (context) => {
         const { currentRecord } = context;
 
@@ -105,6 +109,52 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
             location.href = stNewURL;
         }
     };
+
+    const searchFilters = () => {
+
+        const currRec = currentRecord.get();
+
+        const intPage = currRec.getValue({ fieldId: 'custpage_cwgp_page' });
+        console.log('page', intPage);
+
+        const dtAsOf = currRec.getValue({ fieldId: 'custpage_cwgp_asof' });
+        console.log('dtAsOf', dtAsOf);
+
+        const dtFrom = currRec.getValue({ fieldId: 'custpage_cwgp_from' });
+        console.log('dtFrom', dtFrom);
+
+        const dtTo = currRec.getValue({ fieldId: 'custpage_cwgp_to' });
+        console.log('dtTo', dtTo);
+
+        if((dtFrom && !dtTo) || (!dtFrom && dtTo)){
+            alert('You need to enter both Date From and Date To');
+            return false;
+        }
+
+        if(dtFrom && dtTo){
+            if(dtTo < dtFrom){
+                alert('Date To cannot be before Date From.')
+                return false;
+            }
+        }
+
+        let stURL = new URL(location.href);
+
+        let objParams = stURL.searchParams;
+        objParams.set('custparam_cwgp_page', intPage);
+        objParams.set('custparam_cwgp_asof', dtAsOf);
+        objParams.set('custparam_cwgp_datefrom', dtFrom);
+        objParams.set('custparam_cwgp_dateto', dtTo);
+
+        stURL.search = objParams.toString();
+
+        const stNewURL = stURL.toString();
+        log.debug('stNewURL', stNewURL);
+
+        //bypass the "Leave Changes" alert box
+        window.onbeforeunload = null;
+        location.href = stNewURL;
+    }
 
     const toCreateTransaction = (stUserId, stAccessType, stType) => {
         //redurect to create transaction page
@@ -224,6 +274,7 @@ define(['N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_ClientExternalPortal.js'
     return {
         pageInit,
         fieldChanged,
+        searchFilters,
         back,
         toCreateTransaction,
         createInventoryAdjustment

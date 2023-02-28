@@ -11,13 +11,16 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget, search, util) => {
+define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/format'], (serverWidget, search, util, file, format) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page',
             LOCATION: 'custparam_cwgp_location',
             APPROVAL_STATUS: 'custparam_cwgp_approvalstatus',
-            FOR_RECEIVING: 'custparam_cwgp_forreceiving'
+            FOR_RECEIVING: 'custparam_cwgp_forreceiving',
+            AS_OF: 'custparam_cwgp_asof',
+            DATE_FROM: 'custparam_cwgp_datefrom',
+            DATE_TO: 'custparam_cwgp_dateto'
         },
         TITLE: {
             intercompanypo: 'Replenishment Purchase Order',
@@ -69,7 +72,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_sointercoid',
                         type: serverWidget.FieldType.TEXT,
                         label: 'AMS Tracking Number'
-                    }
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
+                    },
                 },
                 itemreceipt: {
                     TRAN_NO: {
@@ -86,7 +94,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Date'
-                    }
+                    },
+                    OPERATOR: {
+                        id: 'custpage_cwgp_operator',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Operator'
+                    },
                 },
                 inventoryadjustment: {
                     TRAN_NO: {
@@ -103,6 +116,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_operator',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Operator'
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Adjustment Type'
                     }
                 },
                 inventorycount: {
@@ -128,17 +146,52 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'Item Name'
                     },
-                    SKU: {
-                        id: 'custpage_cwgp_internalsku',
-                        type: serverWidget.FieldType.TEXT,
-                        label:  'Internal SKU'
-                    },
                     UPC:{
                         id: 'custpage_cwgp_upccode',
                         type: serverWidget.FieldType.TEXT,
                         label:  'UPC Code'
                     },
-                    LOCATION: {
+                    SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Internal SKU'
+                    },
+                    ON_HAND: {
+                        id: 'custpage_cwgp_onhand',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'On Hand'
+                    },
+                    DAMAGE:{
+                        id: 'custpage_cwgp_damage',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Damage'
+                    },
+                    TESTER:{
+                        id: 'custpage_cwgp_tester',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Tester'
+                    },
+                    THEFT:{
+                        id: 'custpage_cwgp_theft',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Theft'
+                    },
+                    BACKBAR:{
+                        id: 'custpage_cwgp_backbar',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Backbar'
+                    },
+                    SOLD:{
+                        id: 'custpage_cwgp_sold',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Sold'
+                    },
+                    DISCREPANCY:{
+                        id: 'custpage_cwgp_discrepancy',
+                        type: serverWidget.FieldType.TEXT,
+                        label:  'Discrepancy'
+                    },
+                   /* LOCATION: {
                         id: 'custpage_cwgp_location',
                         type: serverWidget.FieldType.TEXT,
                         label:  'Location'
@@ -147,32 +200,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_subsidiary',
                         type: serverWidget.FieldType.TEXT,
                         label:  'Subsidiary'
-                    },
-                    ON_HAND: {
-                        id: 'custpage_cwgp_onhand',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'On Hand'
-                    },
-                    TESTER:{
-                        id: 'custpage_cwgp_tester',
-                        type: serverWidget.FieldType.TEXT,
-                        label:  'Tester'
-                    },
-                    BACKBAR:{
-                        id: 'custpage_cwgp_backbar',
-                        type: serverWidget.FieldType.TEXT,
-                        label:  'Backbar'
-                    },
-                    DAMAGE:{
-                        id: 'custpage_cwgp_damage',
-                        type: serverWidget.FieldType.TEXT,
-                        label:  'Damage'
-                    },
-                    THEFT:{
-                        id: 'custpage_cwgp_theft',
-                        type: serverWidget.FieldType.TEXT,
-                        label:  'Theft'
-                    },
+                    },*/
                 },
                 itemperlocationtotal: {
                     ON_HAND_TOTAL: {
@@ -180,30 +208,35 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'On Hand'
                     },
-                    QUANTITY_TESTER_TOTAL: {
-                        id: 'custpage_cwgp_tester_total',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Tester'
-                    },
-                    QUANTITY_BACKBAR_TOTAL: {
-                        id: 'custpage_cwgp_backbar_total',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Backbar'
-                    },
                     QUANTITY_DAMAGE_TOTAL: {
                         id: 'custpage_cwgp_damage_total',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Damage'
+                    },
+                    QUANTITY_TESTER_TOTAL: {
+                        id: 'custpage_cwgp_tester_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Tester'
                     },
                     QUANTITY_THEFT_TOTAL: {
                         id: 'custpage_cwgp_theft_total',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Theft'
                     },
+                    QUANTITY_BACKBAR_TOTAL: {
+                        id: 'custpage_cwgp_backbar_total',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Backbar'
+                    },
                     QUANTITY_SOLD_TOTAL: {
                         id: 'custpage_cwgp_sold_total',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Quantity Sold'
+                        label: 'Sold'
+                    },
+                    QUANTITY_DISCREPANCY_TOTAL: {
+                        id: 'custpage_cwgp_sold_discrepancy',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Discrepancy'
                     },
                 }
             }
@@ -595,12 +628,17 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stUserId,
             objSearch,
             objSearchTotal,
+            objSearchQoH,
+            objSearchTotalQoH,
             stSubsidiary,
             stLocation
         } = options;
 
 
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
+        const dtAsOf = request.parameters[_CONFIG.PARAMETER.AS_OF] ? request.parameters[_CONFIG.PARAMETER.AS_OF] : new Date();
+        const dtFrom = request.parameters[_CONFIG.PARAMETER.DATE_FROM] ? request.parameters[_CONFIG.PARAMETER.DATE_FROM] : new Date();
+        const dtTo = request.parameters[_CONFIG.PARAMETER.DATE_TO] ? request.parameters[_CONFIG.PARAMETER.DATE_TO] : new Date();
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
@@ -690,6 +728,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             label: 'As Of',
             container: _CONFIG.TAB[stType]  
         });
+        fldAsOf.defaultValue = dtAsOf ? new Date(dtAsOf) : null;
 
         const fldFrom = form.addField({
             id: 'custpage_cwgp_from',
@@ -697,6 +736,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             label: 'From',
             container: _CONFIG.TAB[stType]  
         });
+        fldFrom.defaultValue = dtFrom ?  new Date(dtFrom) : null;
 
         const fldTo = form.addField({
             id: 'custpage_cwgp_to',
@@ -704,19 +744,24 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             label: 'To',
             container: _CONFIG.TAB[stType]  
         });
+        fldTo.defaultValue = dtTo ?  new Date(dtTo) : null;
 
-
+        log.debug('objSearchTotalQoH1',objSearchTotalQoH);
 
         setListValues({
             objSearch,
             objSearchTotal,
+            objSearchTotalQoH,
             fldPage,
             intPage,
             sbtotal,
             stType,
             stAccessType,
             stUserId,
-            blItermPerLocTotal
+            blItermPerLocTotal,
+            dtAsOf,
+            dtFrom,
+            dtTo
         });
 
         blItermPerLocTotal = false;
@@ -748,17 +793,30 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                 label
             });
         });
+        log.debug('objSearchTotalQoH2',objSearchTotalQoH);
 
         setListValues({
             objSearch,
             objSearchTotal,
+            objSearchQoH,
+            objSearchTotalQoH,
             blItermPerLocTotal,
             fldPage,
             intPage,
             sbl,
             stType,
             stAccessType,
-            stUserId
+            stUserId,
+            dtAsOf,
+            dtFrom,
+            dtTo
+        });
+
+        
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Search',
+            functionName: `searchFilters(${stUserId}, ${stAccessType}, 'itemperlocation')`
         });
 
         form.addButton({
@@ -770,13 +828,73 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         response.writePage(form);
     };
 
-    const getPageData = (objSearch, objSearchTotal, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus) => {
+    const getPageData = (objSearch, objSearchTotal, objSearchQoH, objSearchTotalQoH, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus,dtAsOf,dtFrom,dtTo) => {
+        log.debug('objSearchTotalQoH3',objSearchTotalQoH);
         if(stType == 'intercompanypo' && stApprovalStatus){
             objSearch.filters.push(search.createFilter({
                 name: 'approvalstatus',
                 operator: 'ANYOF',
                 values: stApprovalStatus,
             }));
+        }
+        if(stType == 'itemperlocation' && !blItermPerLocTotal){   
+            log.debug('blItermPerLocTotal filters', blItermPerLocTotal);
+            log.debug('dtAsOf | dtFrom | dtTo', dtAsOf +'|'+ dtFrom +'|'+ dtTo);
+            if(dtAsOf){
+                objSearchQoH.filters.push(search.createFilter({
+                    name: 'trandate',
+                    operator: 'onorbefore',
+                    values: formatDate(dtAsOf),
+                }));
+            }
+            if(dtFrom && dtTo){
+                objSearch.filters.push(search.createFilter({
+                    name: 'trandate',
+                    operator: 'within',
+                    values: [formatDate(dtFrom),formatDate(dtTo)],
+                }));                
+            }
+        }
+
+        if(stType == 'itemperlocation' && blItermPerLocTotal){   
+            log.debug('blItermPerLocTotal filters', blItermPerLocTotal);
+            log.debug('dtAsOf | dtFrom | dtTo', dtAsOf +'|'+ dtFrom +'|'+ dtTo);
+            if(dtAsOf){
+                objSearchTotalQoH.filters.push(search.createFilter({
+                    name: 'trandate',
+                    operator: 'onorbefore',
+                    values: formatDate(dtAsOf),
+                }));
+            }
+            if(dtFrom && dtTo){
+                objSearchTotal.filters.push(search.createFilter({
+                    name: 'trandate',
+                    operator: 'within',
+                    values: [formatDate(dtFrom),formatDate(dtTo)],
+                }));                
+            }
+        }
+
+        function formatDate(date) {
+            var d = new Date(date)
+            const offset = d.getTimezoneOffset(); 
+            d = new Date(d.getTime() + (offset*60*1000)); 
+            d = d.toISOString().split('T')[0]
+            d = d.split('-');
+
+            /*var   month = '' + (d.getMonth() + 1)
+            var   day = '' + d.getDate()
+            var   year = d.getFullYear()*/
+            let year = d[0];
+            let month = d[1];
+            let day = d[2];
+        
+            if (month.length < 2) 
+                month = '0' + month;
+            if (day.length < 2) 
+                day = '0' + day;
+        
+            return [month, day, year].join('/');
         }
 
         let stPageSize = 20;
@@ -785,39 +903,121 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         }
         
         let objPagedData;
+        let objPagedDataQoH;
+        let objPagedDataTotalQoH;
+        
         let objPage;
+        let objPageQoH;
+
         if(blItermPerLocTotal){
+            ///Total Search
             log.debug('blItermPerLocTotal',blItermPerLocTotal);
-            objPage = objSearchTotal;
+            log.debug('objSearchTotal', objSearchTotal);
+            objPagedData = objSearchTotal.runPaged({ pageSize: stPageSize });;
+            objPagedDataTotalQoH = objSearchTotalQoH.runPaged({ pageSize: stPageSize });;
+            log.debug('objPagedData',objPagedData);
+            objPage = objPagedData.fetch({ index: 0 });
+            log.debug('objPage',objPage);
+            objPageQoH = objPagedDataTotalQoH.fetch({ index: 0 });
         }else{
+            ///Not Total Search
             log.debug('blItermPerLocTotal',blItermPerLocTotal);
-            objPagedData = objSearch.runPaged({ pageSize: stPageSize });
+            log.debug('objSearch', objSearch);
+            log.debug('objSearchQoH', objSearchQoH);
 
-            objPagedData.pageRanges.map((objPageResult) => {
-                fldPage.addSelectOption({
-                    //value: objPageResult.index + 1,
-                    value: objPageResult.index,
-                    text: `${objPageResult.index + 1} of ${objPagedData.pageRanges.length}`
+            if(stType == 'itemperlocation'){
+                objPagedData = objSearch.runPaged({ pageSize: stPageSize });
+                objPagedDataQoH = objSearchQoH.runPaged({ pageSize: stPageSize });
+
+
+                const maxPageIndex = objPagedData.pageRanges.length > objPagedDataQoH.pageRanges.length ? objPagedData.pageRanges.length : objPagedDataQoH.pageRanges.length;
+                const startingPageData= objPagedData.pageRanges.length > objPagedDataQoH.pageRanges.length ? objPagedData : objPagedDataQoH;
+
+                startingPageData.pageRanges.map((objPageResult) => {
+                    fldPage.addSelectOption({
+                        //value: objPageResult.index + 1,
+                        value: objPageResult.index,
+                        text: `${objPageResult.index + 1} of ${maxPageIndex}`
+                    });
                 });
-            });
+            }
+            else{
+                objPagedData = objSearch.runPaged({ pageSize: stPageSize });
+                objPagedData.pageRanges.map((objPageResult) => {
+                    fldPage.addSelectOption({
+                        //value: objPageResult.index + 1,
+                        value: objPageResult.index,
+                        text: `${objPageResult.index + 1} of ${objPagedData.pageRanges.length}`
+                    });
+                });
+            }
 
-           if(objPagedData.count!=0){
+           if(objPagedData.count!=0 && stType != 'itemperlocation'){
                 objPage = objPagedData.fetch({ index: intPage });
+                log.debug('objPage', objPage);
+
+           }
+           else if((objPagedData.count!=0 || objPagedDataQoH.count !=0) && stType == 'itemperlocation'){
+                if(stType == 'itemperlocation' && objPagedDataQoH.count != 0){
+                    log.debug('intPage',intPage);
+
+                    log.debug('objPagedDataQoH.pageRanges.length',objPagedDataQoH.pageRanges.length)
+                    log.debug('objPagedDataQoH', objPagedDataQoH);
+                    if(intPage >= objPagedDataQoH.pageRanges.length ){
+                        objPageQoH = null;
+                    }
+                    else{
+                        objPageQoH = objPagedDataQoH.fetch({ index: intPage });
+                        
+                    }
+
+                    log.debug('objPagedData.pageRanges.length',objPagedData.pageRanges.length)
+                    log.debug('objPagedData', objPagedData);
+
+                    if(intPage >= objPagedData.pageRanges.length ){
+                        objPage = null;
+                    }
+                    else{
+                        objPage = objPagedData.fetch({ index: intPage });
+                    }
+
+                    log.debug('objPageQoH', objPageQoH);
+                    log.debug('objPage', objPage);
+                }
+
+                /*let fileObj1 = file.create({
+                    name: 'objPage.txt',
+                    fileType: file.Type.PLAINTEXT,
+                    contents: JSON.stringify(objPage)
+                });
+
+                fileObj1.folder = -15;
+                fileObj1.save();
+
+                let fileObj2 = file.create({
+                    name: 'objPageQoH.txt',
+                    fileType: file.Type.PLAINTEXT,
+                    contents: JSON.stringify(objPageQoH)
+                });
+
+                fileObj2.folder = -15;
+                fileObj2.save();*/
            }
            else{
                 objPage = null;
            }
     
         }
-        log.debug('objPage',objPage);
 
-        return objPage;
+        return [objPage,objPageQoH];
     };
 
     const setListValues = (options) => {
         const {
             objSearch,
             objSearchTotal,
+            objSearchQoH,
+            objSearchTotalQoH,
             fldPage,
             intPage,
             sbl,
@@ -827,25 +1027,40 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stUserId,
             stApprovalStatus,
             blForReceiving,
-            blItermPerLocTotal
+            blItermPerLocTotal,
+            dtAsOf,
+            dtFrom,
+            dtTo
         } = options;
 
 
-        const objPagedData = getPageData(objSearch, objSearchTotal, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus);
+        const objPagedData = getPageData(objSearch, objSearchTotal, objSearchQoH, objSearchTotalQoH, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus,dtAsOf,dtFrom,dtTo);
+        log.debug('objSearchTotalQoH4',objSearchTotalQoH);
         log.debug('objPagedData',objPagedData)
         
-        if(objPagedData){
+        if(objPagedData[0] || objPagedData[1]){
             let arrPagedData;
-            if(!blItermPerLocTotal){
-             arrPagedData = objPagedData.data;
-            }else{arrPagedData = objPagedData;}
-            log.debug('arrPagedData', arrPagedData);
+            let arrPagedQoH;
+
+
+            if(objPagedData[0]){
+                arrPagedData = objPagedData[0].data;
+                //log.debug('arrPagedData Not Total', arrPagedData);
+            }
+
+            if(objPagedData[1]){
+                //Item Per Loc QoH
+                arrPagedQoH = objPagedData[1].data;
+                log.debug('arrPagedQoH', arrPagedQoH);
+            }
+
 
             const arrListValues = util.mapValues({
                 stType, 
                 stAccessType, 
                 stUserId,
                 arrPagedData,
+                arrPagedQoH,
                 blForReceiving,
                 stApprovalStatus,
                 blItermPerLocTotal
@@ -876,6 +1091,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                             value: value[fieldId] || 0
                         });
                     });
+
                 });
             }
         }

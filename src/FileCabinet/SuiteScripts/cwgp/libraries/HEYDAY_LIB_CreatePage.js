@@ -281,6 +281,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    displayType: 'inline'
                 },
                 POSTING_PERIOD: {
                     id: 'custpage_cwgp_postingperiod',
@@ -955,7 +956,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Starting Quantity',
-                        isHidden: ['1']
+                        isHidden: ['1','2']
                         //displayType: 'hidden'
                     },
                     FINAL_COUNT: {
@@ -2311,7 +2312,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         log.debug('objItemResultSet',objItemResultSet);
             
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Count'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Review'});
         log.debug('last count params',JSON.stringify({
             intAdjustmentAccount: intAdjustmentAccount,
             stSubsidiary: stSubsidiary,
