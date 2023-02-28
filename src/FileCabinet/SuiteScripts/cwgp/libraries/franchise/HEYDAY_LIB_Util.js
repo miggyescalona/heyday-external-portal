@@ -85,6 +85,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     type: serverWidget.FieldType.TEXT,
                     label: 'Damage'
                 },
+                QUANTITY_THEFT: {
+                    id: 'custpage_cwgp_theft',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Sold'
+                },
                 QUANTITY_SOLD: {
                     id: 'custpage_cwgp_sold',
                     type: serverWidget.FieldType.TEXT,
@@ -109,7 +114,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             stType, 
             stAccessType, 
             stUserId,
-            arrPagedData
+            arrPagedData,
+            dtAsof,
+            dtFrom,
+            dtTo
         } = options;
 
         const MAP_VALUES = {
@@ -121,7 +129,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         };
         const mapValues = MAP_VALUES[stType];
 
-        return mapValues(stUserId, stAccessType, arrPagedData);
+        return mapValues(stUserId, stAccessType, arrPagedData,dtAsof,dtFrom,dtTo);
     };
 
     const mapFranchisePO = (stUserId, stAccessType, arrPagedData) => {
@@ -259,7 +267,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stID = result.id;
             const stOperator = result.getValue({ name: 'custrecord_cwgp_fic_operator' });
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&rectype=inventorycount&tranid=${stID}`;
-            const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stID}</a>`;
+            const stViewLink = `<a href='${stUrl}'>Inventory Count # ${stID}</a>`;
 
             arrMapInventoryAdjustment.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
@@ -271,7 +279,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         return arrMapInventoryAdjustment;
     };
 
-    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData) => {
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, dtAsof, dtFron, dtTo) => {
 
         let arrMapItemperLocation= [];
         const stCustomer = getCustomer(stUserId);
@@ -280,7 +288,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stSKU= result.getValue({ name: 'custitem_heyday_sku' });
             const stUPC= result.getValue({ name: 'custitemheyday_upccode' });
 
-            const itemPerLocColumns = getItemPerLocationColumns(result.id,stCustomer);
+            const itemPerLocColumns = getItemPerLocationColumns(result.id,stCustomer,dtAsof, dtFron, dtTo);
             arrMapItemperLocation.push({
                 [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                 [_CONFIG.COLUMN.LIST.INTERNAL_SKU.id]: stSKU,
@@ -290,6 +298,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR.id]: parseInt(itemPerLocColumns.backbar) || '0',
                 [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE.id]: parseInt(itemPerLocColumns.damage) || '0',
                 [_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(itemPerLocColumns.sold) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_THEFT.id]: parseInt(itemPerLocColumns.theft) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY.id]: parseInt(itemPerLocColumns.discrepancy) || '0',
                 //[_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(getQtyCashSaleTypeFranchise(result.id,stCustomer)) || '0',
                 //[_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
                 //[_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
@@ -1290,37 +1300,77 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
     };
 
-    const getItemPerLocationColumns = (stItem, stCustomer) => {
+    const getItemPerLocationColumns = (stItem, stCustomer, dtAsof, dtFrom , dtTo) => {
         let inOnhand = 0;
         let inTester = 0;
         let inBackbar = 0;
         let inDamage = 0;
         let inTheft = 0;
         let inSold = 0;
+        let inDiscrepancy = 0;
 
-        const ssItemPerLocTotal = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
 
-        ssItemPerLocTotal.filters.push(search.createFilter({
+        //qty on hand column
+        const ssItemPerLocOnhand = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
+        
+        if(dtAsof){
+            ssItemPerLocOnhand.filters.push(search.createFilter({
+                name: 'created',
+                operator: 'onorbefore',
+                values: dtAsof,
+            }));
+        }
+
+        ssItemPerLocOnhand.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
             operator: 'anyof',
             values: stCustomer,
         }));
 
-        ssItemPerLocTotal.filters.push(search.createFilter({
+        ssItemPerLocOnhand.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_item',
             operator: 'anyof',
             values: stItem,
         }));
 
-        ssItemPerLocTotal.run().each(function(result){
+        ssItemPerLocOnhand.run().each(function(result){
             // .run().each has a limit of 4,000 results
             inOnhand = result.getValue(result.columns[2]);
+
+            return true;
+         });
+
+         //Other columns
+         const ssItemPerLocOthers = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
+         
+         if(dtFrom && dtTo){
+            ssItemPerLocOthers.filters.push(search.createFilter({
+                name: 'created',
+                operator: 'within',
+                values: [dtFrom,dtTo],
+            }));
+        }
+
+        ssItemPerLocOthers.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        ssItemPerLocOthers.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_item',
+            operator: 'anyof',
+            values: stItem,
+        }));
+
+        ssItemPerLocOthers.run().each(function(result){
+            // .run().each has a limit of 4,000 results
             inTester = result.getValue(result.columns[3]);
             inBackbar = result.getValue(result.columns[4]);
             inDamage = result.getValue(result.columns[5]);
             inTheft = result.getValue(result.columns[6]);
             inSold = result.getValue(result.columns[7]);
-
+            inDiscrepancy = result.getValue(result.columns[8]);
 
             return true;
          });
@@ -1333,35 +1383,64 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             'damage': inDamage,
             'theft': inTheft,
             'sold': inSold,
+            'discrepancy': inDiscrepancy
           };
     };
 
 
-    const getItemPerLocationTotalColumns = (stCustomer) => {
+    const getItemPerLocationTotalColumns = (stCustomer,dtAsof,dtFrom,dtTo) => {
         let inOnhand = 0;
         let inTester = 0;
         let inBackbar = 0;
         let inDamage = 0;
         let inTheft = 0;
         let inSold = 0;
-
-        const ssItemPerLocTotal = search.load({ id: "customsearch_cwgp_franchise_itemperloct", type: "customrecord_cwgp_franchise_tranline" });
-
-        ssItemPerLocTotal.filters.push(search.createFilter({
+        let inDiscrepancy = 0;
+        //qty on hand column
+        let ssItemPerLocTotalOnhand = search.load({ id: "customsearch_cwgp_franchise_itemperloct", type: "customrecord_cwgp_franchise_tranline" });
+        ssItemPerLocTotalOnhand.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
             operator: 'anyof',
             values: stCustomer,
         }));
-
-        ssItemPerLocTotal.run().each(function(result){
+        if(dtAsof){
+            ssItemPerLocTotalOnhand.filters.push(search.createFilter({
+                name: 'created',
+                operator: 'onorbefore',
+                values: dtAsof,
+            }));
+        }
+        ssItemPerLocTotalOnhand.run().each(function(result){
             // .run().each has a limit of 4,000 results
             inOnhand = result.getValue(result.columns[1]);
+            return true;
+         });
+
+
+
+
+        //Other columns
+        let ssItemPerLocTotalOthers = search.load({ id: "customsearch_cwgp_franchise_itemperloct", type: "customrecord_cwgp_franchise_tranline" });
+        ssItemPerLocTotalOthers.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+        if(dtFrom && dtTo){
+            ssItemPerLocTotalOthers.filters.push(search.createFilter({
+                name: 'created',
+                operator: 'within',
+                values: [dtFrom,dtTo],
+            }));
+        }
+        ssItemPerLocTotalOthers.run().each(function(result){
+            // .run().each has a limit of 4,000 results
             inTester = result.getValue(result.columns[2]);
             inBackbar = result.getValue(result.columns[3]);
             inDamage = result.getValue(result.columns[4]);
             inTheft = result.getValue(result.columns[5]);
             inSold = result.getValue(result.columns[6]);
-
+            inDiscrepancy = result.getValue(result.columns[7]);
 
             return true;
          });
@@ -1374,6 +1453,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             'damage': inDamage,
             'theft': inTheft,
             'sold': inSold,
+            'discrepancy': inDiscrepancy
           };
     };
 

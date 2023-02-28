@@ -780,15 +780,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
                         label: 'Adjustment Reason'
-                    },
-                    TOTAL_DISCREPANCY: {
-                        id: 'custpage_cwgp_totaldiscrepancy',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Total No. of Items with Discrepancy',
-                        container: 'DISCREPANCY',
-                        displayType: 'inline',
-                        isHidden: ['1']
-                    },
+                    }
                 },
             }
         },

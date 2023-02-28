@@ -1687,7 +1687,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        const {	
+        const {
             objItemResultSet,	
             objUpcMap,	
         }= EPLib.initScanner({	
@@ -1695,7 +1695,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             stSubsidiary,	
             _CONFIG	
         })	
-
+        
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
@@ -1927,27 +1927,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
     const renderInventoryCountSecond = (request,response) => {
         log.debug('request', request);
         var rec = request;
-        var arrItemFirstCount = [];
-        var arrQtyFirstCount = [];
-        var numLines = rec.getLineCount({
-            group: 'custpage_inventoryadjustmentinventorycount_items'
-        });
-        log.debug('numLines', numLines);
-        for(var i=0; i<numLines; i++){
-            var stItem = rec.getSublistValue({
-                group: 'custpage_inventoryadjustmentinventorycount_items',
-                name: 'custpage_cwgp_item',
-                line: i
-            });
-            log.debug('stItem', stItem);
-            var inFirstCount = rec.getSublistValue({
-                group: 'custpage_inventoryadjustmentinventorycount_items',
-                name: 'custpage_cwgp_firstcount',
-                line: i
-            });
-            arrItemFirstCount.push(stItem);
-            arrQtyFirstCount.push(inFirstCount);
-        }
+        
 
         var stCustomer = rec.parameters.custpage_cwgp_customer;
         log.debug('stCustomer', stCustomer);
@@ -2179,7 +2159,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             }
         });
         
-        populateSecondCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl,form);
+        populateSecondCountLines(stCustomer,rec,sbl,form);
 
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
@@ -2237,7 +2217,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         // var stUpcMap = rec.parameters.custpage_cwgp_upccodemap;
         log.debug('stOperator', stOperator);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Count'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Review'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -2445,7 +2425,43 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         response.writePage(form);
     };
 
-    const populateSecondCountLines = (stCustomer,arrItemFirstCount,arrQtyFirstCount,itemLines,form) => {
+    const populateSecondCountLines = (stCustomer,rec,itemLines,form) => {
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var arrIndexFirstCount = [];
+        var arrDescFirstCount = [];
+        var numLines = rec.getLineCount({
+            group: 'custpage_inventoryadjustmentinventorycount_items'
+        });
+        log.debug('numLines', numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_item',
+                line: i
+            });
+            
+            var inFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            });
+            var stDescFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_description',
+                line: i
+            });
+            arrItemFirstCount.push(stItem);
+            arrQtyFirstCount.push(inFirstCount);
+            arrDescFirstCount.push(stDescFirstCount);
+            arrIndexFirstCount.push(i);
+        }
+
+        log.debug('arrItemFirstCount.length', arrItemFirstCount.length);
+        log.debug('arrItemFirstCount', arrItemFirstCount);
+        log.debug('arrQtyFirstCount', arrQtyFirstCount);
+        log.debug('arrDescFirstCount', arrDescFirstCount);
+        log.debug('arrIndexFirstCount', arrIndexFirstCount);
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemperlocic", type: "customrecord_cwgp_franchise_tranline" });
 
         ssItemPerLocationIC.filters.push(search.createFilter({
@@ -2475,23 +2491,15 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             var result = results[i];
             var stItem = result.getValue(result.columns[0]);
             var intQtyOnhand = result.getValue(result.columns[2]);
-            var stDesc = result.getValue(result.columns[3]);
-            var stSku = result.getValue(result.columns[4]);
-            var stUpc = result.getValue(result.columns[5]);
-            
             var index = arrItemFirstCount.indexOf(stItem);
             
-            if((index == -1 && intQtyOnhand > 0) || (index != -1 && intQtyOnhand != arrQtyFirstCount[index])){
-
-                if(index != -1){
-
-                    itemLines.setSublistValue({
-                        id : 'custpage_cwgp_firstcount',
-                        line : inCounter,
-                        value: arrQtyFirstCount[index]
-                    });
-                }
-                
+            if(index != -1 && intQtyOnhand != arrQtyFirstCount[index]){
+                log.debug('stItem', stItem);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_firstcount',
+                    line : inCounter,
+                    value: arrQtyFirstCount[index]
+                });
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_item',
                     line : inCounter,
@@ -2505,17 +2513,57 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_description',
                     line : inCounter,
-                    value: stDesc || ' '
+                    value: arrDescFirstCount[index] || ' '
                 });
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_internalsku',
                     line : inCounter,
-                    value: stSku || ' '
+                    value: result.getValue(result.columns[4]) || ' '
                 });
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_upccode',
                     line : inCounter,
-                    value: stUpc || ' '
+                    value: result.getValue(result.columns[5]) || ' '
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : inCounter,
+                    value: intQtyOnhand
+                });
+                inCounter++;
+                arrItemFirstCount.splice(index,1);
+                arrQtyFirstCount.splice(index,1);
+                arrDescFirstCount.splice(index,1);
+                arrIndexFirstCount.splice(index,1);
+                log.debug('arrItemFirstCount', arrItemFirstCount);
+                log.debug('index', index);
+            }
+            else if(index == -1 && stItem != ''){
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : inCounter,
+                    value: stItem
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: stItem
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : inCounter,
+                    value: result.getValue(result.columns[3]) || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : inCounter,
+                    value: result.getValue(result.columns[4]) || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : inCounter,
+                    value: result.getValue(result.columns[5]) || ' '
                 });
 
                 itemLines.setSublistValue({
@@ -2525,6 +2573,65 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                 });
                 inCounter++;
             }
+        }
+        /*log.debug('arrItemFirstCount.length', arrItemFirstCount.length);
+        log.debug('arrItemFirstCount', arrItemFirstCount);
+        log.debug('arrQtyFirstCount', arrQtyFirstCount);
+        log.debug('arrDescFirstCount', arrDescFirstCount);
+        log.debug('arrIndexFirstCount', arrIndexFirstCount);*/
+        for(var i=0; i<arrItemFirstCount.length; i++){
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_firstcount',
+                line : inCounter,
+                value: arrQtyFirstCount[i]
+            });
+
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_item',
+                line : inCounter,
+                value: arrItemFirstCount[i]
+            });
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_itemid',
+                line : inCounter,
+                value: arrItemFirstCount[i]
+            });
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_description',
+                line : inCounter,
+                value: arrDescFirstCount[i] || ' '
+            });
+
+            var stSku = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_internalsku',
+                line: arrIndexFirstCount[i]
+            });
+
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_internalsku',
+                line : inCounter,
+                value: stSku || ' '
+            });
+
+            var stUpc = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_upccode',
+                line: arrIndexFirstCount[i]
+            });
+
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_upccode',
+                line : inCounter,
+                value: stUpc || ' '
+            });
+
+            itemLines.setSublistValue({
+                id : 'custpage_cwgp_qtyonhand',
+                line : inCounter,
+                value: 0
+            });
+            inCounter++;
 
         }
 
