@@ -105,6 +105,12 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     operator: search.Operator.IS,
                     values: 'F'
                 }),
+                search.createFilter({
+                    name: 'custitem_cwgp_item_extportal',
+                    operator: search.Operator.IS,
+                    values: 'T'
+                }),
+                
             ]
 
             if(stSubsidiary){
