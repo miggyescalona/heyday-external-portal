@@ -335,7 +335,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     type: serverWidget.FieldType.TEXT,
                     label: 'accessType',
                     displayType: 'hidden'
-                }, 
+                },
+                ADJUSTMENT_TYPE: {
+                    id: 'custpage_cwgp_adjustmenttype',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Adjustment Type',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 CUSTOMER: {
                     id: 'custpage_cwgp_customer',
                     type: serverWidget.FieldType.SELECT,
@@ -383,13 +390,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'CLASS',
                     displayType: 'inline'
                 },
-                TOTAL_DISCREPANCY_HTML: {
+                TOTAL_DISCREPANCY: {
+                    id: 'custpage_cwgp_totaldiscrepancy',
+                    type: serverWidget.FieldType.INTEGER,
+                    label: 'Total No. of Items with Discrepancy',
+                    container: 'DISCREPANCY',
+                    displayType: 'inline',
+                    isHidden: ['1']
+                },
+                /*TOTAL_DISCREPANCY_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
                     label: ' ',
                     container: 'TOTAL_DISCREPANCY',
                     displayType:'inline'
-                },
+                },*/
             },
         },
         COLUMN: {
@@ -612,11 +627,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.TEXT,
                         label: 'St Assignment',
                     },
-                    DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: 'Date/Time (M/D/YYYY hhmm)',
-                    },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
@@ -671,11 +681,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
-                    },
-                    DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.TEXT,
-                        label: 'Date/Time (M/D/YYYY hhmm)',
                     },
                     ADJUSTMENT_TYPE: {
                         id: 'custpage_cwgp_adjustmenttype',
@@ -755,12 +760,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Starting Quantity',
-                        displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_enteredcount',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Entered Count'
+                        label: 'Entered Quantity'
                     },
                     DISREPANCY: {
                         id: 'custpage_cwgp_discrepancy',
@@ -770,7 +774,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     FINAL_QTY: {
                         id: 'custpage_cwgp_icfinalqty',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Final Quantity At Location'
+                        label: 'Final Quantity'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
@@ -854,9 +858,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_inventoryadjustmentinventorycount_class_grp',
                     label: 'Classification'
                 },
-                TOTAL_DISCREPANCY: {
-                    id: 'custpage_inventoryadjustmentinventorycountinitial_total_grp',
-                    label: 'Total Discrepancy'
+                DISCREPANCY: {
+                    id: 'custpage_inventoryadjustmentinventorycount_discrepancy_grp',
+                    label: 'Discrepancy'
                 },
             },
         },
@@ -1467,7 +1471,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        
+        objPO.body.custpage_cwgp_adjustmenttype = 'Inventory Recount';
         //log.debug('objPO', objPO);
 
         //render body fields

@@ -152,6 +152,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
     const createRetailInventoryAdjustment = (request, stSubType) => {
 
         log.debug('createRetailInventoryAdjustment', '===createRetailInventoryAdjustment===');
+        log.debug('createRetailInventoryAdjustment stSubType', stSubType);
         const recIA = record.create({
             type: record.Type.INVENTORY_ADJUSTMENT,
             isDynamic: true
@@ -160,6 +161,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const objPOBodyFields = mapRetailInventoryAdjustmentBodyFields(request);
 
         util.each(objPOBodyFields, (value, fieldId) => {
+            log.debug('fieldId | value', fieldId +' | '+value);
             recIA.setValue({
                 fieldId: fieldId,
                 value: value
@@ -419,8 +421,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
-        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
-        log.debug('stTotalDiscrepancy',stTotalDiscrepancy);
+        let stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        const stType = request.parameters.custpage_cwgp_rectype;
+        const stItemSummary = request.parameters.custpage_cwgp_itemsummary;
+        if(stType == 'inventorycount'){
+            stTotalDiscrepancy = stItemSummary;
+        }
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),
@@ -433,7 +439,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
             custbody_cwgp_itemsummary: stTotalAdjustment,
-            custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
+           // custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
             custbody_cwgp_totaldiscrepancy: stTotalDiscrepancy
 
         };
@@ -693,6 +699,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 line: i
             })
 
+            let inEndingQty = request.getSublistValue({
+                group: subTypeSublist,
+                name: 'custpage_cwgp_finalquantity',
+                line: i
+            });
+
 
 
             if(stSubType == 'standard'){
@@ -728,21 +740,27 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 })
             }
             else{
+                log.debug('inEndingQty | intQtyOnHand', inEndingQty + '|' + intQtyOnHand);
+                let intActualQty = 0;
+                if(inEndingQty){
+                    intActualQty = inEndingQty - intQtyOnHand;
+                    log.debug('intActualQty', intActualQty);
+                }
                 arrMapSblFields.push({
                     item: stItem,
                     location: stLocation,
-                    adjustqtyby: intDiscrepancy,
+                    adjustqtyby: intActualQty,
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
                     custcol_cwgp_discrepancy: stDiscrepancy,
-                    custcol_cwgp_enteredcountfinalqty: stEnteredCount
+                    custcol_cwgp_enteredcountfinalqty: inEndingQty
                 })
             }
             
         }
 
-        log.debug('arrMapSblFields', )
+        log.debug('arrMapSblFields', arrMapSblFields);
         return arrMapSblFields;
     };
 

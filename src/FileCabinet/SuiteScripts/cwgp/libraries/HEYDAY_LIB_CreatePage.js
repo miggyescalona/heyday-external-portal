@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPortal.js'], (serverWidget, utilLib, EPLib) => {
+define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPortal.js','N/file', 'N/record', 'N/search'], (serverWidget, utilLib, EPLib, file, record, search) => {
     let _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -281,6 +281,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    displayType: 'inline'
                 },
                 POSTING_PERIOD: {
                     id: 'custpage_cwgp_postingperiod',
@@ -338,6 +339,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Inventory Adjustment Subtype',
                     container: 'CLASS',
                     displayType: 'hidden'
+                },
+                TOTAL_ESTIMATED_RECPLACEMENT_VALUE_HTML: {
+                    id: 'custpage_cwgp_totalestimatedreplacementvalue',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: '   ',
+                    container: 'TOTAL_ESTIMATED_REPLACEMENT_VALUE',
+                    displayType:'inline'
                 },
                 TOTAL_ADJUSTMENT_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
@@ -412,7 +420,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
-                    isInline: ['2','3','4']
+                    isInline: ['1','2','3','4']
                 },
                 POSTING_PERIOD: {
                     id: 'custpage_cwgp_postingperiod',
@@ -493,7 +501,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 ITEM_SUMMARY_HTML: {
                     id: 'custpage_cwgp_itemsummary',
                     type: serverWidget.FieldType.TEXTAREA,
-                    label: '   ',
+                    label: 'Total No. Of Items With Discrepancy',
                     container: 'ITEM_SUMMARY',
                     displayType: 'inline'
                 },
@@ -502,7 +510,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.LONGTEXT,
                     label: 'Total Discrepancy Hidden',
                     container: 'PRIMARY',
-                    displayType: 'hidden'
+                    isHidden: ['1','2','3'],
                 },
             }
         },
@@ -896,6 +904,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.INTEGER,
                         label: '*Quantity Removed'
                     },
+                    ESTIMATED_REPLACEMENT_VALUE:{
+                        id: 'custpage_cwgp_estimatedreplacementvalue',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Estimated Replacement Value',
+                        displayType: 'disabled'
+                    },
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -951,13 +965,43 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Location',
                         displayType: 'hidden'
                     },
-                    ADJUST_QUANTITY_BY: {
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity',
+                        isHidden: ['1','2']
+                        //displayType: 'hidden'
+                    },
+                    FINAL_COUNT: {
+                        id: 'custpage_cwgp_finalquantity',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Entered Count',
+                        //isInline: ['3','4'],
+                        isHidden: ['1','2'],
+                        //isEntry: ['3']
+                    },
+                    FIRST_COUNT: {
+                        id: 'custpage_cwgp_firstcount',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*First Count',
+                        //isInline: ['3','4'],
+                        isHidden: ['3'],
+                        isEntry: ['1']
+                    },
+                    SECOND_COUNT: {
+                        id: 'custpage_cwgp_secondcount',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Second Count',
+                        //isInline: ['3','4'],
+                        isHidden: ['1','3'],
+                        isEntry: ['2']
+                    },
+                    /*ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: '*Quantity',
-                        isInline: ['3','4'],
-                        isHidden: ['1'],
-                        isEntry: ['2']
+                        isHidden: ['3','4'],
+                        isEntry: ['1','2']
                     },
                     ENTERED_COUNT: {
                         id: 'custpage_cwgp_enteredcount',
@@ -971,21 +1015,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Has Discrepancy',
                         displayType: 'inline',
                         isHidden: ['2','4'],
-                    },
+                    },*/
                     DISCREPANCY: {
                         id: 'custpage_cwgp_discrepancy',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Discrepancy',
                         displayType: 'inline',
-                        isHidden: ['2','3']
+                        isHidden: ['1','2']
                     },
-                    NEW_QUANTITY: {
+                   /* NEW_QUANTITY: {
                         id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'New Quantity',
                         isHidden: ['1','2','4'],
                         isEntry: ['3']
-                    },
+                    },*/
                     BUSINESS_LINE: {
                         id: 'custpage_cwgp_businessline',
                         type: serverWidget.FieldType.SELECT,
@@ -1002,8 +1046,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_adjustmentreason',
                         type: serverWidget.FieldType.TEXTAREA,
                         label: '*Adjustment Reason',
-                        isHidden: ['1','2','3'],
-                        isEntry: ['4']
+                        isHidden: ['1','2'],
+                        isEntry: ['3']
                     },
                 }
             }
@@ -1063,6 +1107,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
                     label: 'Total Quantity by Adjustment Type Summary'
                 },
+                TOTAL_ESTIMATED_REPLACEMENT_VALUE: {
+                    id: 'custpage_inventoryadjustmentdamagetestertheft_totalestreplacementval_grp',
+                    label: 'Total Estimated Replacement Value'
+                },
                 ITEM_SUMMARY: {
                     id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
                     label: 'Item Summary'
@@ -1076,6 +1124,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 CLASS: {
                     id: 'custpage_inventoryadjustmentinventorycountinitial_class_grp',
                     label: 'Classification'
+                },
+                ITEM_SUMMARY: {
+                    id: 'custpage_inventoryadjustmentinventorycountinitial_totalsku_grp',
+                    label: 'Discrepancy'
                 },
             }
         },
@@ -1193,6 +1245,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
+
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType } = objItemCols[stCol];
@@ -1513,8 +1566,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-
-            log.debug('stSubType',stSubType);
             if ((id =='custpage_cwgp_totaladjustment' || id == 'custpage_cwgp_itemsummary') && stSubType != 'damagetestertheft') {
                 fld.updateDisplayType({ displayType: 'hidden' });
             }
@@ -1581,6 +1632,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType+'_'+stSubType];
 
         const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];
@@ -1663,43 +1716,56 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stAccessType,
             stStep,
             objOperator,
-            objIC,
-            requestParams
+            requestParams,
+            customRecordId
         } = options;
 
         log.debug('requestParams',requestParams);
         log.debug('stStep',stStep);
 
-        log.debug('objIC',objIC);
+        
+        /*log.debug('objIC',objIC);
         let objICparsed;
         if(objIC){
             objICparsed = JSON.parse(objIC);
             log.debug('objIC parsed',objICparsed);
+        }*/
+        log.debug('customRecordId',customRecordId)
+        let objICBodyFlds;
+        let objICItemFlds;
+        if(customRecordId){
+            var objRecord = record.load({
+                type: 'customrecord_cwgp_icobjectstorage',
+                id: customRecordId,
+                isDynamic: true,
+            });
+
+            objICBodyFlds = JSON.parse(objRecord.getValue('custrecord_cwgp_icobjectstorage_field1'));
+            log.debug('objICBodyFlds',JSON.stringify(JSON.stringify(objICBodyFlds)));
+            objICItemFlds = JSON.parse(objRecord.getValue('custrecord_cwgp_icobjectstorage_field2'));
+            log.debug('objICItemFlds',JSON.stringify(JSON.stringify(objICItemFlds)));
         }
-        const stTitle = stStep == 1 ? 'Select Items' : stStep == 2 ? 'Add Quantity' : stStep == 3 ? 'Count Review' : 'Final Review';
+        const stTitle = stStep == 1 ? 'First Count' : stStep == 2 ? 'Second Count' : 'Final Review';
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - '+stTitle});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        //Add scanner UI for step 2 and 3 only
-        if(stStep == 2 || stStep == 3){
-            var {
-                objItemResultSet,
-                objUpcMap,
-            }= EPLib.initScanner({
-                stType,
-                stSubsidiary,
-                _CONFIG
-            })
-        }
-        else{
-            var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
-        }
-            
+        const {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+
         let stUpcMap = ''
         if(objUpcMap){
             stUpcMap = JSON.stringify(objUpcMap)
         }
+        
+        log.debug('objItemResultSet',objItemResultSet);
+            
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -1734,10 +1800,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stUpcMap,
             stOperator,
             stOperatorId,
-            stStep
+            stStep,
         });
 
         log.debug('objDefaultValues',objDefaultValues);
+
+       /* var fileObj2 = file.create({
+            name: 'test3.txt',
+            fileType: file.Type.PLAINTEXT,
+            contents: JSON.stringify(objDefaultValues)
+        });
+        fileObj2.folder = -15;
+        var id = fileObj2.save();*/
 
         arrFlds.forEach((stCol) => {
             const {
@@ -1750,6 +1824,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 defaultValue,
                 displayType,
                 isInline,
+                isHidden,
             } = objBodyFields[stCol];
 
 
@@ -1760,8 +1835,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 label,
                 source,
                 isInline,
+                isHidden,
                 container: _CONFIG.FIELD_GROUP[stType][container]?.id
             });
+            log.debug('fld',fld);
 
             if (mandatory) {
                 fld.isMandatory = true;
@@ -1789,17 +1866,24 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 };
             }
 
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                };
+            }
+
+
             if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
 
-            if(objICparsed && stStep != 1){
-                if (objICparsed.body[fld.id] != 'undefined') {
+            if(objICBodyFlds && stStep != 1){
+                if (objICBodyFlds[fld.id] != 'undefined') {
                     if(id != 'custpage_cwgp_date'){
-                        fld.defaultValue = objICparsed.body[fld.id]
+                        fld.defaultValue = objICBodyFlds[fld.id]
                     }
                     else{
-                        fld.defaultValue = new Date(objICparsed.body[fld.id]);
+                        fld.defaultValue = new Date(objICBodyFlds[fld.id]);
                     }
                 }
             }
@@ -1893,31 +1977,865 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
-        if(objICparsed && stStep != 1){
-            utilLib.setSublistValues(sbl, objICparsed);
+        if(objICItemFlds && stStep != 1){
+            utilLib.setSublistValues(sbl, objICItemFlds, stType);
         }
 
         //Create Buttons
        
-        if(stStep == 4){form.addSubmitButton({ label: 'Save' });}
-        //form.addSubmitButton({ label: 'Save' });
+        //if(stStep == 4){form.addSubmitButton({ label: 'Save' });}
+        form.addSubmitButton({ label: 'Submit First Count' });
 
         let stNextButton = stStep == 1 ? 'Submit Items' : stStep == 2 ? 'Submit Qty' : stStep == 3 ? 'Submit' : 'Complete Count';
 
-        if(stStep == 1 || stStep == 2 || stStep == 3){ 
+        /*if(stStep == 1 || stStep == 2 || stStep == 3){ 
             form.addButton({
                 id: 'custpage_next_button',
                 label: stNextButton,
-                functionName: `nextStep(${stUserId}, ${stAccessType}, ${stStep}, ${JSON.stringify(objICparsed)}, ${JSON.stringify(objDefaultValues)},'inventorycount')`
+                functionName: `nextStep(${stUserId}, ${stAccessType}, ${stLocation}, ${stSubsidiary}, ${stStep}, ${JSON.stringify(objDefaultValues)}, ${customRecordId},'inventorycount')`
             });
-        }
+        }*/
 
         form.addButton({
             id: 'custpage_back_button',
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+
+        log.debug('form',form);
+        log.debug('response',response);
         response.writePage(form);
+        log.debug('===CREATE===','===End of Create Inventory Count===');
+    };
+
+    const renderInventoryCountSecond = (request,response) => {
+        log.debug('===CREATE===','===Create Inventory Second Count===');
+        log.debug('request', request);
+        var rec = request;
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var numLines = rec.getLineCount({
+            group: 'custpage_inventoryadjustmentinventorycount_items'
+        });
+        log.debug('numLines', numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_item',
+                line: i
+            });
+            log.debug('stItem', stItem);
+            var inFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            });
+            arrItemFirstCount.push(stItem);
+            arrQtyFirstCount.push(inFirstCount);
+        }
+        const intAdjustmentAccount = rec.parameters.custpage_cwgp_adjustmentaccount;
+        const stSubsidiary = rec.parameters.custpage_cwgp_subsidiary;
+        let stStep = '2';
+        const stUserId = rec.parameters.custpage_cwgp_userid;	
+        const stAccessType = rec.parameters.custpage_cwgp_accesstype;
+        const stPageMode = rec.parameters.custpage_cwgp_pagemode;
+        const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
+        const stMemo = rec.parameters.custpage_cwgp_memomain;
+        const stType = rec.parameters.custpage_cwgp_rectype;
+        const stOperator = rec.parameters.custpage_cwgp_operator;
+        const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
+        log.debug('second count params',JSON.stringify({
+            intAdjustmentAccount: intAdjustmentAccount,
+            stSubsidiary: stSubsidiary,
+            stUserId: stUserId,
+            stAccessType: stAccessType,
+            stPageMode: stPageMode,
+            stLocation: stLocation,
+            stMemo: stMemo,
+            stType: stType,
+            stOperator: stOperator,
+            stOperatorId: stOperatorId            
+        }));
+
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        const {	
+            objItemResultSet,	
+            objUpcMap,	
+        }= EPLib.initScanner({	
+            stType,	
+            stSubsidiary,	
+            _CONFIG	
+        })	
+
+        let stUpcMap = ''
+        if(objUpcMap){
+            stUpcMap = JSON.stringify(objUpcMap)
+        }
+
+        //add field group
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+
+        const arrFldGrp = Object.keys(objFldGrp);
+        log.debug('arrFldGrp', arrFldGrp);
+
+        arrFldGrp.forEach((stCol) => {
+            const { id, label } = objFldGrp[stCol];
+
+            form.addFieldGroup({
+                id,
+                label
+            });
+        });
+
+        //render body fields
+        const objBodyFields = _CONFIG.FIELD[stType];
+
+        const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
+
+        //const stOperator = objOperator[0].stOperator;
+        //const stOperatorId = objOperator[0].stOperatorId;
+        const objDefaultValues = mapDefaultValues({
+            intAdjustmentAccount,
+            stSubsidiary,
+            stLocation, 
+            stPageMode, 
+            stUserId,
+            stAccessType,
+            stType,
+            stUpcMap,
+            stOperator,
+            stOperatorId,
+            stStep,
+            stMemo
+        });
+
+        log.debug('objDefaultValues',objDefaultValues);
+
+        arrFlds.forEach((stCol) => {
+            const {
+                id,
+                type,
+                label,
+                source,
+                container,
+                mandatory,
+                defaultValue,
+                displayType,
+                isInline,
+                isHidden,
+            } = objBodyFields[stCol];
+
+
+
+            let fld = form.addField({
+                id,
+                type,
+                label,
+                source,
+                isInline,
+                isHidden,
+                container: _CONFIG.FIELD_GROUP[stType][container]?.id
+            });
+
+            
+            if (mandatory) {
+                fld.isMandatory = true;
+            }
+            
+            if (displayType) {
+                fld.updateDisplayType({ displayType });
+            }
+
+            if (id == 'custpage_cwgp_adjustmentaccount') {
+                utilLib.addDamagedAdjustingAccount(fld);
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(fld);
+            }
+
+            if (id == 'custpage_cwgp_postingperiod') {
+                utilLib.addOptionsPostingPeriod(fld);
+            }
+
+           
+            if(isInline){	
+                if(isInline.includes(stStep)){	
+                    fld.updateDisplayType({ displayType: 'inline' });	
+                };	
+            }
+        
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                };
+            }
+        
+
+           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
+                 log.debug('fld',JSON.stringify({
+                    fld: id,
+                    val: objDefaultValues[fld.id]
+                 }));
+                fld.defaultValue = objDefaultValues[fld.id]
+            }
+
+
+        });
+
+        
+        //render sublist
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+
+        
+        //const subListType = stStep == 1 ? serverWidget.SublistType.INLINEEDITOR : serverWidget.SublistType.LIST;
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+
+
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+
+        const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
+
+
+            let col = sbl.addField({
+                id,
+                type,
+                label,
+                source,
+                mandatory,
+                isInline,
+                isHidden,
+                isEntry
+            });
+
+            if (mandatory) {
+                col.isMandatory = true;
+            }
+
+            if (id == 'custpage_cwgp_item') {
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
+            }
+
+            if (id == 'custpage_cwgp_location') {
+                utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+                col.defaultValue = stLocation;
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                col.defaultValue = 1;
+            }
+
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentType(col);
+                col.defaultValue = 1;
+            }
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
+
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
+            if(isInline){
+                if(isInline.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'inline' });
+                };
+            }
+            if(isEntry){
+                if(isEntry.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'entry' });
+                };
+            }
+        });
+        
+        populateSecondCountLines(arrItemFirstCount,arrQtyFirstCount,sbl,stLocation,stSubsidiary,form);
+
+        form.addSubmitButton({ label: 'Submit Second Count' });
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Cancel',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        log.debug('form',form);
+        log.debug('response',response);
+        response.writePage(form);
+        log.debug('===CREATE===','===End Create Inventory Second Count===');
+    };
+
+    const renderInventoryCountFinal = (request,response) => {
+        log.debug('===CREATE===','===Create Inventory Count Final===');
+        log.debug('request', request);
+        var rec = request;
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var numLines = rec.getLineCount({
+            group: 'custpage_inventoryadjustmentinventorycount_items'
+        });
+        log.debug('numLines', numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_item',
+                line: i
+            });
+            log.debug('stItem', stItem);
+            var inFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            });
+            arrItemFirstCount.push(stItem);
+            arrQtyFirstCount.push(inFirstCount);
+        }
+        const intAdjustmentAccount = rec.parameters.custpage_cwgp_adjustmentaccount;
+        const stSubsidiary = rec.parameters.custpage_cwgp_subsidiary;
+        let stStep = '3';
+        const stUserId = rec.parameters.custpage_cwgp_userid;	
+        const stAccessType = rec.parameters.custpage_cwgp_accesstype;
+        const stPageMode = rec.parameters.custpage_cwgp_pagemode;
+        const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
+        const stMemo = rec.parameters.custpage_cwgp_memomain;
+        const stType = rec.parameters.custpage_cwgp_rectype;
+        const stOperator = rec.parameters.custpage_cwgp_operator;
+        const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
+
+        //Add scanner UI for step 2 and 3 only
+
+        const objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        log.debug('objItemResultSet',objItemResultSet);
+            
+
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Review'});
+        log.debug('last count params',JSON.stringify({
+            intAdjustmentAccount: intAdjustmentAccount,
+            stSubsidiary: stSubsidiary,
+            stUserId: stUserId,
+            stAccessType: stAccessType,
+            stPageMode: stPageMode,
+            stLocation: stLocation,
+            stMemo: stMemo,
+            stType: stType,
+            stOperator: stOperator,
+            stOperatorId: stOperatorId            
+        }));
+
+        form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        //add field group
+        const objFldGrp = _CONFIG.FIELD_GROUP[stType];
+
+        const arrFldGrp = Object.keys(objFldGrp);
+        log.debug('arrFldGrp', arrFldGrp);
+
+        arrFldGrp.forEach((stCol) => {
+            const { id, label } = objFldGrp[stCol];
+
+            form.addFieldGroup({
+                id,
+                label
+            });
+        });
+
+        //render body fields
+        const objBodyFields = _CONFIG.FIELD[stType];
+
+        const arrFlds = Object.keys(objBodyFields);
+        log.debug('arrFlds', arrFlds);
+
+        //const stOperator = objOperator[0].stOperator;
+        //const stOperatorId = objOperator[0].stOperatorId;
+        const stSubType = 'inventorycount';
+        const objDefaultValues = mapDefaultValues({
+            intAdjustmentAccount,
+            stSubsidiary,
+            stLocation, 
+            stPageMode, 
+            stUserId,
+            stAccessType,
+            stType,
+            //stUpcMap,
+            stOperator,
+            stOperatorId,
+            stStep,
+            stMemo,
+            stSubType
+        });
+
+        log.debug('objDefaultValues',objDefaultValues);
+
+        arrFlds.forEach((stCol) => {
+            const {
+                id,
+                type,
+                label,
+                source,
+                container,
+                mandatory,
+                defaultValue,
+                displayType,
+                isInline,
+                isHidden,
+            } = objBodyFields[stCol];
+
+
+
+            let fld = form.addField({
+                id,
+                type,
+                label,
+                source,
+                isInline,
+                isHidden,
+                container: _CONFIG.FIELD_GROUP[stType][container]?.id
+            });
+
+            
+            if (mandatory) {
+                fld.isMandatory = true;
+            }
+            
+            if (displayType) {
+                fld.updateDisplayType({ displayType });
+            }
+
+            if (id == 'custpage_cwgp_adjustmentaccount') {
+                utilLib.addDamagedAdjustingAccount(fld);
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(fld);
+            }
+
+            if (id == 'custpage_cwgp_postingperiod') {
+                utilLib.addOptionsPostingPeriod(fld);
+            }
+
+           
+            
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    fld.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
+
+            if(isInline){	
+                if(isInline.includes(stStep)){	
+                    fld.updateDisplayType({ displayType: 'inline' });	
+                };	
+            }
+
+           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
+                 log.debug('fld',JSON.stringify({
+                    fld: id,
+                    val: objDefaultValues[fld.id]
+                 }));
+                fld.defaultValue = objDefaultValues[fld.id]
+            }
+
+
+        });
+
+        
+        //render sublist
+        form.addSubtab({
+            id: _CONFIG.TAB[stType],
+            label: 'Items'
+        });
+
+        
+        //const subListType = stStep == 1 ? serverWidget.SublistType.INLINEEDITOR : serverWidget.SublistType.LIST;
+        const sbl = form.addSublist({
+            id: _CONFIG.SUBLIST[stType],
+            label: ' ',
+            type: serverWidget.SublistType.LIST,
+            tab: _CONFIG.TAB[stType]
+        });
+
+
+
+        const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
+
+        const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
+
+        arrCols.forEach((stCol) => {
+            const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
+
+
+            let col = sbl.addField({
+                id,
+                type,
+                label,
+                source,
+                mandatory,
+                isInline,
+                isHidden,
+                isEntry
+            });
+
+            if (mandatory) {
+                col.isMandatory = true;
+            }
+
+            if (id == 'custpage_cwgp_item') {
+                utilLib.addOptionsItemBySubsidiary({
+                    fld: col, 
+                    objResultSet: objItemResultSet
+                });
+            }
+
+            if (id == 'custpage_cwgp_location') {
+                utilLib.addOptionsLocationBySubsidiary(col, stSubsidiary);
+                col.defaultValue = stLocation;
+            }
+
+            if (id == 'custpage_cwgp_businessline') {
+                utilLib.addOptionsBusinessLine(col);
+                col.defaultValue = 1;
+            }
+
+            if(id == 'custpage_cwgp_adjustmenttype'){
+                utilLib.addOptionsAdjusmentType(col);
+                col.defaultValue = 1;
+            }
+
+
+            if (displayType) {
+                col.updateDisplayType({ displayType });
+            }
+
+            if(isHidden){
+                if(isHidden.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'hidden' });
+                }
+            };
+            if(isInline){
+                if(isInline.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'inline' });
+                };
+            }
+            if(isEntry){
+                if(isEntry.includes(stStep)){
+                    col.updateDisplayType({ displayType: 'entry' });
+                };
+            }
+        });
+        
+        populateFinalCountLines(request,sbl,form);
+
+        form.addSubmitButton({ label: 'Submit Final Count' });
+
+        form.addButton({
+            id: 'custpage_back_button',
+            label: 'Cancel',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        log.debug('form',form);
+        log.debug('response',response);
+        response.writePage(form);
+        log.debug('===CREATE===','===End Create Inventory Count Final===');
+    };
+
+    const populateSecondCountLines = (arrItemFirstCount,arrQtyFirstCount,itemLines,stLocation,stSubsidiary,form) => {
+        const ssItemPerLocationIC = search.load({ id: "626", type: "item" });
+
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+
+        do {
+            var subresults = ssItemPerLocationIC.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        let inCounter = 0;
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var item = result.getValue(result.columns[0]);
+            var inQty = result.getValue(result.columns[4]);
+            var stDesc = result.getValue(result.columns[1]);
+            var stSku = result.getValue(result.columns[2]);
+            var stUpc = result.getValue(result.columns[3]);
+            
+            var index = arrItemFirstCount.indexOf(item);
+
+            log.debug('populateSecondCountLines',JSON.stringify({
+                item: item,
+                inQty: inQty,
+                arrQtyFirstCount: arrQtyFirstCount[index]
+            }));
+            
+            if((index == -1 && inQty>0) || (index != -1 && inQty != arrQtyFirstCount[index])){
+
+                if(index != -1){
+
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: arrQtyFirstCount[index]
+                    });
+                }
+                
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : inCounter,
+                    value: item
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: item
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : inCounter,
+                    value: stDesc || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : inCounter,
+                    value: stSku || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : inCounter,
+                    value: stUpc || ' '
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : inCounter,
+                    value: inQty
+                });
+                inCounter++;
+            }
+
+        }
+        var fieldTotalSku = form.getField({
+            id : 'custpage_cwgp_itemsummary'
+        });
+        fieldTotalSku.defaultValue = inCounter;
+
+
+    };
+
+    const populateFinalCountLines = (request,itemLines,form) => {
+        var rec = request;
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var numLines = rec.getLineCount({
+            group: 'custpage_inventoryadjustmentinventorycount_items'
+        });
+        log.debug('numLines', numLines);
+        let inCounter = 0;
+        let totalDiscrepancy = 0;
+        for(var i=0; i<numLines; i++){
+
+            var inSecondCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_secondcount',
+                line: i
+            });
+
+            var inFirstCount = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            });
+
+            var intQtyOnhand = rec.getSublistValue({
+                group: 'custpage_inventoryadjustmentinventorycount_items',
+                name: 'custpage_cwgp_qtyonhand',
+                line: i
+            });
+
+            if(inSecondCount != intQtyOnhand){
+                var stItem = rec.getSublistValue({
+                    group: 'custpage_inventoryadjustmentinventorycount_items',
+                    name: 'custpage_cwgp_item',
+                    line: i
+                });
+                var stDesc = rec.getSublistValue({
+                    group: 'custpage_inventoryadjustmentinventorycount_items',
+                    name: 'custpage_cwgp_description',
+                    line: i
+                });
+                var stSku = rec.getSublistValue({
+                    group: 'custpage_inventoryadjustmentinventorycount_items',
+                    name: 'custpage_cwgp_internalsku',
+                    line: i
+                });
+                var stUpc = rec.getSublistValue({
+                    group: 'custpage_inventoryadjustmentinventorycount_items',
+                    name: 'custpage_cwgp_upccode',
+                    line: i
+                });
+    
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : inCounter,
+                    value: stItem
+                });
+
+                    
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: stItem
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : inCounter,
+                    value: stDesc || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : inCounter,
+                    value: stSku || ' '
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : inCounter,
+                    value: stUpc || ' '
+                });
+    
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : inCounter,
+                    value: intQtyOnhand
+                });
+
+                /*itemLines.setSublistValue({
+                    id : 'custpage_cwgp_discrepancy',
+                    line : inCounter,
+                    value: inSecondCount - intQtyOnhand
+                });*/
+
+                totalDiscrepancy += Math.abs(inSecondCount) + Math.abs(intQtyOnhand)
+
+                if(inSecondCount){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
+                        value: inSecondCount
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_enteredquantity',
+                        line : inCounter,
+                        value: inSecondCount
+                    });
+
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: inSecondCount - intQtyOnhand
+                    });
+                }
+                else if(!inSecondCount && inFirstCount){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
+                        value: inFirstCount
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_enteredquantity',
+                        line : inCounter,
+                        value: inFirstCount
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: inFirstCount - intQtyOnhand
+                    });
+                }
+                else{
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
+                        value: intQtyOnhand
+                    }); 
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_discrepancy',
+                        line : inCounter,
+                        value: 0 - intQtyOnhand
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : inCounter,
+                        value: 0
+                    });
+                }
+                inCounter++;
+            }
+            
+        }
+
+        
+        var fieldTotalSku = form.getField({
+            id : 'custpage_cwgp_itemsummary'
+        });
+        fieldTotalSku.defaultValue = inCounter;
+
+        var fieldTotalDiscrepancy = form.getField({
+            id : 'custpage_cwgp_totaldiscrepancy'
+        });
+        fieldTotalDiscrepancy.defaultValue = parseInt(totalDiscrepancy);
+
+
     };
 
 
@@ -1961,7 +2879,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})
             stMapVendor = 19082;
         }
-        stSubTypeId = stSubType == 'standard' ? '1' : stSubType == 'backbar' ? '2' : '3';
+        stSubTypeId = stSubType == 'standard' ? '1' : stSubType == 'backbar' ? '2' : stSubType == 'damagetestertheft' ? '3' : 'inventorycount' ;
 
         return {
             custpage_cwgp_adjustmentlocation: stLocation,
@@ -2070,6 +2988,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         render,
         renderItemReceipt,
         renderInventoryAdjustment,
-        renderInventoryCount
+        renderInventoryCount,
+        renderInventoryCountSecond,
+        renderInventoryCountFinal
     }
 });
