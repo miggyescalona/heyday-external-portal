@@ -952,12 +952,17 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 });
             }
 
-           if(objPagedData.count!=0 && stType != 'itemperlocation'){
+            log.debug('objPagedData',objPagedData);
+            log.debug('stType',stType);
+
+           if(objPagedData.count != 0 && stType != 'itemperlocation'){
+                log.debug('objPagedData1', objPagedData);
                 objPage = objPagedData.fetch({ index: intPage });
                 log.debug('objPage', objPage);
 
            }
-           else if((objPagedData.count!=0 || objPagedDataQoH.count !=0) && stType == 'itemperlocation'){
+           else if((objPagedData || objPagedDataQoH) && stType == 'itemperlocation'){
+                log.debug('objPagedData2', objPagedData);
                 if(stType == 'itemperlocation' && objPagedDataQoH.count != 0){
                     log.debug('intPage',intPage);
 
@@ -968,7 +973,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                     }
                     else{
                         objPageQoH = objPagedDataQoH.fetch({ index: intPage });
-                        
+
                     }
 
                     log.debug('objPagedData.pageRanges.length',objPagedData.pageRanges.length)
@@ -984,31 +989,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                     log.debug('objPageQoH', objPageQoH);
                     log.debug('objPage', objPage);
                 }
-
-                /*let fileObj1 = file.create({
-                    name: 'objPage.txt',
-                    fileType: file.Type.PLAINTEXT,
-                    contents: JSON.stringify(objPage)
-                });
-
-                fileObj1.folder = -15;
-                fileObj1.save();
-
-                let fileObj2 = file.create({
-                    name: 'objPageQoH.txt',
-                    fileType: file.Type.PLAINTEXT,
-                    contents: JSON.stringify(objPageQoH)
-                });
-
-                fileObj2.folder = -15;
-                fileObj2.save();*/
-           }
-           else{
-                objPage = null;
-           }
-    
+            }
+            else{
+                log.debug('objPagedData3', objPagedData);
+                 objPage = null;
+                 log.debug('objPage null', objPage);
+            }
         }
-
         return [objPage,objPageQoH];
     };
 
