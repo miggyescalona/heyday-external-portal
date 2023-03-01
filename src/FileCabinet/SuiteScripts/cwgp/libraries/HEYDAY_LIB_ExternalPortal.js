@@ -105,6 +105,12 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     operator: search.Operator.IS,
                     values: 'F'
                 }),
+                search.createFilter({
+                    name: 'custitem_cwgp_item_extportal',
+                    operator: search.Operator.IS,
+                    values: 'T'
+                }),
+                
             ]
 
             if(stSubsidiary){
@@ -203,8 +209,7 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
 
     const getScanButtonCss = (options) => {
         const {
-            stPageType,
-            stStep
+            stPageType
         } = options;
         
         let stBtnDefCss = ''
@@ -236,12 +241,10 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                     `
                     break;
                 case 'inventorycount':
-                    if(stStep == 2 || stStep == 3){
-                        log.debug('Step 2 or 3', stPageType)
-                        stBtnDefCss = `
-                            <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
-                        `
-                    }
+                    log.debug('inventorycount', 'here')
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_count_scan_btn" type="button" class="scanbutton">Add to<br />Count</button>
+                    `
                     break;
             }
 

@@ -907,11 +907,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         type: serverWidget.FieldType.DATETIMETZ,
                         label: 'Date/Time (M/D/YYYY hhmm)',
                     },*/
+                    RATE: {
+                        id: 'custpage_cwgp_rate',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Estimated Replacement Value',
+                        displayType:'disabled'
+                    },
                     ADJUST_QUANTITY_BY: {
                         id: 'custpage_cwgp_adjustqtyby',
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Quantity Removed'
                     },
+                    
+                    
                     /*ROOM_NUMBER: {
                         id: 'custpage_cwgp_roomnumber',
                         type: serverWidget.FieldType.TEXT,
@@ -1024,7 +1032,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Final Quantity',
                         //isInline: ['3','4'],
-                        isHidden: ['1','2'],
+                        isHidden: ['1','2','3'],
                         //isEntry: ['3']
                     },
                     /*ADJUST_QUANTITY_BY: {
