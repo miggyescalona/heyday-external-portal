@@ -363,7 +363,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                         name: 'subsidiary',
                         operator: search.Operator.ANYOF,
                         values: stSubsidiary
+                    }),
+                    search.createFilter({
+                        name: 'custitem_cwgp_item_extportal',
+                        operator: search.Operator.IS,
+                        values: 'T'
                     })
+
                 ],
             columns:
                 [
@@ -1365,10 +1371,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
         ssItemPerLocOthers.run().each(function(result){
             // .run().each has a limit of 4,000 results
-            inTester = result.getValue(result.columns[3]);
-            inBackbar = result.getValue(result.columns[4]);
-            inDamage = result.getValue(result.columns[5]);
-            inTheft = result.getValue(result.columns[6]);
+            inDamage = result.getValue(result.columns[3]);
+            inTester = result.getValue(result.columns[4]);
+            inTheft = result.getValue(result.columns[5]);
+            inBackbar = result.getValue(result.columns[6]);
             inSold = result.getValue(result.columns[7]);
             inDiscrepancy = result.getValue(result.columns[8]);
 
@@ -1435,10 +1441,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         }
         ssItemPerLocTotalOthers.run().each(function(result){
             // .run().each has a limit of 4,000 results
-            inTester = result.getValue(result.columns[2]);
-            inBackbar = result.getValue(result.columns[3]);
-            inDamage = result.getValue(result.columns[4]);
-            inTheft = result.getValue(result.columns[5]);
+            inDamage = result.getValue(result.columns[2]);
+            inTester = result.getValue(result.columns[3]);
+            inTheft = result.getValue(result.columns[4]);
+            inBackbar = result.getValue(result.columns[5]);
             inSold = result.getValue(result.columns[6]);
             inDiscrepancy = result.getValue(result.columns[7]);
 

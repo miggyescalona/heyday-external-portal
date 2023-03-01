@@ -241,7 +241,10 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
             accesstype  : stAccessType,
             rectype     : stType,
             pageMode    : 'list',
-            custparam_cwgp_page: intPage
+            custparam_cwgp_page: intPage,
+            asof        : dtAsOf,
+            from        : dtFrom,
+            to          : dtTo
         };
 
         if((dtFrom != '' && dtTo == '' ) || (dtFrom == '' && dtTo != '' )){
@@ -254,13 +257,13 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
 		}
         console.log('intPage '+ intPage);
 
-        if(dtAsOf != ''){
+        /*if(dtAsOf != ''){
             params.asof = dtAsOf;
         }
         else{
             params.from = dtFrom;
             params.to = dtTo;
-        }
+        }*/
 
         const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
 
