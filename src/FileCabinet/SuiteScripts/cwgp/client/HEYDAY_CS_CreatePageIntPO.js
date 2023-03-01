@@ -54,7 +54,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      const saveRecord = (context) => {
         const { currentRecord } = context;
 
-        
+  
 
         let stQuery = window.location.search;
         let objParams = new URLSearchParams(stQuery);
