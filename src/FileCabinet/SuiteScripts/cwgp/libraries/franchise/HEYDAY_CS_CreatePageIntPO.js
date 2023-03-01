@@ -864,8 +864,8 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 console.log('stItem', stItem);
 
                 const objItem = getItemDetails(stItem);
-                console.log('objItem', objItem);
-
+                console.log('objItem '+ JSON.stringify(objItem));
+                
                 util.each(objItem, function (value, fieldId) {
                     currentRecord.setCurrentSublistValue({
                         sublistId: sublistId,
