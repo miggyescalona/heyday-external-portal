@@ -72,7 +72,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
         const objPOBodyFields = mapRetailItemReceiptBodyFields(request);
         const arrSkipSblFields  = ['description','item','quantityremaining','rate','entity','account','subsidiary'];
-        const arrSkipBdyFields  = ['location','description','item','quantityremaining','rate','entity','account','subsidiary'];
+        const arrSkipBdyFields  = ['location','description','item','quantityremaining','rate','entity','account','subsidiary','custbody_cwgp_itemsummary'];
         log.debug('objPOBodyFields',objPOBodyFields);
 
         let intCreatedFrom = objItemReceipt.getValue('createdfrom');
@@ -219,6 +219,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 });
             });
 
+
             recIA.setValue({
                 fieldId: 'account',
                 value: arrIteGroupedByAccount[x][0]
@@ -257,6 +258,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             stTranId = stTranId.tranid
 
+            let lineCount = 0;         
+            let objItemSummary = [];
             for(var i = 0;i<arrIteGroupedByAccount[x][1].length;i++){
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
@@ -269,6 +272,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                     fieldId: 'adjustqtyby',
                     value: arrIteGroupedByAccount[x][1][i].adjustqtyby
                 });
+
+                lineCount += Math.abs(arrIteGroupedByAccount[x][1][i].adjustqtyby);
 
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
@@ -296,6 +301,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 recIA.commitLine({ sublistId: 'inventory' });
             }
+
+            objItemSummary.push({
+                Id: 'Damage',
+                intQty: lineCount
+             });
+             
+             recIA.setValue({
+                fieldId: 'custbody_cwgp_itemsummary',
+                value: JSON.stringify(objItemSummary)
+            });
 
            var idIA = recIA.save();
            arrIARecIds.push(idIA);
@@ -401,7 +416,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             subsidiary: stSubsidiary,
             account: stAccount,
             custbody_cwgp_externalportaloperator: stOperator,
-            location: stLocation
+            location: stLocation,
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -749,7 +764,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 arrMapSblFields.push({
                     item: stItem,
                     location: stLocation,
-                    adjustqtyby: intActualQty,
+                    adjustqtyby: stDiscrepancy,
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,

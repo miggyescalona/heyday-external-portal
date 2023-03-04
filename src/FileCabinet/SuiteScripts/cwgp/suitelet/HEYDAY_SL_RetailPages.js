@@ -557,8 +557,36 @@ define([
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
                 idRec = editInterPO(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        poid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
             }else if(stRecType == 'itemreceipt'){
                 idRec = editItemReceipt(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        itemreceiptid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId,
+                    }
+                });
             }
         }
 
@@ -566,6 +594,7 @@ define([
         if(stPageMode == 'view'){
             stTranId = getTranIdSearch(idRec,stRecType);
             if(stRecType == 'intercompanypo'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,
@@ -581,6 +610,7 @@ define([
                 });
             }
             else if(stRecType == 'itemreceipt'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,

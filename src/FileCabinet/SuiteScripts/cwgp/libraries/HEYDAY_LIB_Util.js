@@ -95,6 +95,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label:  'Internal SKU'
                 },
+                ESTIMATED_COST_PER_UNIT:{
+                    id: 'custpage_cwgp_estimatedcostperunit',
+                    type: serverWidget.FieldType.FLOAT,
+                    label:  'Estimated Cost Per Unit'
+                },
+                TOTAL_ESTIMATED_VALUE:{
+                    id: 'custpage_cwgp_totalestimatedvalue',
+                    type: serverWidget.FieldType.FLOAT,
+                    label:  'Total Estimated Value'
+                },
                 UPC:{
                     id: 'custpage_cwgp_upccode',
                     type: serverWidget.FieldType.TEXT,
@@ -137,37 +147,37 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 },
                 ON_HAND_TOTAL: {
                     id: 'custpage_cwgp_onhand_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'On Hand'
                 },
                 QUANTITY_TESTER_TOTAL: {
                     id: 'custpage_cwgp_tester_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Tester'
                 },
                 QUANTITY_BACKBAR_TOTAL: {
                     id: 'custpage_cwgp_backbar_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Backbar'
                 },
                 QUANTITY_DAMAGE_TOTAL: {
                     id: 'custpage_cwgp_damage_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Damage'
                 },
                 QUANTITY_THEFT_TOTAL: {
                     id: 'custpage_cwgp_theft_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Theft'
                 },
                 QUANTITY_SOLD_TOTAL: {
                     id: 'custpage_cwgp_sold_total',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Quantity Sold'
                 },
                 QUANTITY_DISCREPANCY_TOTAL: {
                     id: 'custpage_cwgp_sold_discrepancy',
-                    type: serverWidget.FieldType.TEXT,
+                    type: serverWidget.FieldType.INTEGER,
                     label: 'Discrepancy'
                 },
             }
@@ -435,12 +445,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         log.debug('mapItemPerLocation arrPagedQoH', arrPagedQoH);
         let arrMapItemperLocation = [];
         let arrMapItemQoH = [];
+        let arrItemList = [];
         let arrFinalItemPerLocation;
         const keysCheck = ['custpage_cwgp_onhand','custpage_cwgp_backbar','custpage_cwgp_damage','custpage_cwgp_tester','custpage_cwgp_theft','custpage_cwgp_sold','custpage_cwgp_discrepancy'];
 
         if(arrPagedData){
             arrPagedData.forEach((result, index) => {
                 const stItemName = result.getText({ name: 'item' , summary: 'GROUP'});
+                const stItemId = result.getValue({ name: 'item' , summary: 'GROUP'});
                 const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
                 const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
                 const stBackbar =result.getValue(result.columns[3]);
@@ -449,6 +461,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 const stTheft = result.getValue(result.columns[6]);
                 const stSold = result.getValue(result.columns[7]);
                 const stDiscrepancy = result.getValue(result.columns[8]);
+                arrItemList.push(stItemId);
     
 
             
@@ -467,12 +480,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         }
 
         if(arrPagedQoH){
+            arrItemList = [];
             arrPagedQoH.forEach((result, index) => {
                 const stItemName = result.getText(result.columns[0]);
+                const stItemId = result.getValue(result.columns[0]);
                 const stOnHand = result.getValue(result.columns[1]);
                 const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
                 const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
-                
+                arrItemList.push(stItemId);
+
                 arrMapItemQoH.push({
                     [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                     [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
@@ -485,6 +501,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             
             });
         }
+
+        log.debug('arrItemList',arrItemList);
 
         if(arrMapItemperLocation && arrMapItemQoH){
             log.debug('arrMapItemperLocation',arrMapItemperLocation);
@@ -529,6 +547,43 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
+              
+        if(arrItemList.length > 0){
+            let index = 0;
+            var itemSearchObj = search.create({
+                type: "item",
+                filters:
+                [
+                ["internalid","anyof",arrItemList],
+                "AND", 
+                ["pricing.pricelevel","anyof","6"]
+                ],
+                columns:
+                [
+                search.createColumn({
+                    name: "itemid",
+                    sort: search.Sort.ASC,
+                    label: "Name"
+                }),
+                search.createColumn({
+                    name: "formulanumeric",
+                    formula: "case when {pricing.pricelevel}='Franchise Price' then {pricing.unitprice} else 0 END",
+                    label: "Formula (Numeric)"
+                })
+                ]
+            });
+            var searchResultCount = itemSearchObj.runPaged().count;
+           
+            let tempEstCostPerUnit = 0;
+            itemSearchObj.run().each(function(result){
+                arrFinalItemPerLocation[index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+                tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
+                arrFinalItemPerLocation[index]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[index]['custpage_cwgp_onhand'])).toFixed(2);
+                index++;
+                return true;
+            });
+        }
+
        /* let fileObj = file.create({
             name: 'arrFinalItemPerLocation.txt',
             fileType: file.Type.PLAINTEXT,
@@ -558,28 +613,32 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let intDiscrepancyTotal = 0;
 
         arrPagedData.forEach((result, index) => {
-             intBackbar = Math.abs(parseInt(result.getValue(result.columns[0]))).toFixed(0);
-             intDamage = Math.abs(parseInt(result.getValue(result.columns[1]))).toFixed(0);
-             intTester = Math.abs(parseInt(result.getValue(result.columns[3]))).toFixed(0);
-             intTheft = Math.abs(parseInt(result.getValue(result.columns[2]))).toFixed(0);
-             intQuantitySold = Math.abs(parseInt(result.getValue(result.columns[4]))).toFixed(0);
-             intDiscrepancyTotal = Math.abs(parseInt(result.getValue(result.columns[5]))).toFixed(0);
+             intBackbar = result.getValue(result.columns[0]) || 0;
+             intDamage = result.getValue(result.columns[1]) || 0;
+             intTester = result.getValue(result.columns[3]) || 0;
+             intTheft = result.getValue(result.columns[2]) || 0;
+             intQuantitySold = result.getValue(result.columns[4]) || 0;
+             intDiscrepancyTotal = result.getValue(result.columns[5]) || 0;
         });
 
+        log.debug('intbackbar',intBackbar);
+
         arrMapItemperLocation.push({
-            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: intTester,
-            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: intBackbar,
-            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: intDamage,
-            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: intTheft,
-            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: intQuantitySold,
-            [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY_TOTAL.id]: intDiscrepancyTotal
+            [_CONFIG.COLUMN.LIST.QUANTITY_TESTER_TOTAL.id]: Math.abs(parseInt(intTester)).toFixed(0),
+            [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR_TOTAL.id]: Math.abs(parseInt(intBackbar)).toFixed(0),
+            [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE_TOTAL.id]: Math.abs(parseInt(intDamage)).toFixed(0),
+            [_CONFIG.COLUMN.LIST.QUANTITY_THEFT_TOTAL.id]: Math.abs(parseInt(intTheft)).toFixed(0),
+            [_CONFIG.COLUMN.LIST.QUANTITY_SOLD_TOTAL.id]: Math.abs(parseInt(intQuantitySold)).toFixed(0),
+            [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY_TOTAL.id]: Math.abs(parseInt(intDiscrepancyTotal)).toFixed(0)
         })
 
         arrPagedQoH.forEach((result, index) => {
-            intOnHand += parseInt(result.getValue(result.columns[0]));
+            intOnHand = parseInt(result.getValue(result.columns[0]));
         });
 
-        arrMapItemperLocation[0]['custpage_cwgp_onhand_total'] = intOnHand;
+        arrMapItemperLocation[0]['custpage_cwgp_onhand_total'] = intOnHand || 0;
+
+        log.debug('mapItemPerLocationTotal',arrMapItemperLocation);
 
         return arrMapItemperLocation;
     };
@@ -1199,12 +1258,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'item',
                     fieldId: 'quantityremaining',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_quantity: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'quantity',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_rate: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'rate',
@@ -1293,37 +1352,37 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_shippedquantity',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_shippedquantityhidden: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_shippedquantity',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_startingquantity: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'onhand',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_startingquantityhidden: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'onhand',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'quantityremaining',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_quantityremaininghidden: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'quantityremaining',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_variance: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_shippedquantity',
                     line: x
-                })),
+                })).toFixed(0),
                 custpage_cwgp_quantity: 0,
                 custpage_cwgp_damagedquantity: 0,
                 custpage_cwgp_rate: objItemReceipt.getSublistValue({
@@ -1360,7 +1419,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let objDiscrepancySummary;
         let subType;
         let intAdjQtyBy;
-        let stDateTime 
+        let stDateTime;
+        let intIcFinalQty;
+        let intNewQty;
 
         const objInventoryAdjustment = record.load({
             type: 'inventoryadjustment',
@@ -1422,21 +1483,40 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 fieldId: 'custcol_cwgp_datetime',
                 line: x
             });
-            
-            if(stDateTime){
-                stDateTime = format.format({value: new Date(stDateTime), type: format.Type.DATETIMETZ})
-            }
 
             intAdjQtyBy = parseInt(objInventoryAdjustment.getSublistValue({
                 sublistId: 'inventory',
                 fieldId: 'adjustqtyby',
                 line: x
             })) || 0
+
+            intIcFinalQty = objInventoryAdjustment.getSublistValue({
+                sublistId: 'inventory',
+                fieldId: 'custcol_cwgp_enteredcountfinalqty',
+                line: x
+            });
+
+            intNewQty = parseInt(objInventoryAdjustment.getSublistValue({
+                sublistId: 'inventory',
+                fieldId: 'newquantity',
+                line: x
+            })) || 0.00
+
+            
+            if(stDateTime){
+                stDateTime = format.format({value: new Date(stDateTime), type: format.Type.DATETIMETZ})
+            }
+
             if(subType != 'standard' && subType){
                 intAdjQtyBy = Math.abs(intAdjQtyBy);
             }
 
+            if(subType == 'inventorycount'){
+                intIcFinalQty = intNewQty
+            }
+
             objPO.item.push({
+                custpage_cwgp_icfinalqty: intIcFinalQty,
                 custpage_cwgp_inventoryadjustment: 'IA# '+ objInventoryAdjustment.getText('tranid'),
                 custpage_cwgp_item: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
@@ -1481,11 +1561,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     line: x
                 }),
                 custpage_cwgp_enteredcount:  objInventoryAdjustment.getSublistValue({
-                    sublistId: 'inventory',
-                    fieldId: 'custcol_cwgp_enteredcountfinalqty',
-                    line: x
-                }),
-                custpage_cwgp_icfinalqty: objInventoryAdjustment.getSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'custcol_cwgp_enteredcountfinalqty',
                     line: x
@@ -1552,7 +1627,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
-                        value: parseInt(value) 
+                        value: parseInt(value).toFixed(0)
                     });
                 }
                 else{

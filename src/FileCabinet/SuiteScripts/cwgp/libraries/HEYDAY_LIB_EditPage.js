@@ -92,6 +92,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    displayType: 'inline',
                     defaultValue: new Date()
                 },
                 DELIVER_BY_DATE: {
@@ -206,6 +207,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     type: serverWidget.FieldType.DATE,
                     label: 'Date',
                     container: 'PRIMARY',
+                    displayType: 'inline',
                     mandatory: true
                 },
                 MEMO: {
