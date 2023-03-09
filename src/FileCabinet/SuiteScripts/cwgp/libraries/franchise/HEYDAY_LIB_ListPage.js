@@ -136,6 +136,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                         type: serverWidget.FieldType.TEXT,
                         label: 'Internal SKU',
                     },
+                    RATE: {
+                        id: 'custpage_cwgp_rate',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Estimated Cost Per Unit',
+                    },
+                    TOTAL: {
+                        id: 'custpage_cwgp_total',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Total Estimated Value',
+                    },
                     ON_HAND: {
                         id: 'custpage_cwgp_onhand',
                         type: serverWidget.FieldType.TEXT,
@@ -882,7 +892,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
     const getPageData = (objSearch, fldPage, intPage, stType) => {
         let stPageSize = 20;
         if(stType == 'itemperlocation'){
-            stPageSize = 15;
+            stPageSize = 30;
         }
         const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
 

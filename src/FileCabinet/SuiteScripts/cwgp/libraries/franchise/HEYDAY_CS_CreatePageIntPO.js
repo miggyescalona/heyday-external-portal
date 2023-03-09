@@ -99,6 +99,12 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
                     }
                     if(stStep == '1'){
+                        /*if(!inCount){
+                            alert('First Count must not be empty.');
+                            return false;
+    
+                        }
+
                         let stItemName= currentRecord.getSublistText({
                             sublistId: 'custpage_inventoryadjustmentinventorycount_items',
                             fieldId: 'custpage_cwgp_item',
@@ -106,7 +112,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                         });
                         objHasDuplicates.push({
                             itemName: stItemName,
-                        });
+                        });*/
                     }
                     
                 }
@@ -199,9 +205,25 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 return false;
             }
 
-            if(pageMode == 'create'){
-                alert('Item and Quantity requested are still subject for approval.');
+            const stDate = new Date(currentRecord.getValue({
+                fieldId: 'custpage_cwgp_date'
+            }));
+
+            const stDeliverByDate = new Date(currentRecord.getValue({
+                fieldId: 'custpage_cwgp_deliverbydate'
+            }));
+            
+            console.log('stDate', stDate);
+            console.log('stDeliverByDate', stDeliverByDate);
+
+            if(stDeliverByDate <= stDate){
+                alert('You cannot set a Deliver By Date before or on Transaction Date.');
+                return false;
             }
+
+            /*if(pageMode == 'create'){
+                alert('Item and Quantity requested are still subject for approval.');
+            }*/
 
         }
 
@@ -527,19 +549,25 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
             let blNegativeQuantity = [];
             let blEmptyFields = [];
             let itemSummary = [];
+            let flDamageEstValue = 0;
+            let flTesterEstValue = 0;
+            let flTheftEstValue = 0;
+
+            
             for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     line: x
                 });
-                let stItem = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_item'
-                });
                 let intQuantity = parseInt(currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
+
+                /*let dtDateTime = currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_datetime'
+                });*/
 
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -556,6 +584,22 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_qtyonhand'
                 })) || 0
 
+                
+                let flEstimatedReplacementValue = parseFloat(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+                })) || 0
+
+                let stAdjustType = currentRecord.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustmenttype'
+                })
+
+                flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+                flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+                flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
+
                 itemSummary.push({
                     stItem: currentRecord.getCurrentSublistText({
                         sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -568,8 +612,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     })
                 });
 
-                if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
-                //if(!stItem || !stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stAdjustmentReason || !stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -594,6 +637,10 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 res[value.stAdjustType].intQty += value.intQty;
                     return res;
                 }, {});
+            }
+
+            for(let x = 0; x < result.length; x++){
+                result[x]['totalEstRepVal'] = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
             }
             currentRecord.setValue('custpage_cwgp_totaladjustmenthidden',JSON.stringify(result));
             console.log(currentRecord.getValue('custpage_cwgp_totaladjustmenthidden'));
@@ -815,7 +862,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
                 const intFinalQty = intStartingQty+intReceivedQty-intDamagedQty
 
-                if(intFinalQty){
+                if(!isNaN(intFinalQty)){
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_finalquantity',
@@ -841,7 +888,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
            
                 const intVariance = intShippedQty-intQty;
 
-                if(intVariance){
+                if(!isNaN(intVariance)){
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_variance',
@@ -890,6 +937,13 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                         fieldId: 'custpage_cwgp_adjustmenttype',
                         value: 2
                     });
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId: 'custpage_cwgp_finalquantity',
+                        value: qtyOnHand - 1
+                    });
+
+                    
                 }
                 if(sublistId === 'custpage_inventorayadjustment_items'){
                     currentRecord.setCurrentSublistValue({
@@ -1063,6 +1117,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         return {
             'custpage_cwgp_description': item.salesdescription,
             'custpage_cwgp_rate': item.franchiseprice || 0,
+            'custpage_cwgp_estimatedreplacementvalue': item.franchiseprice || 0,
             'custpage_cwgp_quantity': 1,
             'custpage_cwgp_amount': item.franchiseprice || 0,
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
@@ -1235,25 +1290,45 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
        const intIaLineCountDamageTesterTheft = currRec.getLineCount('custpage_inventoryadjustmentdamagetestertheft_items');
        let qtyByType = [];
        let itemSummary = [];
+       let flDamageEstValue = 0;
+       let flTesterEstValue = 0;
+       let flTheftEstValue = 0;
 
-       for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
-        currRec.selectLine({
+        for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
+            currRec.selectLine({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                 line: x
             });
+
+            let flEstimatedReplacementValue = parseFloat(currRec.getCurrentSublistValue({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+            })) || 0
+
+            let stAdjustType = currRec.getCurrentSublistText({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_adjustmenttype'
+            })
+            
+            flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+            flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+            flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
             qtyByType.push({
+
+                intQty: parseInt(currRec.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })),
+                sublistId: parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })) || 0,
                 stItem: currRec.getCurrentSublistText({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_item'
                 }),
-                 intQty: parseInt(currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustqtyby'
-                })) || 0,
-                 stAdjustType: currRec.getCurrentSublistText({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustmenttype'
-                })
+                stAdjustType: stAdjustType
             });
             let qtyTempQtyOnHand = parseInt(currRec.getCurrentSublistValue({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -1283,6 +1358,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
           console.log(JSON.stringify(qtyByType));
           console.log(JSON.stringify(itemSummary));
 
+        //Total Quantity by Adjustment Type Summary
         if(qtyByType.length > 0){
             let result = []
             qtyByType.reduce(function(res, value) {
@@ -1296,17 +1372,24 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
             let stTextAreaVal = '';
 
+            console.log(JSON.stringify({
+                flDamageEstValue: flDamageEstValue,
+                flTesterEstValue: flTesterEstValue,
+                flTheftEstValue: flTheftEstValue
+            }));
+
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</td><td style="font-weight: bold;padding:3px">Total Estimated Replacement Value</td>';
             for(let x = 0; x < result.length; x++){
-                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</tr>';
+                let flTotalEstVal = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</td><td>'+flTotalEstVal.toFixed(2)+'</td></tr>';
             }
             stTextAreaVal += '</div></table>'
 
             currRec.setValue('custpage_cwgp_totaladjustment',stTextAreaVal)
         }
 
-           
+        //Item Summary
         if(itemSummary.length > 0){
             let result = []
 
