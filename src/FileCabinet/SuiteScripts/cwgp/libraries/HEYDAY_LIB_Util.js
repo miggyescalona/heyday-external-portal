@@ -260,8 +260,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         function getPairedIntercoStatus(intPairedIntercoIds, arrMapIntercompanyPO, blForReceiving, stApprovalStatus){
             let arrPairedSOs = [];
-            const ssPairedIntercoSo = search.load({ id: "600", type: "salesorder" });
-
+            const ssPairedIntercoSo = search.load({ id: "customsearch_cwgp_retail_getpairedso", type: "salesorder" });
 
             if(intPairedIntercoIds.length!=0){;
                 ssPairedIntercoSo.filters.push(search.createFilter({
@@ -1773,7 +1772,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     }
 
     const buildInventoryCountItemSearch = (stLocation,stSubsidiary) => {
-        const ssInventoryCountItem = search.load({ id: "626", type: "item" });
+        const ssInventoryCountItem = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
         let arrInventoryCountItem = [];
 
         ssInventoryCountItem.filters.push(search.createFilter({
