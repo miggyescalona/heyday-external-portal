@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
+            ID: 'customscript_cwgp_sl_franchisepages2',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
         }
     };
     /**
@@ -749,10 +749,10 @@ define([
     };
 
     const buildInventoryCountSearch = (stCustomer) => {
-        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invcount", type: "customrecord_cwgp_franchiseinvcount" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invcount", type: "customrecord_cwgp_franchiseinvadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
-            name: 'custrecord_cwgp_fic_customer',
+            name: 'custrecord_cwgp_fia_customer',
             operator: 'anyof',
             values: stCustomer,
         }));
