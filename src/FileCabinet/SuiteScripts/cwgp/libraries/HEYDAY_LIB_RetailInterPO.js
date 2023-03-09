@@ -12,7 +12,7 @@
  */
 
 
-define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, record, format, util,redirect) => {
+define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/https','./HEYDAY_LIB_ClientExternalPortal.js'], (search, record, format, util,redirect,url,https,ClientEPLib) => {
 
     const _CONFIG = {
         SCRIPT: {
@@ -260,12 +260,21 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             let lineCount = 0;         
             let objItemSummary = [];
+            let flTotalEstimateReplacementValue = 0;
             for(var i = 0;i<arrIteGroupedByAccount[x][1].length;i++){
+                let objItemDetails;
+                let flFranchisePrice;
+
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'item',
                     value: arrIteGroupedByAccount[x][1][i].item
                 });
+
+                objItemDetails = getItemDetails(arrIteGroupedByAccount[x][1][i].item);
+                flFranchisePrice = objItemDetails.custpage_cwgp_estimatedreplacementvalue;
+
+                flTotalEstimateReplacementValue += flFranchisePrice*Math.abs(arrIteGroupedByAccount[x][1][i].adjustqtyby);
 
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
@@ -304,7 +313,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             objItemSummary.push({
                 Id: 'Damage',
-                intQty: lineCount
+                intQty: lineCount,
+                totalEstRepVal :flTotalEstimateReplacementValue
              });
              
              recIA.setValue({
@@ -589,22 +599,31 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 });
             }
             if(request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_variance',line: i}) && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_receive',line: i}) == 'T' && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_variance',line: i}) != 0){
+                let quantity = 0;
+                let variance = 0;
+                let shippedqty = 0;
+
+                quantity = parseInt(request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_quantity',
+                    line: i
+                })) || 0
+
+                shippedqty = parseInt(request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_shippedquantityhidden',
+                    line: i
+                })) || 0
+
+                variance = shippedqty-quantity;
+
                 arrMapVariance.push({
                     item: request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_itemid',
                         line: i
                     }),
-                    /*quantity: request.getSublistValue({
-                        group: 'custpage_itemreceipt_items',
-                        name: 'custpage_cwgp_quantity',
-                        line: i
-                    }),*/
-                    quantity: request.getSublistValue({
-                        group: 'custpage_itemreceipt_items',
-                        name: 'custpage_cwgp_variance',
-                        line: i
-                    }),
+                quantity: variance
                 });
             }
         }
@@ -780,12 +799,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
     };
 
     const editRetailPurchaseOrder = (stPoId, objPOEditDetails, objPORecordDetails, request) => {
-      
+            let blUpdateApprovalStatus = false;
+            let stApprovalStatus;
+
             const recPO = record.load({
                 type: record.Type.PURCHASE_ORDER,
                 id: stPoId,
                 isDynamic: true
             });
+            
+            stApprovalStatus = recPO.getValue('approvalstatus');
 
             const objPOEditBodyFields = objPOEditDetails.body;
             log.debug('objPOEditBodyFields', objPOEditBodyFields);
@@ -794,6 +817,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             log.debug('objPORecordBodyFields', objPORecordBodyFields);
 
             const objBodyFields = getBodyFieldsToUpdate(objPORecordBodyFields, objPOEditBodyFields);
+
+            log.debug('objBodyFields', objBodyFields);
+
+            if(Object.keys(objBodyFields).length > 0){
+                blUpdateApprovalStatus = true;
+            }
 
             util.each(objBodyFields, (value, fieldId) => {
                 recPO.setValue({
@@ -811,8 +840,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             const arrRemoveLines = objItemLines.removeLines;
             const arrUpdateLines = objItemLines.updateLines;
 
+            if(arrRemoveLines.length > 0){
+                blUpdateApprovalStatus = true;
+            }
                     
             log.debug('arrUpdateLines',arrUpdateLines);
+            log.debug('arrRemoveLines',arrRemoveLines);
 
             arrRemoveLines.forEach((objRemoveLines) => {
                 log.debug('removing lines...', 'removing lines...');
@@ -852,7 +885,28 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 }
 
                 const arrSkipFields  = ['custpage_cwgp_description'];
+                const arrCheckEditableFields  = ['item','quantity'];
                 util.each(objUpdateLines, (value, fieldId) => {
+                        let stCurrentVal;
+                        let stNewVal;
+
+                        if(arrCheckEditableFields.includes(fieldId)){
+                            log.debug('Get fieldId: ' + fieldId, recPO.getCurrentSublistValue({
+                                fieldId: fieldId,
+                                sublistId: 'item',
+                            }));
+                            log.debug('Set fieldId: ' + fieldId, value );
+                            
+                            stCurrentVal = recPO.getCurrentSublistValue({
+                                fieldId: fieldId,
+                                sublistId: 'item',
+                            });
+                            stNewVal = value;
+                            if(stCurrentVal != stNewVal){
+                                log.debug('Line Items Not Equal', stCurrentVal + '|' +stNewVal)
+                                blUpdateApprovalStatus = true;
+                            }
+                        }
                         recPO.setCurrentSublistValue({
                             fieldId: fieldId,
                             sublistId: 'item',
@@ -862,6 +916,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 recPO.commitLine({ sublistId: 'item' });
             });
+
+            log.debug('Back to Pending Approval',JSON.stringify({
+                blUpdateApprovalStatus: blUpdateApprovalStatus,
+                stApprovalStatus: stApprovalStatus
+            }));
+            if(blUpdateApprovalStatus && stApprovalStatus == 3){
+                recPO.setValue('approvalstatus',1);
+            }
 
         
             const idPO = recPO.save();
@@ -1197,6 +1259,38 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             updateLines: arrColFldsToUpdate,
             removeLines: arrColFieldsToRemove
         }
+    };
+
+    const getItemDetails = (stItem) => {
+
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                item:   stItem,
+                type: 'retail',
+            }
+        });
+
+        const objResponse = https.get({
+            url: stCreateIntPOBaseUrl,
+        });
+
+        const { item } = JSON.parse(objResponse.body);
+
+        return {
+            'custpage_cwgp_description': item.purchasedescription,
+            'custpage_cwgp_rate': item.franchiseprice || 0,
+            'custpage_cwgp_quantity': 1,
+            'custpage_cwgp_amount': item.franchiseprice || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode,
+            'custpage_cwgp_itemid': item.internalid[0].value,
+            'custpage_cwgp_estimatedreplacementvalue': 1*item.franchiseprice
+        };
     };
 
     return {

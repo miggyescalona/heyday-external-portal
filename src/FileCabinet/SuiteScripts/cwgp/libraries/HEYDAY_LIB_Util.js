@@ -1389,7 +1389,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'item',
                     fieldId: 'rate',
                     line: x
-                })
+                }),
+                
+                
             });
         }
 
@@ -1450,9 +1452,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             let stTextAreaVal = '';
 
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</td><td style="font-weight: bold;padding:3px">Total Estimated Replacement Value</td>';
             for(let x = 0; x < objItemSummary.length; x++){
-                stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</tr>';
+                let totalEstRepVal = objItemSummary[x].totalEstRepVal || 0;
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ objItemSummary[x].Id+'</td><td style="padding:3px">'+objItemSummary[x].intQty+'</td><td>'+totalEstRepVal.toFixed(2)+'</td></tr>';
             }
             stTextAreaVal += '</div></table>'
 
@@ -1624,10 +1627,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     });
                 }
                 else if(Number.isInteger(value)){
+                    let tempVal = value || 0;
                     sbl.setSublistValue({
                         id: fieldId,
                         line: i,
-                        value: parseInt(value).toFixed(0)
+                        value: parseInt(tempVal).toFixed(0)
                     });
                 }
                 else{

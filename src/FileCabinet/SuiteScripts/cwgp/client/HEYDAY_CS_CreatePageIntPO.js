@@ -546,6 +546,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let blNegativeQuantity = [];
             let blEmptyFields = [];
             let itemSummary = [];
+            let flDamageEstValue = 0;
+            let flTesterEstValue = 0;
+            let flTheftEstValue = 0;
+
+            
             for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -576,6 +581,22 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_qtyonhand'
                 })) || 0
 
+                
+                let flEstimatedReplacementValue = parseFloat(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+                })) || 0
+
+                let stAdjustType = currentRecord.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustmenttype'
+                })
+
+                flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+                flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+                flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
+
                 itemSummary.push({
                     stItem: currentRecord.getCurrentSublistText({
                         sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -603,8 +624,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             }
             console.log('itemSummary: ' + JSON.stringify(itemSummary));
-            let result = []
-            if(itemSummary){
+            let result = [];
+            if(itemSummary.length > 0){
                 itemSummary.reduce(function(res, value) {
                 if (!res[value.stAdjustType]) {
                     res[value.stAdjustType] = { Id: value.stAdjustType, intQty: 0 };
@@ -613,6 +634,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 res[value.stAdjustType].intQty += value.intQty;
                     return res;
                 }, {});
+            }
+
+            console.log('result: ' + JSON.stringify(result));
+
+            for(let x = 0; x < result.length; x++){
+                result[x]['totalEstRepVal'] = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
             }
             currentRecord.setValue('custpage_cwgp_totaladjustmenthidden',JSON.stringify(result));
             console.log(currentRecord.getValue('custpage_cwgp_totaladjustmenthidden'));
@@ -810,6 +837,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 const intVariance = intShippedQty-intQty;
 
                 if(!isNaN(intVariance)){
+                    console.log('Variance: ' + intVariance);
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_variance',
@@ -1259,8 +1287,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 intFinalOnHand: qtyTempQtyOnHand-qtyTempIntQty
             });
         }
-          console.log(JSON.stringify(qtyByType));
-          console.log(JSON.stringify(itemSummary));
+          console.log('qtyByType: '+ JSON.stringify(qtyByType));
+          //console.log(JSON.stringify(itemSummary));
 
         //Total Quantity by Adjustment Type Summary
         if(qtyByType.length > 0){
@@ -1276,17 +1304,17 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             let stTextAreaVal = '';
 
-            console.log(JSON.stringify({
+           /* console.log(JSON.stringify({
                 flDamageEstValue: flDamageEstValue,
                 flTesterEstValue: flTesterEstValue,
                 flTheftEstValue: flTheftEstValue
-            }));
+            }));*/
 
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
             stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</td><td style="font-weight: bold;padding:3px">Total Estimated Replacement Value</td>';
             for(let x = 0; x < result.length; x++){
-                let flTotalEstVal = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
-                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</td><td>'+flTotalEstVal+'</td></tr>';
+                let flTotalEstVal = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : 0;
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</td><td>'+flTotalEstVal.toFixed(2)+'</td></tr>';
             }
             stTextAreaVal += '</div></table>'
 

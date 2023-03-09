@@ -574,7 +574,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'hidden'
-                    }
+                    },
                 },    
                 itemreceipt: {
                     RECEIVE: {

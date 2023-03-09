@@ -33,7 +33,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
     const fieldChanged = (context) => {
         const { currentRecord } = context;
 
-        if (context.fieldId == 'custpage_cwgp_page') {
+        /*if (context.fieldId == 'custpage_cwgp_page') {
             const intPage = currentRecord.getValue({ fieldId: 'custpage_cwgp_page' });
             console.log('page', intPage);
 
@@ -50,7 +50,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
             //bypass the "Leave Changes" alert box
             window.onbeforeunload = null;
             location.href = stNewURL;
-        }
+        }*/
 
         if (context.fieldId == 'custpage_cwgp_location') {
             const intLocation = currentRecord.getValue({ fieldId: 'custpage_cwgp_location' });
