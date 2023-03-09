@@ -91,6 +91,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     label: 'Date',
                     container: 'PRIMARY',
                     mandatory: true,
+                    displayType: 'inline'
                     //defaultValue: new Date()
                 },
                 DELIVERY_BY_DATE: {
@@ -203,13 +204,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
                     type: serverWidget.FieldType.DATE,
                     label: 'Date',
                     container: 'PRIMARY',
-                    mandatory: true
+                    mandatory: true,
+                    displayType: 'inline'
                 },
                 MEMO: {
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
                     container: 'PRIMARY'
+                },
+                OPERATOR: {
+                    id: 'custpage_cwgp_operator',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Operator',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -563,7 +572,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             }
         });
 
-        utilLib.setPOSublist(sbl, objPO);
+        utilLib.setSublistValues(sbl, objPO);
 
         form.addSubmitButton({ label: 'Save' });
         

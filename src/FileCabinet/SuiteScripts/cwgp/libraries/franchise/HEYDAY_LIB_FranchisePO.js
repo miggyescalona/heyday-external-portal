@@ -195,7 +195,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 log.debug('recDamaged', recDamaged);
             });
             let result = []
-            if(itemSummary){
+            /*if(itemSummary){
                 itemSummary.reduce(function(res, value) {
                 if (!res[value.stAdjustType]) {
                     res[value.stAdjustType] = { Id: value.stAdjustType, intQty: 0 };
@@ -204,13 +204,13 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 res[value.stAdjustType].intQty += value.intQty;
                     return res;
                 }, {});
-            }
+            }*/
             log.debug('itemSummary', itemSummary);
             record.submitFields({
                 type: 'customrecord_cwgp_franchiseinvadjustment',
                 id: idIA,
                 values: {
-                    'custrecord_cwgp_fia_itemsummary': JSON.stringify(result)
+                    'custrecord_cwgp_fia_itemsummary': JSON.stringify(arrPOSblFields[3])
                 }
             });
 
@@ -336,7 +336,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
     const createFranchiseIC = (request,) => {
         log.debug('createFranchiseIC', 'createFranchiseIC');
         const recIC = record.create({
-            type: 'customrecord_cwgp_franchiseinvcount'
+            type: 'customrecord_cwgp_franchiseinvadjustment'
         });
 
         const objIABodyFields = mapFranchiseICBodyFields(request);
@@ -350,16 +350,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const idIC = recIC.save();
         //const idIA = 123;
         
-        const arrPOSblFields = mapFranchiseICSublistFields(idIC,objIABodyFields.custrecord_cwgp_fic_customer,request);
+        const arrPOSblFields = mapFranchiseICSublistFields(idIC,objIABodyFields.custrecord_cwgp_fia_customer,request);
         log.debug('mapFranchiseICSublistFields', mapFranchiseICSublistFields);
         arrPOSblFields.forEach((objPOBodyFields) => {
             log.debug('objPOBodyFields', objPOBodyFields);
             const recICLine = record.create({
                 type: 'customrecord_cwgp_franchise_tranline'
-            });
-            recICLine.setValue({
-                fieldId: 'custrecord_cwgp_ftl_parentia',
-                value: idIC
             });
             
             util.each(objPOBodyFields, (value,fieldId) => {
@@ -383,7 +379,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stDate = request.parameters.custpage_cwgp_date;
         const stDeliveryDate = request.parameters.custpage_cwgp_deliverbydate;
         const stOperator = request.parameters.custpage_cwgp_operator;
-
+        const stOperatorId = request.parameters.custpage_cwgp_userid;
+        
         const objMapBodyFields = {
             entity: stCustomer,
             trandate: new Date(stDate),
@@ -392,7 +389,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             subsidiary: 15,
             class: 6,
             location: 230,
-            'custbody_cwgp_externalportaloperator':stOperator
+            'custbody_cwgp_externalportaloperator':stOperator,
+            'custbody_cwgp_externalportaloperatorid': stOperatorId
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -407,6 +405,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stMemoMain = request.parameters.custpage_cwgp_memomain;
         const stDate = request.parameters.custpage_cwgp_date;
         const stOperator = request.parameters.custpage_cwgp_operator;
+        const stOperatorId = request.parameters.custpage_cwgp_userid;
         log.debug(' mapFranchiseIRBodyFields', request.parameters);
         const objMapBodyFields = {
         	'recid': recid,
@@ -415,7 +414,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         	'custrecord_cwgp_fr_location': stLocation,
         	'custrecord_cwgp_fr_date': new Date(stDate),
             'custrecord_cwgp_fr_memo': stMemoMain,
-            'custrecord_cwgp_fr_operator':stOperator
+            'custrecord_cwgp_fr_operator':stOperator,
+            'custrecord_cwgp_fr_operatorid':stOperatorId
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -429,6 +429,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
+        const stOperatorId = request.parameters.custpage_cwgp_userid;
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fia_customer': stCustomer,
@@ -437,6 +438,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             'custrecord_cwgp_fia_operator': stMemoMain,
             'custrecord_cwgp_fia_subtype': stAdjustmentSubType,
             'custrecord_cwgp_fia_operator': stOperator,
+            'custrecord_cwgp_fia_operatorid': stOperatorId,
             'custrecord_cwgp_fia_itemsummary': stTotalAdjustment
         };
         log.debug('objMapBodyFields', objMapBodyFields);
@@ -452,16 +454,20 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const stSubsidiary = request.parameters.custpage_cwgp_subsidiary;
         const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
         const stLocation = request.parameters.custpage_cwgp_location;
+        const stOperatorId = request.parameters.custpage_cwgp_userid;
+        
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
-        	'custrecord_cwgp_fic_customer': stCustomer,
-        	'custrecord_cwgp_fic_date': new Date(stDate),
-            'custrecord_cwgp_fic_memo': stMemoMain,
-            'custrecord_cwgp_fic_operator': stMemoMain,
-            'custrecord_cwgp_fic_operator': stOperator,
-            'custrecord_cwgp_fic_subsidiary': stSubsidiary,
-        	'custrecord_cwgp_fic_location': stLocation,
-            'custrecord_cwgp_fic_totaldiscrepancy': stTotalDiscrepancy
+        	'custrecord_cwgp_fia_customer': stCustomer,
+        	'custrecord_cwgp_fia_date': new Date(stDate),
+            'custrecord_cwgp_fia_memo': stMemoMain,
+            'custrecord_cwgp_fia_operator': stMemoMain,
+            'custrecord_cwgp_fia_operator': stOperator,
+            'custrecord_cwgp_fia_subsidiary': stSubsidiary,
+        	'custrecord_cwgp_fia_location': stLocation,
+            'custrecord_cwgp_fia_totaldiscrepancy': stTotalDiscrepancy,
+            'custrecord_cwgp_fia_adjustmenttype' : 1,
+            'custrecord_cwgp_fia_operatorid': stOperatorId,
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -528,7 +534,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         let arrMapSblFields = [];
         let arrMapDamagedItems = [];
         let arrMapVariance = [];
-
+        let arrMapDamagedSummary = [];
+        let inDamagedQty = 0;
+        let flTotal = 0;
         log.debug('mapFranchiseIRSublistFields', '');
         log.debug('request', request);
         const intLineCount = request.getLineCount({ group: 'custpage_itemreceipt_items' });
@@ -595,15 +603,28 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         	}
             if(recieve =='T' && qtyDamaged > 0){
                 let qtyActual = -1 * qtyDamaged;
+                inDamagedQty += parseInt(qtyDamaged);
+                let stItem = request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_item',
+                    line: i
+                });
+                
+                let flRate = request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_rate',
+                    line: i
+                });
+                log.debug('flRate', flRate);
+                log.debug('qtyDamaged', qtyDamaged);
+                log.debug('flTotal', flTotal);
+                flTotal += parseFloat(flRate * qtyDamaged);
+                log.debug('flTotal', flTotal);
                 log.debug('qtyActual', qtyActual);
         		arrMapDamagedItems.push({
                     'custrecord_cwgp_ftl_parentir': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
-                    'custrecord_cwgp_ftl_item': request.getSublistValue({
-                        group: 'custpage_itemreceipt_items',
-                        name: 'custpage_cwgp_item',
-                        line: i
-                    }),
+                    'custrecord_cwgp_ftl_item': stItem,
                     'custrecord_cwgp_ftl_description': request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_description',
@@ -636,10 +657,17 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             
         }
 
+        arrMapDamagedSummary.push({
+            'Id': 'Damage',
+            'intQty': inDamagedQty,
+            'totalEstRepVal': flTotal
+        });
+
         log.debug('arrMapSblFields', arrMapSblFields);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
-        return [arrMapSblFields,arrMapDamagedItems,arrMapVariance];
+        log.debug('arrMapDamagedSummary', arrMapDamagedSummary);
+        return [arrMapSblFields,arrMapDamagedItems,arrMapVariance,arrMapDamagedSummary];
     };
 
     const mapFranchiseIASublistFields = (id,stCustomer,request) => {
@@ -806,7 +834,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
         const intLineCountStandard = request.getLineCount({ group: stSublistName });
 
-
+        log.debug('intLineCountStandard', intLineCountStandard);
         for (let i = 0; i < intLineCountStandard; i++) {
             let inStartingQty = request.getSublistValue({
                 group: stSublistName,
@@ -815,63 +843,68 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             });
             let inEndingQty = request.getSublistValue({
                 group: stSublistName,
-                name: 'custpage_cwgp_finalquantity',
+                name: 'custpage_cwgp_enteredquantity',
                 line: i
+            }) || 0;
+
+            if(!inEndingQty){
+                inEndingQty = 0;
+            }
+            log.debug('i', i);
+            log.debug('inEndingQty', inEndingQty);
+            log.debug('inStartingQty', inStartingQty);
+            let inActualQty = 0;
+            inActualQty = inEndingQty - inStartingQty;
+            log.debug('inActualQty', inActualQty);
+            arrMapSblFields.push({
+                'custrecord_cwgp_ftl_parentia': id,
+                'custrecord_cwgp_ftl_customer': stCustomer,
+                'custrecord_cwgp_ftl_item': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_item',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_description': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_description',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_actualqty': inActualQty,
+                'custrecord_cwgp_ftl_displayqty': inActualQty,
+                'custrecord_cwgp_ftl_endingqty': inEndingQty,
+                'custrecord_cwgp_ftl_type' : 4,
+                'custrecord_cwgp_ftl_discrepancy': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_discrepancy',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_adjustmentreason': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_adjustmenttype': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_adjustmenttype',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_enteredqty': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_enteredquantity',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_finalqty': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_finalquantity',
+                    line: i
+                }),
+                'custrecord_cwgp_ftl_startingqty': request.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_qtyonhand',
+                    line: i
+                }),
             });
             
-            if(inEndingQty){
-                let inActualQty = 0;
-                inActualQty = inEndingQty - inStartingQty;
-                log.debug('inActualQty', inActualQty);
-                arrMapSblFields.push({
-                    'custrecord_cwgp_ftl_parentic': id,
-                    'custrecord_cwgp_ftl_customer': stCustomer,
-                    'custrecord_cwgp_ftl_item': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_item',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_description': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_description',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_actualqty': inActualQty,
-                    'custrecord_cwgp_ftl_displayqty': inActualQty,
-                    'custrecord_cwgp_ftl_endingqty': inEndingQty,
-                    'custrecord_cwgp_ftl_type' : 4,
-                    'custrecord_cwgp_ftl_discrepancy': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_discrepancy',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_adjustmentreason': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_adjustmentreason',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_adjustmenttype': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_adjustmenttype',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_enteredqty': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_enteredquantity',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_finalqty': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_finalquantity',
-                        line: i
-                    }),
-                    'custrecord_cwgp_ftl_startingqty': request.getSublistValue({
-                        group: stSublistName,
-                        name: 'custpage_cwgp_qtyonhand',
-                        line: i
-                    }),
-                });
-            }
             
         }
         log.debug('arrMapSblFields', arrMapSblFields)
@@ -1011,6 +1044,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             fieldId: 'custbody_cwgp_modifiedbyfranchise',
             value: true
         });
+        recPO.setValue({
+            fieldId: 'custbody_cwgp_franchiseapprovalstatus',
+            value: 1
+        });
 
         const objPOEditBodyFields = objPOEditDetails.body;
         log.debug('objPOEditBodyFields', objPOEditBodyFields);
@@ -1097,7 +1134,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             id: stPoId,
             values: {
                 'custrecord_cwgp_fr_date': objPOEditBodyFields.custrecord_cwgp_fr_date,
-                'custrecord_cwgp_fr_memo': objPOEditBodyFields.custrecord_cwgp_fr_memo
+                'custrecord_cwgp_fr_memo': objPOEditBodyFields.custrecord_cwgp_fr_memo,
             }
         });
         
