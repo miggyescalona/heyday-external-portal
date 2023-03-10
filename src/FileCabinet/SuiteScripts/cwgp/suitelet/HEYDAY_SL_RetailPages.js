@@ -28,8 +28,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_retailpages',
-            DEPLOY: 'customdeploy_cwgp_sl_retailpages'
+            ID: 'customscript_cwgp_sl_retailpages2',
+            DEPLOY: 'customdeploy_cwgp_sl_retailpages2'
         }
     };
     /**
