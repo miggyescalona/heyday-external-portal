@@ -2515,7 +2515,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
     const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines) => {
 
-        const ssItemPerLocationIC = search.load({ id: "626", type: "item" });
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
 
 
         ssItemPerLocationIC.filters.push(search.createFilter({
@@ -2613,7 +2613,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             arrIndexFirstCount.push(i);
         }
 
-        const ssItemPerLocationIC = search.load({ id: "626", type: "item" });
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
 
 
         ssItemPerLocationIC.filters.push(search.createFilter({
