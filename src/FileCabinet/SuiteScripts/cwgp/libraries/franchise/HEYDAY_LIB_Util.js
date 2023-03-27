@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/format', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, format, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/format', 'N/file', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, format, file, EPLib) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -1415,8 +1415,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         const ssItemPerLocOnhand = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
         
         if(dtAsof){
-            ssItemPerLocOnhand.filters.push(search.createFilter({
+            /*ssItemPerLocOnhand.filters.push(search.createFilter({
                 name: 'created',
+                operator: 'onorbefore',
+                values: dtAsof,
+            }));*/
+            ssItemPerLocOnhand.filters.push(search.createFilter({
+                name: 'custrecord_cwgp_ftl_date',
                 operator: 'onorbefore',
                 values: dtAsof,
             }));
@@ -1456,11 +1461,18 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
          const ssItemPerLocOthers = search.load({ id: "customsearch_cwgp_franchise_itemperloc", type: "customrecord_cwgp_franchise_tranline" });
          
          if(dtFrom && dtTo){
-            ssItemPerLocOthers.filters.push(search.createFilter({
+            /*ssItemPerLocOthers.filters.push(search.createFilter({
                 name: 'created',
                 operator: 'within',
                 values: [dtFrom,dtTo],
+            }));*/
+
+            ssItemPerLocOthers.filters.push(search.createFilter({
+                name: 'custrecord_cwgp_ftl_date',
+                operator: 'within',
+                values: [dtFrom,dtTo],
             }));
+
         }
 
         ssItemPerLocOthers.filters.push(search.createFilter({
@@ -1529,8 +1541,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             values: stCustomer,
         }));
         if(dtAsof){
-            ssItemPerLocTotalOnhand.filters.push(search.createFilter({
+            /*ssItemPerLocTotalOnhand.filters.push(search.createFilter({
                 name: 'created',
+                operator: 'onorbefore',
+                values: dtAsof,
+            }));*/
+            ssItemPerLocTotalOnhand.filters.push(search.createFilter({
+                name: 'custrecord_cwgp_ftl_date',
                 operator: 'onorbefore',
                 values: dtAsof,
             }));
@@ -1552,8 +1569,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             values: stCustomer,
         }));
         if(dtFrom && dtTo){
-            ssItemPerLocTotalOthers.filters.push(search.createFilter({
+            /*ssItemPerLocTotalOthers.filters.push(search.createFilter({
                 name: 'created',
+                operator: 'within',
+                values: [dtFrom,dtTo],
+            }));*/
+            ssItemPerLocTotalOthers.filters.push(search.createFilter({
+                name: 'custrecord_cwgp_ftl_date',
                 operator: 'within',
                 values: [dtFrom,dtTo],
             }));
@@ -1757,6 +1779,111 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         });
     };
 
+    const createICLineBackupFile = (stOperator, stStep,rec) => {
+
+        let headers = 'Item,UPC,SKU,First Count';
+        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+        var d = new Date().toLocaleDateString();;
+        
+        var csvFile = file.create({
+            name: stOperator+'_step'+stStep+'_'+d+'.csv',
+            fileType: file.Type.CSV,
+            //contents: lines,
+            folder: 821
+        });
+
+        if(stStep == 1){
+            csvFile.appendLine({
+                value: headers
+            });
+            
+        }
+        else if(stStep == 2){
+            csvFile.appendLine({
+                value: headers+',Second Count'
+            });
+        }
+        else if(stStep == 3){
+            csvFile.appendLine({
+                value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
+            });
+        }
+
+        var numLines = rec.getLineCount({
+            group: stSublistName
+        });
+        log.debug('numLines', numLines);
+        for(var i=0; i<numLines; i++){
+            var line = '';
+            var stItem = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_item',
+                line: i
+            });
+            line += stItem+',';
+            var stUpc = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_upccode',
+                line: i
+            });
+            line += stUpc+',';
+            var stSku = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_internalsku',
+                line: i
+            });
+            line += stSku+',';
+            var inFirstCount = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            }) || '';
+            line += inFirstCount;
+            
+            if(stStep == 2 || stStep == 3){
+                var inSecondCount = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+                line += ','+inSecondCount;
+            }
+            if(stStep == 3){
+                var inEnteredQty = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_enteredquantity',
+                    line: i
+                }) || 0;
+                line += ','+inEnteredQty;
+                var inStartingQty = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_qtyonhand',
+                    line: i
+                });
+                line += ','+inStartingQty;
+                var inDiscrepancy = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_discrepancy',
+                    line: i
+                });
+                line += ','+inDiscrepancy;
+                var stAdjustmentReason = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
+                line += ','+stAdjustmentReason;
+            }
+            
+            csvFile.appendLine({
+                value: line
+            });
+        }
+
+        var fileId = csvFile.save();
+
+    };
+
     
 
     
@@ -1791,6 +1918,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         getTotalQtyPerAdjustmentTypeFranchise,
         getTotalQtyFranchise,
         getItemPerLocationColumns,
-        getItemPerLocationTotalColumns
+        getItemPerLocationTotalColumns,
+        createICLineBackupFile
     }
 });
