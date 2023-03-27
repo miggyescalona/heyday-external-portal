@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, util) => {
+define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Util.js'], (search, record, format, util, task, utilLib) => {
 
     
     const createFranchisePO = (request) => {
@@ -76,7 +76,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const idIR = recIR.save();
         log.debug('idIR', idIR);
         //create IR lines
-        const arrPOSblFields = mapFranchiseIRSublistFields(idIR,objPOBodyFields.custrecord_cwgp_fr_customer,request);
+        const arrPOSblFields = mapFranchiseIRSublistFields(idIR,objPOBodyFields.custrecord_cwgp_fr_customer,objPOBodyFields.custrecord_cwgp_fr_date,request);
         let lineList = [];
         let qtyList = [];
         log.debug('arrPOSblFields', arrPOSblFields);
@@ -309,7 +309,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         const idIA = recIA.save();
         //const idIA = 123;
         
-        const arrPOSblFields = mapFranchiseIASublistFields(idIA,objIABodyFields.custrecord_cwgp_fia_customer,request);
+        const arrPOSblFields = mapFranchiseIASublistFields(idIA,objIABodyFields.custrecord_cwgp_fia_customer,objIABodyFields.custrecord_cwgp_fia_date,request);
         log.debug('mapFranchiseIASublistFields', mapFranchiseIASublistFields);
         arrPOSblFields.forEach((objPOBodyFields) => {
             log.debug('objPOBodyFields', objPOBodyFields);
@@ -349,10 +349,15 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         log.debug('objIABodyFields', objIABodyFields);
         const idIC = recIC.save();
         //const idIA = 123;
-        
-        const arrPOSblFields = mapFranchiseICSublistFields(idIC,objIABodyFields.custrecord_cwgp_fia_customer,request);
-        log.debug('mapFranchiseICSublistFields', mapFranchiseICSublistFields);
-        arrPOSblFields.forEach((objPOBodyFields) => {
+        utilLib.createICLineBackupFile(objIABodyFields.custrecord_cwgp_fia_operator, 3, request);
+        const arrPOSblFields = mapFranchiseICSublistFields(idIC,objIABodyFields.custrecord_cwgp_fia_customer,objIABodyFields.custrecord_cwgp_fia_date,request);
+        log.debug('arrPOSblFields', arrPOSblFields.length);
+        var mrTask = task.create({taskType: task.TaskType.SCHEDULED_SCRIPT});
+        mrTask.scriptId = 'customscript_cwgp_sc_createiclines';
+        mrTask.params = {custscript_cwgp_iclines: JSON.stringify(arrPOSblFields)};
+        //mrTask.deploymentId = custdeploy1;
+        var mrTaskId = mrTask.submit();
+        /*arrPOSblFields.forEach((objPOBodyFields) => {
             log.debug('objPOBodyFields', objPOBodyFields);
             const recICLine = record.create({
                 type: 'customrecord_cwgp_franchise_tranline'
@@ -366,7 +371,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             });
             let recIcLineID = recICLine.save();
             //log.debug('recIALineID', recIALineID);
-        });
+        });*/
         return idIC;
     }
     
@@ -530,7 +535,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return arrMapSblFields;
     };
     
-    const mapFranchiseIRSublistFields = (id,stCustomer,request) => {
+    const mapFranchiseIRSublistFields = (id,stCustomer,stDate,request) => {
         let arrMapSblFields = [];
         let arrMapDamagedItems = [];
         let arrMapVariance = [];
@@ -578,6 +583,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         		arrMapSblFields.push({
                     'custrecord_cwgp_ftl_parentir': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ftl_item': request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_item',
@@ -624,6 +630,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         		arrMapDamagedItems.push({
                     'custrecord_cwgp_ftl_parentir': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ftl_item': stItem,
                     'custrecord_cwgp_ftl_description': request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
@@ -645,6 +652,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         		arrMapVariance.push({
                     'custrecord_cwgp_ext_irvar_franchisetxn': id,
                     'custrecord_cwgp_ext_irvar_type': 2,
+                    'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ext_irvar_item': request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_item',
@@ -670,7 +679,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return [arrMapSblFields,arrMapDamagedItems,arrMapVariance,arrMapDamagedSummary];
     };
 
-    const mapFranchiseIASublistFields = (id,stCustomer,request) => {
+    const mapFranchiseIASublistFields = (id,stCustomer,stDate,request) => {
         const stSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         let arrMapSblFields = [];
         const intLineCountStandard = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
@@ -709,6 +718,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 arrMapSblFields.push({
                     'custrecord_cwgp_ftl_parentia': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ftl_item': request.getSublistValue({
                         group: 'custpage_inventorayadjustment_items',
                         name: 'custpage_cwgp_item',
@@ -748,6 +758,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 arrMapSblFields.push({
                     'custrecord_cwgp_ftl_parentia': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ftl_item': request.getSublistValue({
                         group: subTypeSublist,
                         name: 'custpage_cwgp_item',
@@ -797,6 +808,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 arrMapSblFields.push({
                     'custrecord_cwgp_ftl_parentia': id,
                     'custrecord_cwgp_ftl_customer': stCustomer,
+                    'custrecord_cwgp_ftl_date': stDate,
                     'custrecord_cwgp_ftl_item': request.getSublistValue({
                         group: subTypeSublist,
                         name: 'custpage_cwgp_item',
@@ -828,7 +840,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
         return arrMapSblFields;
     };
 
-    const mapFranchiseICSublistFields = (id,stCustomer,request) => {
+    const mapFranchiseICSublistFields = (id,stCustomer,stDate,request) => {
         const stSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         let arrMapSblFields = [];
         let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
@@ -859,6 +871,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
             arrMapSblFields.push({
                 'custrecord_cwgp_ftl_parentia': id,
                 'custrecord_cwgp_ftl_customer': stCustomer,
+                'custrecord_cwgp_ftl_date': stDate,
                 'custrecord_cwgp_ftl_item': request.getSublistValue({
                     group: stSublistName,
                     name: 'custpage_cwgp_item',
