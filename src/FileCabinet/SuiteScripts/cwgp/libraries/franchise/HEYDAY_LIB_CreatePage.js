@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPortal.js'], (serverWidget, search, utilLib, EPLib) => {
+define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPortal.js'], (serverWidget, search, file, utilLib, EPLib) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -2139,7 +2139,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         });
         
         populateSecondCountLines(stCustomer,rec,sbl,form);
-
+        utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
         form.addButton({
@@ -2394,6 +2394,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         
         //populateFinalCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl);
         populateFinalCountLines(request,sbl,form);
+        utilLib.createICLineBackupFile(stOperator, 2, rec);
         form.addSubmitButton({ label: 'Submit - Final Review' });
 
         form.addButton({
@@ -2689,6 +2690,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
 
         for(var i=0; i<arrItemFirstCount.length; i++){
             if(arrQtyFirstCount[i]){
+                log.debug('item', arrItemFirstCount[i]);
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_firstcount',
                     line : inCounter,
@@ -2699,25 +2701,27 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
                     line : inCounter,
                     value: arrItemFirstCount[i]
                 });
-
+                log.debug('desc', arrDescFirstCount[i]);
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_description',
                     line : inCounter,
                     value: arrDescFirstCount[i]
                 });
+                log.debug('sku', arrSkuFirstCount[i]);
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_internalsku',
                     line : inCounter,
                     value: arrSkuFirstCount[i]
                 });
+                log.debug('upc', arrUpcFirstCount[i]);
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_upccode',
                     line : inCounter,
                     value: arrUpcFirstCount[i]
                 });
 
-                arrSkuFirstCount.splice(index,1);
-                arrUpcFirstCount.splice(index,1);
+                //arrSkuFirstCount.splice(index,1);
+                //arrUpcFirstCount.splice(index,1);
                 inCounter++;
             }
             
@@ -2939,6 +2943,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
         fldTotalDiscrepancy.defaultValue = inCounter;
 
     };
+
+    
     
 
     const mapDefaultValues = (options) => {
@@ -2993,6 +2999,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_
             custpage_cwgp_step: stStep
         }
     };
+    
 
     
 
