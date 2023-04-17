@@ -129,6 +129,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
                     },
+                    TYPE: {
+                        id: 'custpage_cwgp_type',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Type'
+                    },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
@@ -612,11 +617,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             stUserId
         });
 
-        form.addButton({
+        /*form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
             functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });*/
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `createInventoryCount(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+
 
         form.addButton({
             id: 'custpage_back_button',

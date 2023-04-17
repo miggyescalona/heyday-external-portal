@@ -287,6 +287,7 @@ define([
                 userId: stUserId,
                 inventoryadjustmentid: stPoId,
                 accesstype: stAccessType,
+                subtype: stSubType,
                 tranid: stTranId,
                 step: stStep,
                 objIC: objIC,
@@ -298,7 +299,8 @@ define([
                 custpage_cwgp_pagemode: stPageMode,
                 custpage_cwgp_userid: stUserId,
                 custpage_cwgp_accesstype: stAccessType,
-                custpage_cwgp_step: stStep
+                custpage_cwgp_step: stStep,
+                custpage_cwgp_adjustmentsubtype: stSubType
             } = request.parameters)
 
             log.debug('IC lineCount', request.getLineCount('custpage_inventoryadjustmentinventorycount_items'));
@@ -381,6 +383,7 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
+                    stSubType,
                     stStep,
                     objOperator,
                     objIC,

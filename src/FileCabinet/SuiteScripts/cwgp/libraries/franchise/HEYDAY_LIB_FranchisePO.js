@@ -460,7 +460,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
         const stLocation = request.parameters.custpage_cwgp_location;
         const stOperatorId = request.parameters.custpage_cwgp_userid;
-        
+        const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fia_customer': stCustomer,
@@ -473,6 +474,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             'custrecord_cwgp_fia_totaldiscrepancy': stTotalDiscrepancy,
             'custrecord_cwgp_fia_adjustmenttype' : 1,
             'custrecord_cwgp_fia_operatorid': stOperatorId,
+            'custrecord_cwgp_fia_subtype': stAdjustmentSubType,
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 

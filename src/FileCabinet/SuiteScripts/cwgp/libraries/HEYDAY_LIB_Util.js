@@ -180,6 +180,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.INTEGER,
                     label: 'Discrepancy'
                 },
+                TYPE: {
+                    id: 'custpage_cwgp_type',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Type'
+                },
             }
         },
         SCRIPT:{
@@ -426,11 +431,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&inventoryadjustmentid=${stID}&rectype=inventorycount&tranid=${stTranId}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment# ${stTranId}</a>`;
-
+            const stSubtype = result.getValue({ name: 'custbody_cwgp_adjustmentsubtype' });
             arrMapInventoryAdjustment.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
-                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
+                [_CONFIG.COLUMN.LIST.TYPE.id]: stSubtype,
             })
         });
 
@@ -1808,6 +1814,142 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return arrInventoryCountItem;
     };
 
+    const createICLineBackupFile = (stOperator, stStep,rec) => {
+
+        let headers = 'Item,UPC,SKU,First Count';
+        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+        //var d = new Date().toLocaleDateString();
+        var d = getTimeStamp();
+        var csvFile = file.create({
+            name: stOperator+'_step'+stStep+'_'+d+'.csv',
+            fileType: file.Type.CSV,
+            //contents: lines,
+            folder: 821
+        });
+
+        if(stStep == 1){
+            csvFile.appendLine({
+                value: headers
+            });
+            
+        }
+        else if(stStep == 2){
+            csvFile.appendLine({
+                value: headers+',Second Count'
+            });
+        }
+        else if(stStep == 3){
+            csvFile.appendLine({
+                value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
+            });
+        }
+
+        var numLines = rec.getLineCount({
+            group: stSublistName
+        });
+        log.debug('numLines', numLines);
+        for(var i=0; i<numLines; i++){
+            var line = '';
+            var stItem = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_item',
+                line: i
+            });
+            line += stItem+',';
+            var stUpc = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_upccode',
+                line: i
+            });
+            line += stUpc+',';
+            var stSku = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_internalsku',
+                line: i
+            });
+            line += stSku+',';
+            var inFirstCount = rec.getSublistValue({
+                group: stSublistName,
+                name: 'custpage_cwgp_firstcount',
+                line: i
+            }) || '';
+            line += inFirstCount;
+            
+            if(stStep == 2 || stStep == 3){
+                var inSecondCount = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+                line += ','+inSecondCount;
+            }
+            if(stStep == 3){
+                var inEnteredQty = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_enteredquantity',
+                    line: i
+                }) || 0;
+                line += ','+inEnteredQty;
+                var inStartingQty = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_qtyonhand',
+                    line: i
+                });
+                line += ','+inStartingQty;
+                var inDiscrepancy = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_discrepancy',
+                    line: i
+                });
+                line += ','+inDiscrepancy;
+                var stAdjustmentReason = rec.getSublistValue({
+                    group: stSublistName,
+                    name: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
+                line += ','+stAdjustmentReason;
+            }
+            
+            csvFile.appendLine({
+                value: line
+            });
+        }
+
+        var fileId = csvFile.save();
+
+    };
+
+    const getTimeStamp = () => {
+        var date = new Date();
+        var aaaa = date.getUTCFullYear();
+        var gg = date.getUTCDate();
+        var mm = (date.getUTCMonth() + 1);
+    
+        if (gg < 10)
+            gg = "0" + gg;
+    
+        if (mm < 10)
+            mm = "0" + mm;
+    
+        var cur_day = aaaa + "-" + mm + "-" + gg;
+    
+        var hours = date.getUTCHours()
+        var minutes = date.getUTCMinutes()
+        var seconds = date.getUTCSeconds();
+    
+        if (hours < 10)
+            hours = "0" + hours;
+    
+        if (minutes < 10)
+            minutes = "0" + minutes;
+    
+        if (seconds < 10)
+            seconds = "0" + seconds;
+    
+        return cur_day + "-" + hours + ":" + minutes + ":" + seconds;
+
+    };
+
 
     
 
@@ -1835,6 +1977,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         getPOValues,
         lookUpItem,
         setDeliverByDate,
-        buildInventoryCountItemSearch
+        buildInventoryCountItemSearch,
+        createICLineBackupFile
     }
 });

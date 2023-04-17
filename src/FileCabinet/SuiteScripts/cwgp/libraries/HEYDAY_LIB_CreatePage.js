@@ -413,7 +413,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Adjustment Account',
                     container: 'PRIMARY',
                     mandatory: true,
-                    isInline: ['2','3','4']
+                    //source: 'account',
+                    isInline: ['1','2','3','4']
                 },
                 DATE: {
                     id: 'custpage_cwgp_date',
@@ -1695,6 +1696,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPageMode,
             stUserId,
             stAccessType,
+            stSubType,
             stStep,
             objOperator,
             requestParams,
@@ -1703,7 +1705,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         log.debug('requestParams',requestParams);
         log.debug('stStep',stStep);
-
+        log.debug('stSubType',stSubType);
         
         log.debug('customRecordId',customRecordId)
         let objICBodyFlds;
@@ -1721,7 +1723,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             log.debug('objICItemFlds',JSON.stringify(JSON.stringify(objICItemFlds)));
         }
         const stTitle = stStep == 1 ? 'First Count' : stStep == 2 ? 'Second Count' : 'Final Review';
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - '+stTitle});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - '+stTitle});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -1765,12 +1767,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         const stOperator = objOperator[0].stOperator;
         const stOperatorId = objOperator[0].stOperatorId;
+        let intAdjustmentAccount;
+        if(stSubType=='Retail'){
+            intAdjustmentAccount = 972;
+        }
+        else if(stSubType=='Backbar'){
+            intAdjustmentAccount = 973;
+        }
         const objDefaultValues = mapDefaultValues({
+            intAdjustmentAccount,
             stSubsidiary, 
             stLocation,
             stPageMode, 
             stUserId,
             stAccessType,
+            stSubType,
             stType,
             stUpcMap,
             stOperator,
@@ -1813,7 +1824,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 isHidden,
                 container: _CONFIG.FIELD_GROUP[stType][container]?.id
             });
-            log.debug('fld',fld);
+            //log.debug('fld',fld);
 
             if (mandatory) {
                 fld.isMandatory = true;
@@ -1824,7 +1835,29 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
             
             if (id == 'custpage_cwgp_adjustmentaccount') {
+                log.debug('custpage_cwgp_adjustmentaccount','');
+                
                 utilLib.addDamagedAdjustingAccount(fld);
+                /*if(stSubType=='Retail'){
+                    form.updateDefaultValues({
+                        custpage_cwgp_adjustmentaccount : 972
+                    })
+                    fld.addSelectOption({
+                        value: 972,
+                        text: '53001 Inventory and Warehousing : Retail Product Variance',
+                        isSelected: true
+                    });
+                    //fld.updateDisplayType({ displayType: 'inline' });
+                }
+                else if(stSubType=='Backbar'){
+                    fld.addSelectOption({
+                        value: 973,
+                        text: '53002 Inventory and Warehousing : Backbar Product Variance',
+                        isSelected: true
+                    });
+                    //fld.updateDisplayType({ displayType: 'inline' });
+                }*/
+                log.debug('fld',fld);
             }
 
             if (id == 'custpage_cwgp_businessline') {
@@ -1940,8 +1973,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
-        populateFirstCountLines(stSubsidiary,stLocation,form,sbl);
-
+        populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType);
         form.addSubmitButton({ label: 'Submit First Count' });
 
         form.addButton({
@@ -1990,10 +2022,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
         const stMemo = rec.parameters.custpage_cwgp_memomain;
         const stType = rec.parameters.custpage_cwgp_rectype;
+        const stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = rec.parameters.custpage_cwgp_operator;
         const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Second Count'});
         log.debug('second count params',JSON.stringify({
             intAdjustmentAccount: intAdjustmentAccount,
             stSubsidiary: stSubsidiary,
@@ -2053,6 +2086,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPageMode, 
             stUserId,
             stAccessType,
+            stSubType,
             stType,
             stUpcMap,
             stOperator,
@@ -2221,8 +2255,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
         });
         
-        populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form);
-
+        populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form,stSubType);
+        utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit Second Count' });
 
         form.addButton({
@@ -2271,6 +2305,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
         const stMemo = rec.parameters.custpage_cwgp_memomain;
         const stType = rec.parameters.custpage_cwgp_rectype;
+        const stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = rec.parameters.custpage_cwgp_operator;
         const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
 
@@ -2280,7 +2315,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         log.debug('objItemResultSet',objItemResultSet);
             
 
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Review'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Final Review'});
         log.debug('last count params',JSON.stringify({
             intAdjustmentAccount: intAdjustmentAccount,
             stSubsidiary: stSubsidiary,
@@ -2319,7 +2354,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         //const stOperator = objOperator[0].stOperator;
         //const stOperatorId = objOperator[0].stOperatorId;
-        const stSubType = 'inventorycount';
+        //let stSubType = 'inventorycount';
         const objDefaultValues = mapDefaultValues({
             intAdjustmentAccount,
             stSubsidiary,
@@ -2498,7 +2533,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         });
         
         populateFinalCountLines(request,sbl,form);
-
+        utilLib.createICLineBackupFile(stOperator, 2, rec);
         form.addSubmitButton({ label: 'Submit Final Count' });
 
         form.addButton({
@@ -2513,10 +2548,23 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         log.debug('===CREATE===','===End Create Inventory Count Final===');
     };
 
-    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines) => {
+    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines,stSubType) => {
 
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
-
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
 
         ssItemPerLocationIC.filters.push(search.createFilter({
             name: 'inventorylocation',
@@ -2581,7 +2629,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
     };
 
-    const populateSecondCountLines = (arrItemFirstCount,rec,itemLines,stLocation,stSubsidiary,form) => {
+    const populateSecondCountLines = (arrItemFirstCount,rec,itemLines,stLocation,stSubsidiary,form,stSubType) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var arrIndexFirstCount = [];
@@ -2614,7 +2662,20 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
 
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
-
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
 
         ssItemPerLocationIC.filters.push(search.createFilter({
             name: 'inventorylocation',

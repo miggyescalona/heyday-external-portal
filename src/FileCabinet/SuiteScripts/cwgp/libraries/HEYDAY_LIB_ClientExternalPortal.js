@@ -174,7 +174,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
         } = options;
 
         let stPageType = stRecType;
-        if(stSubType){
+        if(stPageType =='inventoryadjustment' && stSubType){
             stPageType += `_${stSubType}`
         }
 
@@ -278,8 +278,10 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 stStep,
                 UI_CONFIG
             } = options;
-
-
+            console.log('a');
+            console.log(objUpcToItemIdMap);
+            console.log(objCurrItemLine.upc_code);
+            console.log('b');
             console.log(objUpcToItemIdMap[objCurrItemLine.upc_code]);
 
             if(!(objUpcToItemIdMap.hasOwnProperty(objCurrItemLine.upc_code))){
@@ -599,45 +601,51 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                             sublistId   : UI_CONFIG.SUBLIST_ID,
                             fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
                         });
+                        try{
+                            intQty          = parseInt(intQty)
+                            intScannedQty   = parseInt(objCurrItemLine.qty)
+                            
+                            //Default all falsy values to 0
+                            if(!intScannedQty){
+                                intScannedQty = 0;
+                            }
+                            if(!intQty){
+                                intQty = 0;
+                            }
+                        }
+                        catch(e){
+                            console.error(e)
+                            throw {
+                                name    : 'CANNOT_PROCESS_QTY',
+                                message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
+                            }
+                        }
+                        recCurrent.setCurrentSublistValue({
+                            sublistId   : UI_CONFIG.SUBLIST_ID,
+                            fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
+                            value       : intQty + intScannedQty
+                        });
+                        recCurrent.commitLine({
+                            sublistId   : UI_CONFIG.SUBLIST_ID
+                        })
                     }
                     else{
-                        recCurrent.selectNewLine({ 
+                        throw {
+                            name    : 'NO_UPC_CODE_MATCH',
+                            message : 'No item matched the UPC Code entered.'
+                        }
+
+                        /*recCurrent.selectNewLine({ 
                             sublistId   : UI_CONFIG.SUBLIST_ID,
                         })
                         recCurrent.setCurrentSublistValue({
                             sublistId   : UI_CONFIG.SUBLIST_ID,
                             fieldId     : UI_CONFIG.SUBLIST_FIELDS.ITEM,
                             value       : objUpcToItemIdMap[objCurrItemLine.upc_code]
-                        });
+                        });*/
                     }
     
-                    try{
-                        intQty          = parseInt(intQty)
-                        intScannedQty   = parseInt(objCurrItemLine.qty)
-                        
-                        //Default all falsy values to 0
-                        if(!intScannedQty){
-                            intScannedQty = 0;
-                        }
-                        if(!intQty){
-                            intQty = 0;
-                        }
-                    }
-                    catch(e){
-                        console.error(e)
-                        throw {
-                            name    : 'CANNOT_PROCESS_QTY',
-                            message : 'Existing line quantity, and/or scanned quantity is/are invalid.'
-                        }
-                    }
-                    recCurrent.setCurrentSublistValue({
-                        sublistId   : UI_CONFIG.SUBLIST_ID,
-                        fieldId     : UI_CONFIG.SUBLIST_FIELDS.QTY,
-                        value       : intQty + intScannedQty
-                    });
-                    recCurrent.commitLine({
-                        sublistId   : UI_CONFIG.SUBLIST_ID
-                    })
+                    
                 }
                 else if(stStep == 2){
                     let index = recCurrent.findSublistLineWithValue({
@@ -883,7 +891,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
             console.log('stStep', stStep)
 
             let stPageType = stRecType;
-            if(stSubType){
+            if(stPageType =='inventoryadjustment' && stSubType){
                 stPageType += `_${stSubType}`
             }
 

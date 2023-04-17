@@ -362,6 +362,7 @@ define([
             userId: stUserId,
             tranid: stPoId,
             accesstype: stAccessType,
+            subtype: stSubType,
             //tranid: stTranId,
             step: stStep,
             objIC: objIC
@@ -398,6 +399,7 @@ define([
                     stPoId,
                     stAccessType,
                     stStep,
+                    stSubType,
                     objOperator,
                     objIC
                 });
@@ -413,6 +415,61 @@ define([
                     stAccessType,
                     //stTranId
                 });
+
+                break;
+            case 'load':
+                if(stStep == 1){
+                    createPage.renderInventoryCount({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                else if(stStep == 2){
+                    createPage.renderInventoryCountSecond({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                else if(stStep == 3){
+                    createPage.renderInventoryCountFinal({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                
 
                 break;
             default:

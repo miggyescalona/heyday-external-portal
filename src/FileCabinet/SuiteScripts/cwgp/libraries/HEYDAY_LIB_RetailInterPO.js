@@ -12,7 +12,7 @@
  */
 
 
-define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/https','./HEYDAY_LIB_ClientExternalPortal.js'], (search, record, format, util,redirect,url,https,ClientEPLib) => {
+define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/https','./HEYDAY_LIB_Util.js', './HEYDAY_LIB_ClientExternalPortal.js'], (search, record, format, util,redirect,url,https,utilLib,ClientEPLib) => {
 
     const _CONFIG = {
         SCRIPT: {
@@ -167,9 +167,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
                 value: value
             });
         });
-
+        if(stSubType == 'Retail' || stSubType == 'Backbar'){
+            utilLib.createICLineBackupFile(objPOBodyFields.custbody_cwgp_externalportaloperator, 3, request);
+        }
+        
         const arrPOSblFields = mapInventoryAdjustmentSublistFields(request,stSubType);
-
+        
         arrPOSblFields.forEach((objPOBodyFields) => {
             recIA.selectNewLine({ sublistId: 'inventory' });
             util.each(objPOBodyFields, (value, fieldId) => {
