@@ -861,11 +861,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'Starting Quantity',
-                        displayType: 'hidden'
+                        label: 'Starting Quantity'
+                        //displayType: 'hidden'
                     },
                     ADJUST_QUANTITY_BY: {
-                        id: 'custpage_cwgp_enteredcount',
+                        id: 'custpage_cwgp_newquantity',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Entered Count'
                     },
@@ -1509,6 +1509,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         } = options;
 
         log.debug('stPoId',stPoId);
+        log.debug('stType',stType);
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stTranId });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;

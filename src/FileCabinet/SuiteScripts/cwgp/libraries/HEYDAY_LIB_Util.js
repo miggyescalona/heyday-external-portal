@@ -267,7 +267,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             let arrPairedSOs = [];
             const ssPairedIntercoSo = search.load({ id: "customsearch_cwgp_retail_getpairedso", type: "salesorder" });
 
-
             if(intPairedIntercoIds.length!=0){;
                 ssPairedIntercoSo.filters.push(search.createFilter({
                     name: 'internalid',
@@ -1395,7 +1394,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     sublistId: 'item',
                     fieldId: 'rate',
                     line: x
-                })
+                }),
+                
+                
             });
         }
 

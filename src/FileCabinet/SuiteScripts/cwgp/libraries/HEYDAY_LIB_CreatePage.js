@@ -575,7 +575,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'hidden'
-                    }
+                    },
                 },    
                 itemreceipt: {
                     RECEIVE: {
@@ -1974,7 +1974,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         });
 
         populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType);
-
         form.addSubmitButton({ label: 'Submit First Count' });
 
         form.addButton({

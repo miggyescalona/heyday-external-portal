@@ -179,7 +179,7 @@ define(['N/search'], (search) => {
 
     
     const buildInventoryCountItemSearch = (stLocation,stSubsidiary,objItemFlds) => {
-        const ssInventoryCountItem = search.load({ id: "626", type: "item" });
+        const ssInventoryCountItem = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
         let arrInventoryCountItem = [];
 
         ssInventoryCountItem.filters.push(search.createFilter({
