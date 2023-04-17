@@ -137,7 +137,7 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
     const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
         var options = {
             title: 'Create Inventory Adjustment',
-            message: 'Please select what type of inventory adjustment to create:',
+            message: 'Please select what type of Inventory Adjustment to create:',
             buttons: [
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
@@ -180,6 +180,83 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
         }
         function failure(reason) { console.log('Failure: ' + reason) }
         dialog.create(options).then(success).catch(failure);
+    }
+
+    const createInventoryCount = (stUserId, stAccessType, stType) => {
+        var options = {
+            title: 'Create Inventory Count',
+            message: 'Please select what type of Inventory Count to create:',
+            buttons: [
+                { label: 'Retail', value: 1 },
+                { label: 'Backbar', value: 2 },
+                { label: 'Cancel', value: 0 },
+            ]
+        };
+        function success(result) { 
+
+            const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
+            let subType;
+
+            switch(result){
+                case 0:
+                    return;
+                case 1:
+                    subType = 'Retail';
+                    break;
+                case 2:
+                    subType = 'Backbar';
+                break;
+            }
+            
+            let stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                scriptId            : objFranchiseUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'create',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : subType,
+                    step        : 1
+                }
+            });
+            window.location = stCreateIntPOUrl;
+        }
+        function failure(reason) { console.log('Failure: ' + reason) }
+        dialog.create(options).then(success).catch(failure);
+    }
+
+    const loadInventoryCountDraft = (stUserId, stAccessType, objInventoryCountDraft) => {
+        const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
+        let subType;
+
+        switch(result){
+            case 0:
+                return;
+            case 1:
+                subType = 'Retail';
+                break;
+            case 2:
+                subType = 'Backbar';
+            break;
+        }
+        
+        let stCreateIntPOUrl = url.resolveScript({
+            deploymentId        : objFranchiseUrl.DEPLOY_ID,
+            scriptId            : objFranchiseUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                pageMode    : 'load',
+                userId      : stUserId,
+                accesstype  : stAccessType,
+                rectype     : 'inventorycount',
+                subtype     : objInventoryCountDraft.stSubtype,
+                step        : objInventoryCountDraft.stStep,
+                draft       : objInventoryCountDraft.stDraft
+            }
+        });
+        window.location = stCreateIntPOUrl;
     }
 
     /*const createInventoryAdjustment = (stUserId, stAccessType, stType) => {
@@ -289,6 +366,8 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
         back,
         toCreateTransaction,
         createInventoryAdjustment,
-        searchItemPerLocation
+        searchItemPerLocation,
+        createInventoryCount,
+        loadInventoryCountDraft
     };
 });

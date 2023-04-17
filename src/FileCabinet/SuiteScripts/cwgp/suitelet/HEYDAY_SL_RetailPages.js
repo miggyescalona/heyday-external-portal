@@ -28,8 +28,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_retailpages',
-            DEPLOY: 'customdeploy_cwgp_sl_retailpages'
+            ID: 'customscript_cwgp_sl_retailpages2',
+            DEPLOY: 'customdeploy_cwgp_sl_retailpages2'
         }
     };
     /**
@@ -287,6 +287,7 @@ define([
                 userId: stUserId,
                 inventoryadjustmentid: stPoId,
                 accesstype: stAccessType,
+                subtype: stSubType,
                 tranid: stTranId,
                 step: stStep,
                 objIC: objIC,
@@ -298,7 +299,8 @@ define([
                 custpage_cwgp_pagemode: stPageMode,
                 custpage_cwgp_userid: stUserId,
                 custpage_cwgp_accesstype: stAccessType,
-                custpage_cwgp_step: stStep
+                custpage_cwgp_step: stStep,
+                custpage_cwgp_adjustmentsubtype: stSubType
             } = request.parameters)
 
             log.debug('IC lineCount', request.getLineCount('custpage_inventoryadjustmentinventorycount_items'));
@@ -381,6 +383,7 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
+                    stSubType,
                     stStep,
                     objOperator,
                     objIC,
@@ -557,8 +560,36 @@ define([
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
                 idRec = editInterPO(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        poid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
             }else if(stRecType == 'itemreceipt'){
                 idRec = editItemReceipt(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        itemreceiptid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId,
+                    }
+                });
             }
         }
 
@@ -566,6 +597,7 @@ define([
         if(stPageMode == 'view'){
             stTranId = getTranIdSearch(idRec,stRecType);
             if(stRecType == 'intercompanypo'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,
@@ -581,6 +613,7 @@ define([
                 });
             }
             else if(stRecType == 'itemreceipt'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,

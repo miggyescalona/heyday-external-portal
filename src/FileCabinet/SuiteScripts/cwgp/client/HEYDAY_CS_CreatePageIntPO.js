@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record'], (https, util, url, ClientEPLib, currentRecord, message, record) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record','N/ui/dialog'], (https, util, url, ClientEPLib, currentRecord, message, record, dialog) => {
     
     /**
      * Function to be executed after page is initialized.
@@ -120,14 +120,14 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     alert('You cannot enter a negative quantity at line/s: ' + arrIsNegative.toString())
                     return false;
                 }
-                if(blHasDuplicates){
+                /*if(blHasDuplicates){
                     alert(stHasDuplicates);
                     return false;
                 }
                 if(arrIsEmpty.length > 0){
                     alert(stHasEmptyValues + arrIsEmpty.toString());
                     return false;
-                }
+                }*/
             }
             if(currentRecord.getValue('custpage_cwgp_step') == '2'){
                 let intFirstQty;
@@ -344,7 +344,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_damagedadjustingaccount'
                 });
 
-
+                
                 if(intDamagedQuantity && !intDamagedAdjustingAccount){
                     intDamagedAccountLine.push(x+1);
                 }
@@ -546,6 +546,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let blNegativeQuantity = [];
             let blEmptyFields = [];
             let itemSummary = [];
+            let flDamageEstValue = 0;
+            let flTesterEstValue = 0;
+            let flTheftEstValue = 0;
+
+            
             for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -576,6 +581,22 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_qtyonhand'
                 })) || 0
 
+                
+                let flEstimatedReplacementValue = parseFloat(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+                })) || 0
+
+                let stAdjustType = currentRecord.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustmenttype'
+                })
+
+                flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+                flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+                flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
+
                 itemSummary.push({
                     stItem: currentRecord.getCurrentSublistText({
                         sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -603,8 +624,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             }
             console.log('itemSummary: ' + JSON.stringify(itemSummary));
-            let result = []
-            if(itemSummary){
+            let result = [];
+            if(itemSummary.length > 0){
                 itemSummary.reduce(function(res, value) {
                 if (!res[value.stAdjustType]) {
                     res[value.stAdjustType] = { Id: value.stAdjustType, intQty: 0 };
@@ -613,6 +634,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 res[value.stAdjustType].intQty += value.intQty;
                     return res;
                 }, {});
+            }
+
+            console.log('result: ' + JSON.stringify(result));
+
+            for(let x = 0; x < result.length; x++){
+                result[x]['totalEstRepVal'] = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
             }
             currentRecord.setValue('custpage_cwgp_totaladjustmenthidden',JSON.stringify(result));
             console.log(currentRecord.getValue('custpage_cwgp_totaladjustmenthidden'));
@@ -783,7 +810,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
                 const intFinalQty = intStartingQty+intReceivedQty-intDamagedQty
 
-                if(intFinalQty){
+                if(!isNaN(intFinalQty)){
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_finalquantity',
@@ -809,7 +836,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
            
                 const intVariance = intShippedQty-intQty;
 
-                if(intVariance){
+                if(!isNaN(intVariance)){
+                    console.log('Variance: ' + intVariance);
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_variance',
@@ -1194,26 +1222,45 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
        const intIaLineCountDamageTesterTheft = currRec.getLineCount('custpage_inventoryadjustmentdamagetestertheft_items');
        let qtyByType = [];
        let itemSummary = [];
-       let flTotalEstimatedReplacementValue = 0;
+       let flDamageEstValue = 0;
+       let flTesterEstValue = 0;
+       let flTheftEstValue = 0;
 
-       for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
+        for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
             currRec.selectLine({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                 line: x
             });
+
+            let flEstimatedReplacementValue = parseFloat(currRec.getCurrentSublistValue({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+            })) || 0
+
+            let stAdjustType = currRec.getCurrentSublistText({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_adjustmenttype'
+            })
+            
+            flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+            flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+            flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
             qtyByType.push({
+
+                intQty: parseInt(currRec.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })),
+                sublistId: parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })) || 0,
                 stItem: currRec.getCurrentSublistText({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_item'
                 }),
-                 intQty: parseInt(currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustqtyby'
-                })) || 0,
-                 stAdjustType: currRec.getCurrentSublistText({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustmenttype'
-                })
+                stAdjustType: stAdjustType
             });
             let qtyTempQtyOnHand = parseInt(currRec.getCurrentSublistValue({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -1239,15 +1286,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 })),
                 intFinalOnHand: qtyTempQtyOnHand-qtyTempIntQty
             });
-
-            flTotalEstimatedReplacementValue += currRec.getCurrentSublistValue({
-                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                fieldId: 'custpage_cwgp_estimatedreplacementvalue'
-            });
         }
-          console.log(JSON.stringify(qtyByType));
-          console.log(JSON.stringify(itemSummary));
+          console.log('qtyByType: '+ JSON.stringify(qtyByType));
+          //console.log(JSON.stringify(itemSummary));
 
+        //Total Quantity by Adjustment Type Summary
         if(qtyByType.length > 0){
             let result = []
             qtyByType.reduce(function(res, value) {
@@ -1261,17 +1304,24 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             let stTextAreaVal = '';
 
+           /* console.log(JSON.stringify({
+                flDamageEstValue: flDamageEstValue,
+                flTesterEstValue: flTesterEstValue,
+                flTheftEstValue: flTheftEstValue
+            }));*/
+
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</td><td style="font-weight: bold;padding:3px">Total Estimated Replacement Value</td>';
             for(let x = 0; x < result.length; x++){
-                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</tr>';
+                let flTotalEstVal = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : 0;
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</td><td>'+flTotalEstVal.toFixed(2)+'</td></tr>';
             }
             stTextAreaVal += '</div></table>'
 
             currRec.setValue('custpage_cwgp_totaladjustment',stTextAreaVal)
         }
 
-           
+        //Item Summary
         if(itemSummary.length > 0){
             let result = []
 
@@ -1313,13 +1363,9 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             currRec.setValue('custpage_cwgp_itemsummary',stTextAreaVal)
         }
-        
-        if(flTotalEstimatedReplacementValue){
-            currRec.setValue('custpage_cwgp_totalestimatedreplacementvalue',flTotalEstimatedReplacementValue)
-        }
     };
 
-    function nextStep(stUserId,stAccessType,stLocation,stSubsidiary,stStep,objBodyDefaultValues,customRecordId,stRecType){
+    /*function nextStep(stUserId,stAccessType,stLocation,stSubsidiary,stStep,objBodyDefaultValues,customRecordId,stRecType){
         console.log('nextStep');
 
         const blReturnError = validateInventoryCount(stStep);
@@ -1643,9 +1689,32 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }));
 
         return [blIsError,stErrorMessage]
-    }
+    }*/
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
+
+    const saveDraftIC = () =>{
+   
+        var options = {
+		    title: "Save as Draft",
+		    message: "Are you sure you want to Save this as Draft?"
+		};
+    	function success(result) {
+        	console.log('result '+result);
+        	console.log('Ok');
+        	if(result){
+                console.log('redirect');
+        	}
+            console.log('cancel');
+    	}
+    	function failure(reason) {
+    		console.log('result '+result);
+    		console.log('Cancel');
+    	}
+    	
+		dialog.confirm(options).then(success).catch(failure);
+   
+    };
 
 
     return {
@@ -1656,8 +1725,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         lineInit,
         back,
         calculateSummary,
-        nextStep,
-        validateInventoryCount,
         scanInputViaBtn,
+        saveDraftIC
     };
 });

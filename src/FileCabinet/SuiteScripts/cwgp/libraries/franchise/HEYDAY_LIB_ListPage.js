@@ -136,6 +136,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                         type: serverWidget.FieldType.TEXT,
                         label: 'Internal SKU',
                     },
+                    RATE: {
+                        id: 'custpage_cwgp_rate',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Estimated Cost Per Unit',
+                    },
+                    TOTAL: {
+                        id: 'custpage_cwgp_total',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Total Estimated Value',
+                    },
                     ON_HAND: {
                         id: 'custpage_cwgp_onhand',
                         type: serverWidget.FieldType.TEXT,
@@ -178,6 +188,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                         id: 'custpage_cwgp_tranid',
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
+                    },
+                    TYPE: {
+                        id: 'custpage_cwgp_type',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Type'
                     },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
@@ -864,10 +879,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             stUserId
         });
 
-        form.addButton({
+        /*form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
             functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });*/
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `createInventoryCount(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
         form.addButton({
@@ -875,6 +896,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+        const objInventoryCountDraft = getInventoryCountDraft(stUserId);
+        log.debug('stInventoryCountDraft', objInventoryCountDraft);
+        if(objInventoryCountDraft){
+            form.addButton({
+                id: 'custpage_loaddraft_button',
+                label: 'Load Draft',
+                functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${objInventoryCountDraft})`
+            });
+        }
 
         response.writePage(form);
     };
@@ -882,7 +912,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
     const getPageData = (objSearch, fldPage, intPage, stType) => {
         let stPageSize = 20;
         if(stType == 'itemperlocation'){
-            stPageSize = 15;
+            stPageSize = 30;
         }
         const objPagedData = objSearch.runPaged({ pageSize: stPageSize });
 
@@ -915,9 +945,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
         
         if(objSearch.runPaged().count >0){
         	const objPagedData = getPageData(objSearch, fldPage, intPage, stType);
-            log.debug('objPagedData', objPagedData);
+            //log.debug('objPagedData', objPagedData);
             const arrPagedData = objPagedData.data;
-            log.debug('arrPagedData', arrPagedData);
+            //log.debug('arrPagedData', arrPagedData);
 
             const arrListValues = util.mapValues({
                 stType, 
@@ -928,7 +958,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                 dtFrom,
                 dtTo
             });
-            log.debug('arrListValues', arrListValues);
+            //log.debug('arrListValues', arrListValues);
 
             arrListValues.forEach((value, i) => {
                 const arrListValue = Object.keys(value);
@@ -944,6 +974,40 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
         }
 
         
+    };
+
+    const getInventoryCountDraft = (stId) => {
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_icdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_icdraftstep' }),
+                    search.createColumn({ name: 'custrecord_cwgp_icdrafttype' })
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            const objDraft = {
+                stDraft: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraft' }),
+                stStep: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraftstep' }),
+                stSubtype: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdrafttype' })
+            };
+            return objDraft;
+        }
+        
+        return false;
     };
 
     const htmlCss = () => {
@@ -973,7 +1037,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             font-weight: 200 !important;
         }
     
-        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton {
+        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton, input#custpage_loaddraft_button, input#secondarycustpage_loaddraft_button{
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;

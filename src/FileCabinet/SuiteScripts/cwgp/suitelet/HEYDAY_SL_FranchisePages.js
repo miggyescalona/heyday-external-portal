@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
+            ID: 'customscript_cwgp_sl_franchisepages2',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
         }
     };
     /**
@@ -362,6 +362,7 @@ define([
             userId: stUserId,
             tranid: stPoId,
             accesstype: stAccessType,
+            subtype: stSubType,
             //tranid: stTranId,
             step: stStep,
             objIC: objIC
@@ -398,6 +399,7 @@ define([
                     stPoId,
                     stAccessType,
                     stStep,
+                    stSubType,
                     objOperator,
                     objIC
                 });
@@ -413,6 +415,61 @@ define([
                     stAccessType,
                     //stTranId
                 });
+
+                break;
+            case 'load':
+                if(stStep == 1){
+                    createPage.renderInventoryCount({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                else if(stStep == 2){
+                    createPage.renderInventoryCountSecond({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                else if(stStep == 3){
+                    createPage.renderInventoryCountFinal({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stCustomer,
+                        stPageMode,
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        objIC
+                    });
+                }
+                
 
                 break;
             default:
@@ -749,10 +806,10 @@ define([
     };
 
     const buildInventoryCountSearch = (stCustomer) => {
-        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invcount", type: "customrecord_cwgp_franchiseinvcount" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_franchise_invcount", type: "customrecord_cwgp_franchiseinvadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
-            name: 'custrecord_cwgp_fic_customer',
+            name: 'custrecord_cwgp_fia_customer',
             operator: 'anyof',
             values: stCustomer,
         }));

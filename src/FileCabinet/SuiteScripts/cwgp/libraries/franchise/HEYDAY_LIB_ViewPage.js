@@ -21,9 +21,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             itemreceipt: 'Item Receipt',
             inventoryadjustment: 'Inventory Adjustment',
             inventoryadjustment_standard: 'Inventory Adjustment',
-            inventoryadjustment_backbar: 'Backbar Usage',
-            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft',
-            inventorycount: 'Inventory Count #'
+            inventoryadjustment_backbar: 'Inventory Adjustment',
+            inventoryadjustment_damagetestertheft: 'Inventory Adjustment',
+            inventorycount: 'Inventory Adjustment'
         },
         TAB: {
         	franchisepo: 'custpage_interpo_itemstab',
@@ -125,6 +125,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     label: 'Operator',
                     container: 'PRIMARY',
                     displayType: 'inline'
+                },
+                AMOUNT: {
+                    id: 'custpage_cwgp_totalamount',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Amount',
+                    container: 'PRIMARY',
+                    displayType: 'inline',
                 },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
@@ -848,6 +855,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
                     label: 'Total Quantity by Adjustment Type Summary'
                 },
+
             },
             inventorycount: {
                 PRIMARY: {
@@ -1447,9 +1455,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stTranId,
         } = options;
 
+        let stSubType = search.lookupFields({type: 'customrecord_cwgp_franchiseinvadjustment',id:parseInt(stPoId), columns: 'custrecord_cwgp_fia_subtype'});
+        stSubType = stSubType.custrecord_cwgp_fia_subtype;
         log.debug('stPoId',stPoId);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+stPoId });
-
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' '+stSubType+' #' +stPoId});
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //add field group

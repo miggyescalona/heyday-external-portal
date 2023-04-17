@@ -129,6 +129,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
                     },
+                    TYPE: {
+                        id: 'custpage_cwgp_type',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Type'
+                    },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
@@ -155,6 +160,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                         id: 'custpage_cwgp_internalsku',
                         type: serverWidget.FieldType.TEXT,
                         label:  'Internal SKU'
+                    },
+                    ESTIMATED_COST_PER_UNIT:{
+                        id: 'custpage_cwgp_estimatedcostperunit',
+                        type: serverWidget.FieldType.FLOAT,
+                        label:  'Estimated Cost Per Unit'
+                    },
+                    TOTAL_ESTIMATED_VALUE:{
+                        id: 'custpage_cwgp_totalestimatedvalue',
+                        type: serverWidget.FieldType.FLOAT,
+                        label:  'Total Estimated Value'
                     },
                     ON_HAND: {
                         id: 'custpage_cwgp_onhand',
@@ -205,37 +220,37 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 itemperlocationtotal: {
                     ON_HAND_TOTAL: {
                         id: 'custpage_cwgp_onhand_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'On Hand'
                     },
                     QUANTITY_DAMAGE_TOTAL: {
                         id: 'custpage_cwgp_damage_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Damage'
                     },
                     QUANTITY_TESTER_TOTAL: {
                         id: 'custpage_cwgp_tester_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Tester'
                     },
                     QUANTITY_THEFT_TOTAL: {
                         id: 'custpage_cwgp_theft_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Theft'
                     },
                     QUANTITY_BACKBAR_TOTAL: {
                         id: 'custpage_cwgp_backbar_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Backbar'
                     },
                     QUANTITY_SOLD_TOTAL: {
                         id: 'custpage_cwgp_sold_total',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Sold'
                     },
                     QUANTITY_DISCREPANCY_TOTAL: {
                         id: 'custpage_cwgp_sold_discrepancy',
-                        type: serverWidget.FieldType.TEXT,
+                        type: serverWidget.FieldType.INTEGER,
                         label: 'Discrepancy'
                     },
                 }
@@ -602,11 +617,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             stUserId
         });
 
-        form.addButton({
+        /*form.addButton({
             id: 'custpage_createtxn_buton',
             label: 'Create',
             functionName: `toCreateTransaction(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });*/
+
+        form.addButton({
+            id: 'custpage_createtxn_buton',
+            label: 'Create',
+            functionName: `createInventoryCount(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+
 
         form.addButton({
             id: 'custpage_back_button',
@@ -1070,7 +1092,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             else{
                 arrListValues.forEach((value, i) => {
                     const arrListValue = Object.keys(value);
-
                     arrListValue.forEach((fieldId) => {
                         sbtotal.setSublistValue({
                             id: fieldId,
