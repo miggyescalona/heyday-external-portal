@@ -278,11 +278,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             const stOperator = result.getValue({ name: 'custrecord_cwgp_fia_operator' });
             const stUrl = `${stBaseUrl}&pageMode=view&&userId=${stUserId}&accesstype=${stAccessType}&rectype=inventorycount&tranid=${stID}`;
             const stViewLink = `<a href='${stUrl}'>Inventory Adjustment # ${stID}</a>`;
-
+            const stSubtype = result.getValue({ name: 'custrecord_cwgp_fia_subtype' });
             arrMapInventoryAdjustment.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
-                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
+                [_CONFIG.COLUMN.LIST.TYPE.id]: stSubtype,
             })
         });
 
@@ -496,7 +497,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
     const addOptionsItemBySubsidiary = (options) => {
 
-        log.debug('options', options)
+        //log.debug('options', options)
 
         const {
             fld, 
@@ -507,7 +508,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             text: ''
         });
 
-        log.debug('objResultSet', objResultSet)
+        //log.debug('objResultSet', objResultSet)
 
         objResultSet.each(function (result) {
             fld.addSelectOption({
@@ -1783,8 +1784,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
         let headers = 'Item,UPC,SKU,First Count';
         let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
-        var d = new Date().toLocaleDateString();;
-        
+        //var d = new Date().toLocaleDateString();
+        var d = getTimeStamp();
         var csvFile = file.create({
             name: stOperator+'_step'+stStep+'_'+d+'.csv',
             fileType: file.Type.CSV,
@@ -1881,6 +1882,37 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         }
 
         var fileId = csvFile.save();
+
+    };
+
+    const getTimeStamp = () => {
+        var date = new Date();
+        var aaaa = date.getUTCFullYear();
+        var gg = date.getUTCDate();
+        var mm = (date.getUTCMonth() + 1);
+    
+        if (gg < 10)
+            gg = "0" + gg;
+    
+        if (mm < 10)
+            mm = "0" + mm;
+    
+        var cur_day = aaaa + "-" + mm + "-" + gg;
+    
+        var hours = date.getUTCHours()
+        var minutes = date.getUTCMinutes()
+        var seconds = date.getUTCSeconds();
+    
+        if (hours < 10)
+            hours = "0" + hours;
+    
+        if (minutes < 10)
+            minutes = "0" + minutes;
+    
+        if (seconds < 10)
+            seconds = "0" + seconds;
+    
+        return cur_day + "-" + hours + ":" + minutes + ":" + seconds;
 
     };
 

@@ -12,7 +12,7 @@
  */
 
 
-define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, record, format, util,redirect) => {
+define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/https','./HEYDAY_LIB_Util.js', './HEYDAY_LIB_ClientExternalPortal.js'], (search, record, format, util,redirect,url,https,utilLib,ClientEPLib) => {
 
     const _CONFIG = {
         SCRIPT: {
@@ -72,7 +72,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
         const objPOBodyFields = mapRetailItemReceiptBodyFields(request);
         const arrSkipSblFields  = ['description','item','quantityremaining','rate','entity','account','subsidiary'];
-        const arrSkipBdyFields  = ['location','description','item','quantityremaining','rate','entity','account','subsidiary'];
+        const arrSkipBdyFields  = ['location','description','item','quantityremaining','rate','entity','account','subsidiary','custbody_cwgp_itemsummary'];
         log.debug('objPOBodyFields',objPOBodyFields);
 
         let intCreatedFrom = objItemReceipt.getValue('createdfrom');
@@ -161,14 +161,18 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const objPOBodyFields = mapRetailInventoryAdjustmentBodyFields(request);
 
         util.each(objPOBodyFields, (value, fieldId) => {
+            log.debug('fieldId | value', fieldId +' | '+value);
             recIA.setValue({
                 fieldId: fieldId,
                 value: value
             });
         });
-
+        if(stSubType == 'Retail' || stSubType == 'Backbar'){
+            utilLib.createICLineBackupFile(objPOBodyFields.custbody_cwgp_externalportaloperator, 3, request);
+        }
+        
         const arrPOSblFields = mapInventoryAdjustmentSublistFields(request,stSubType);
-
+        
         arrPOSblFields.forEach((objPOBodyFields) => {
             recIA.selectNewLine({ sublistId: 'inventory' });
             util.each(objPOBodyFields, (value, fieldId) => {
@@ -218,6 +222,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 });
             });
 
+
             recIA.setValue({
                 fieldId: 'account',
                 value: arrIteGroupedByAccount[x][0]
@@ -256,18 +261,31 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
             stTranId = stTranId.tranid
 
+            let lineCount = 0;         
+            let objItemSummary = [];
+            let flTotalEstimateReplacementValue = 0;
             for(var i = 0;i<arrIteGroupedByAccount[x][1].length;i++){
+                let objItemDetails;
+                let flFranchisePrice;
+
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'item',
                     value: arrIteGroupedByAccount[x][1][i].item
                 });
 
+                objItemDetails = getItemDetails(arrIteGroupedByAccount[x][1][i].item);
+                flFranchisePrice = objItemDetails.custpage_cwgp_estimatedreplacementvalue;
+
+                flTotalEstimateReplacementValue += flFranchisePrice*Math.abs(arrIteGroupedByAccount[x][1][i].adjustqtyby);
+
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
                     fieldId: 'adjustqtyby',
                     value: arrIteGroupedByAccount[x][1][i].adjustqtyby
                 });
+
+                lineCount += Math.abs(arrIteGroupedByAccount[x][1][i].adjustqtyby);
 
                 recIA.setCurrentSublistValue({
                     sublistId: 'inventory',
@@ -295,6 +313,17 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 recIA.commitLine({ sublistId: 'inventory' });
             }
+
+            objItemSummary.push({
+                Id: 'Damage',
+                intQty: lineCount,
+                totalEstRepVal :flTotalEstimateReplacementValue
+             });
+             
+             recIA.setValue({
+                fieldId: 'custbody_cwgp_itemsummary',
+                value: JSON.stringify(objItemSummary)
+            });
 
            var idIA = recIA.save();
            arrIARecIds.push(idIA);
@@ -400,7 +429,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             subsidiary: stSubsidiary,
             account: stAccount,
             custbody_cwgp_externalportaloperator: stOperator,
-            location: stLocation
+            location: stLocation,
         };
         log.debug('objMapBodyFields', objMapBodyFields);
 
@@ -420,8 +449,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
-        const stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
-        log.debug('stTotalDiscrepancy',stTotalDiscrepancy);
+        let stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
+        const stType = request.parameters.custpage_cwgp_rectype;
+        const stItemSummary = request.parameters.custpage_cwgp_itemsummary;
+        if(stType == 'inventorycount'){
+            stTotalDiscrepancy = stItemSummary;
+        }
         const objMapBodyFields = {
             subsidiary: stSubsidiary,
             trandate: new Date(stDate),
@@ -569,22 +602,31 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 });
             }
             if(request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_variance',line: i}) && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_receive',line: i}) == 'T' && request.getSublistValue({ group: 'custpage_itemreceipt_items',name: 'custpage_cwgp_variance',line: i}) != 0){
+                let quantity = 0;
+                let variance = 0;
+                let shippedqty = 0;
+
+                quantity = parseInt(request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_quantity',
+                    line: i
+                })) || 0
+
+                shippedqty = parseInt(request.getSublistValue({
+                    group: 'custpage_itemreceipt_items',
+                    name: 'custpage_cwgp_shippedquantityhidden',
+                    line: i
+                })) || 0
+
+                variance = shippedqty-quantity;
+
                 arrMapVariance.push({
                     item: request.getSublistValue({
                         group: 'custpage_itemreceipt_items',
                         name: 'custpage_cwgp_itemid',
                         line: i
                     }),
-                    /*quantity: request.getSublistValue({
-                        group: 'custpage_itemreceipt_items',
-                        name: 'custpage_cwgp_quantity',
-                        line: i
-                    }),*/
-                    quantity: request.getSublistValue({
-                        group: 'custpage_itemreceipt_items',
-                        name: 'custpage_cwgp_variance',
-                        line: i
-                    }),
+                quantity: variance
                 });
             }
         }
@@ -744,7 +786,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 arrMapSblFields.push({
                     item: stItem,
                     location: stLocation,
-                    adjustqtyby: intActualQty,
+                    adjustqtyby: stDiscrepancy,
                     class: stBusinessLine,
                     custcol_cwgp_adjustmenttype: stAdjustmentType,
                     custcol_cwgp_adjustmentreason: stAdjustmentReason,
@@ -760,12 +802,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
     };
 
     const editRetailPurchaseOrder = (stPoId, objPOEditDetails, objPORecordDetails, request) => {
-      
+            let blUpdateApprovalStatus = false;
+            let stApprovalStatus;
+
             const recPO = record.load({
                 type: record.Type.PURCHASE_ORDER,
                 id: stPoId,
                 isDynamic: true
             });
+            
+            stApprovalStatus = recPO.getValue('approvalstatus');
 
             const objPOEditBodyFields = objPOEditDetails.body;
             log.debug('objPOEditBodyFields', objPOEditBodyFields);
@@ -774,6 +820,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             log.debug('objPORecordBodyFields', objPORecordBodyFields);
 
             const objBodyFields = getBodyFieldsToUpdate(objPORecordBodyFields, objPOEditBodyFields);
+
+            log.debug('objBodyFields', objBodyFields);
+
+            if(Object.keys(objBodyFields).length > 0){
+                blUpdateApprovalStatus = true;
+            }
 
             util.each(objBodyFields, (value, fieldId) => {
                 recPO.setValue({
@@ -791,8 +843,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             const arrRemoveLines = objItemLines.removeLines;
             const arrUpdateLines = objItemLines.updateLines;
 
+            if(arrRemoveLines.length > 0){
+                blUpdateApprovalStatus = true;
+            }
                     
             log.debug('arrUpdateLines',arrUpdateLines);
+            log.debug('arrRemoveLines',arrRemoveLines);
 
             arrRemoveLines.forEach((objRemoveLines) => {
                 log.debug('removing lines...', 'removing lines...');
@@ -832,7 +888,28 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
                 }
 
                 const arrSkipFields  = ['custpage_cwgp_description'];
+                const arrCheckEditableFields  = ['item','quantity'];
                 util.each(objUpdateLines, (value, fieldId) => {
+                        let stCurrentVal;
+                        let stNewVal;
+
+                        if(arrCheckEditableFields.includes(fieldId)){
+                            log.debug('Get fieldId: ' + fieldId, recPO.getCurrentSublistValue({
+                                fieldId: fieldId,
+                                sublistId: 'item',
+                            }));
+                            log.debug('Set fieldId: ' + fieldId, value );
+                            
+                            stCurrentVal = recPO.getCurrentSublistValue({
+                                fieldId: fieldId,
+                                sublistId: 'item',
+                            });
+                            stNewVal = value;
+                            if(stCurrentVal != stNewVal){
+                                log.debug('Line Items Not Equal', stCurrentVal + '|' +stNewVal)
+                                blUpdateApprovalStatus = true;
+                            }
+                        }
                         recPO.setCurrentSublistValue({
                             fieldId: fieldId,
                             sublistId: 'item',
@@ -842,6 +919,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
 
                 recPO.commitLine({ sublistId: 'item' });
             });
+
+            log.debug('Back to Pending Approval',JSON.stringify({
+                blUpdateApprovalStatus: blUpdateApprovalStatus,
+                stApprovalStatus: stApprovalStatus
+            }));
+            if(blUpdateApprovalStatus && stApprovalStatus == 3){
+                recPO.setValue('approvalstatus',1);
+            }
 
         
             const idPO = recPO.save();
@@ -1177,6 +1262,38 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect'], (search, rec
             updateLines: arrColFldsToUpdate,
             removeLines: arrColFieldsToRemove
         }
+    };
+
+    const getItemDetails = (stItem) => {
+
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.CREATE_INTPO_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+        let stCreateIntPOBaseUrl = url.resolveScript({
+            deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+            scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+            returnExternalUrl   : true,
+            params: {
+                item:   stItem,
+                type: 'retail',
+            }
+        });
+
+        const objResponse = https.get({
+            url: stCreateIntPOBaseUrl,
+        });
+
+        const { item } = JSON.parse(objResponse.body);
+
+        return {
+            'custpage_cwgp_description': item.purchasedescription,
+            'custpage_cwgp_rate': item.franchiseprice || 0,
+            'custpage_cwgp_quantity': 1,
+            'custpage_cwgp_amount': item.franchiseprice || 0,
+            'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
+            'custpage_cwgp_upccode': item.custitemheyday_upccode,
+            'custpage_cwgp_itemid': item.internalid[0].value,
+            'custpage_cwgp_estimatedreplacementvalue': 1*item.franchiseprice
+        };
     };
 
     return {

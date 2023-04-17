@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record'], (https, util, url, ClientEPLib, currentRecord, message, record) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record','N/ui/dialog'], (https, util, url, ClientEPLib, currentRecord, message, record, dialog) => {
     
     /**
      * Function to be executed after page is initialized.
@@ -1574,6 +1574,29 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
+    const saveDraftIC = () =>{
+   
+        var options = {
+		    title: "Save as Draft",
+		    message: "Are you sure you want to Save this as Draft?"
+		};
+    	function success(result) {
+        	console.log('result '+result);
+        	console.log('Ok');
+        	if(result){
+                console.log('redirect');
+        	}
+            console.log('cancel');
+    	}
+    	function failure(reason) {
+    		console.log('result '+result);
+    		console.log('Cancel');
+    	}
+    	
+		dialog.confirm(options).then(success).catch(failure);
+   
+    };
+
 
     return {
         pageInit,
@@ -1586,5 +1609,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         nextStep,
         validateInventoryCount,
         scanInputViaBtn,
+        saveDraftIC
     };
 });
