@@ -28,8 +28,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_retailpages',
-            DEPLOY: 'customdeploy_cwgp_sl_retailpages'
+            ID: 'customscript_cwgp_sl_retailpages2',
+            DEPLOY: 'customdeploy_cwgp_sl_retailpages2'
         }
     };
     /**
@@ -287,6 +287,7 @@ define([
                 userId: stUserId,
                 inventoryadjustmentid: stPoId,
                 accesstype: stAccessType,
+                subtype: stSubType,
                 tranid: stTranId,
                 step: stStep,
                 objIC: objIC,
@@ -298,7 +299,8 @@ define([
                 custpage_cwgp_pagemode: stPageMode,
                 custpage_cwgp_userid: stUserId,
                 custpage_cwgp_accesstype: stAccessType,
-                custpage_cwgp_step: stStep
+                custpage_cwgp_step: stStep,
+                custpage_cwgp_adjustmentsubtype: stSubType
             } = request.parameters)
 
             log.debug('IC lineCount', request.getLineCount('custpage_inventoryadjustmentinventorycount_items'));
@@ -381,6 +383,7 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
+                    stSubType,
                     stStep,
                     objOperator,
                     objIC,
@@ -419,6 +422,8 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary);
         const objItemPerLocationTotalSearch = buildItemPerLocationTotalSearch(stLocation,stSubsidiary);
+        const objItemPerLocationQoHSearch = buildItemPerLocationQuantityOnHand(stLocation,stSubsidiary);
+        const objItemPerLocationTotalQuantityOnHand = buildItemPerLocationTotalQuantityOnHand(stLocation,stSubsidiary);
 
         listPage.renderItemPerLocation({
             request,
@@ -429,7 +434,9 @@ define([
             stSubsidiary,
             stLocation,
             objSearch: objItemPerLocationSearch,
-            objSearchTotal: objItemPerLocationTotalSearch
+            objSearchTotal: objItemPerLocationTotalSearch,
+            objSearchQoH: objItemPerLocationQoHSearch,
+            objSearchTotalQoH: objItemPerLocationTotalQuantityOnHand
         });
     };
 
@@ -553,8 +560,36 @@ define([
         if (stPageMode == 'edit') {
             if(stRecType == 'intercompanypo'){
                 idRec = editInterPO(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        poid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId
+                    }
+                });
             }else if(stRecType == 'itemreceipt'){
                 idRec = editItemReceipt(request);
+                stTranId = getTranIdSearch(idRec,stRecType);
+                redirect.toSuitelet({
+                    scriptId: objRetailUrl.SCRIPT_ID,
+                    deploymentId: objRetailUrl.DEPLOY_ID,
+                    isExternal: true,
+                    parameters: {
+                        pageMode: 'view',
+                        userId: stUserId,
+                        itemreceiptid: idRec,
+                        accesstype: stAccessType,
+                        rectype: stRecType,
+                        tranid: stTranId,
+                    }
+                });
             }
         }
 
@@ -562,6 +597,7 @@ define([
         if(stPageMode == 'view'){
             stTranId = getTranIdSearch(idRec,stRecType);
             if(stRecType == 'intercompanypo'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,
@@ -577,6 +613,7 @@ define([
                 });
             }
             else if(stRecType == 'itemreceipt'){
+                stTranId = getTranIdSearch(idRec,stRecType);
                 redirect.toSuitelet({
                     scriptId: objRetailUrl.SCRIPT_ID,
                     deploymentId: objRetailUrl.DEPLOY_ID,
@@ -665,7 +702,7 @@ define([
     };
 
     const buildIntercompanyPOSearch = (stSubsidiary) => {
-        const ssIntercompanyPO = search.load({ id: "563", type: "purchaseorder" });
+        const ssIntercompanyPO = search.load({ id: "customsearch_cwgp_retail_interpo", type: "purchaseorder" });
 
         ssIntercompanyPO.filters.push(search.createFilter({
             name: 'subsidiary',
@@ -678,7 +715,7 @@ define([
 
     
     const buildItemReceiptSearch = (stSubsidiary) => {
-        const ssItemReceipt = search.load({ id: "572", type: "itemreceipt" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_retail_itemreceipt", type: "itemreceipt" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'subsidiary',
@@ -690,7 +727,7 @@ define([
     };
 
     const buildInventoryAdjustmentSearch = (stSubsidiary) => {
-        const ssItemReceipt = search.load({ id: "577", type: "inventoryadjustment" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_retail_inventoryadjust", type: "inventoryadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'subsidiary',
@@ -702,7 +739,7 @@ define([
     };
 
     const buildInventoryCountSearch = (stSubsidiary) => {
-        const ssItemReceipt = search.load({ id: "616", type: "inventoryadjustment" });
+        const ssItemReceipt = search.load({ id: "customsearch_cwgp_retail_inventorycount", type: "inventoryadjustment" });
 
         ssItemReceipt.filters.push(search.createFilter({
             name: 'subsidiary',
@@ -714,12 +751,37 @@ define([
     };
 
     const buildItemPerLocationSearch = (stLocation,stSubsidiary) => {
-        const ssItemPerLocation = search.load({ id: "623", type: "transaction" });
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloc", type: "transaction" });
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
             operator: 'anyof',
             join: 'item',
+            values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        return ssItemPerLocation;
+    };
+
+    const buildItemPerLocationQuantityOnHand= (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperlocqoh", type: "transaction" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            join: 'item',
+            values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'location',
+            operator: 'anyof',
             values: stLocation,
         }));
 
@@ -733,6 +795,7 @@ define([
     };
 
         
+
     const buildItemPerLocationTotalSearch = (stLocation,stSubsidiary) => {
         const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloctotal", type: "transaction" });
 
@@ -740,6 +803,31 @@ define([
             name: 'inventorylocation',
             operator: 'anyof',
             join: 'item',
+            values: stLocation,
+        }));
+        
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        return ssItemPerLocation;
+    };
+
+    const buildItemPerLocationTotalQuantityOnHand = (stLocation,stSubsidiary) => {
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemprloctotqoh", type: "transaction" });
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            join: 'item',
+            values: stLocation,
+        }));
+
+        ssItemPerLocation.filters.push(search.createFilter({
+            name: 'location',
+            operator: 'anyof',
             values: stLocation,
         }));
 
@@ -751,6 +839,8 @@ define([
 
         return ssItemPerLocation;
     };
+
+
 
 
 

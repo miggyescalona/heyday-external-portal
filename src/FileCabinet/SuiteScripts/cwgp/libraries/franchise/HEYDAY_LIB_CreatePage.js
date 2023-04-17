@@ -1680,14 +1680,16 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stUserId,
             stAccessType,
             stStep,
+            stSubType,
             objOperator,
             objIC
         } = options;
-
-
-        
+        log.debug('options',options);
+        log.debug('stCustomer',stCustomer);
+        log.debug('stSubtype',stSubType);
+        log.debug('stType',stType);
         const stTitle = 'First Count';
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - '+stTitle});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - '+stTitle});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -1736,6 +1738,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stUserId,
             stAccessType,
             stType,
+            stSubType,
             stUpcMap,
             stOperator,
             stOperatorId,
@@ -1890,7 +1893,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         /*if(objICparsed && stStep != 1){
             utilLib.setSublistValues(sbl, objICparsed);
         }*/
-        populateFirstCountLines(stCustomer,form,sbl);
+        populateFirstCountLines(stCustomer,form,sbl,stSubType);
 
         form.addSubmitButton({ label: 'Submit - First Count' });
 
@@ -1898,6 +1901,12 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             id: 'custpage_back_button',
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+        
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
         });
 
         response.writePage(form);
@@ -1926,9 +1935,10 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var stLocation = rec.parameters.custpage_cwgp_location;
         var stMemo = rec.parameters.custpage_cwgp_memomain;
         var stType = rec.parameters.custpage_cwgp_rectype;
+        var stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         log.debug('stOperator', stOperator);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Second Count'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Second Count'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -1977,6 +1987,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stUserId,
             stAccessType,
             stType,
+            stSubType,
             stUpcMap,
             stOperator,
             //stOperatorId,
@@ -2138,13 +2149,18 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             }
         });
         
-        populateSecondCountLines(stCustomer,rec,sbl,form);
+        populateSecondCountLines(stCustomer,rec,sbl,form,stSubType);
         utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
         form.addButton({
             id: 'custpage_back_button',
             label: 'Cancel',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
         response.writePage(form);
@@ -2193,10 +2209,11 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var stLocation = rec.parameters.custpage_cwgp_location;
         var stMemo = rec.parameters.custpage_cwgp_memomain;
         var stType = rec.parameters.custpage_cwgp_rectype;
+        var stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         // var stUpcMap = rec.parameters.custpage_cwgp_upccodemap;
         log.debug('stOperator', stOperator);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' - Final Review'});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Final Review'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
@@ -2231,6 +2248,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stUserId,
             stAccessType,
             stType,
+            stSubType,
             // stUpcMap,
             stOperator,
             //stOperatorId,
@@ -2402,11 +2420,34 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
+            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
         response.writePage(form);
     };
 
-    const populateFirstCountLines = (stCustomer,form,itemLines) => {
+    const populateFirstCountLines = (stCustomer,form,itemLines,stSubType) => {
+        log.debug('IC Subtype', stSubType);
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
+
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        
 
         var results = [];
         var count = 0;
@@ -2462,7 +2503,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         }
     };
 
-    const populateSecondCountLines = (stCustomer,rec,itemLines,form) => {
+    const populateSecondCountLines = (stCustomer,rec,itemLines,form,stSubType) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var arrIndexFirstCount = [];
@@ -2510,6 +2551,22 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         log.debug('arrItemFirstCount', arrItemFirstCount);
         log.debug('arrQtyFirstCount', arrQtyFirstCount);
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemperlocic", type: "customrecord_cwgp_franchise_tranline" });
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
 
         ssItemPerLocationIC.filters.push(search.createFilter({
             name: 'custrecord_cwgp_ftl_customer',
@@ -2701,6 +2758,12 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                     line : inCounter,
                     value: arrItemFirstCount[i]
                 });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : inCounter,
+                    value: arrItemFirstCount[i]
+                });
+                
                 log.debug('desc', arrDescFirstCount[i]);
                 itemLines.setSublistValue({
                     id : 'custpage_cwgp_description',
@@ -3035,7 +3098,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             font-weight: 200 !important;
         }
     
-        input#submitter, input#secondarysubmitter, input#custpage_back_calculatesummary, input#secondarycustpage_back_calculatesummary, input#custpage_franchisepo_items_addedit {
+        input#submitter, input#secondarysubmitter, input#custpage_savedraft_button, input#secondarycustpage_savedraft_button,input#custpage_back_calculatesummary, input#secondarycustpage_back_calculatesummary, input#custpage_franchisepo_items_addedit {
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;

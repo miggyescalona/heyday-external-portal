@@ -1455,8 +1455,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             stTranId,
         } = options;
 
+        let stSubType = search.lookupFields({type: 'customrecord_cwgp_franchiseinvadjustment',id:parseInt(stPoId), columns: 'custrecord_cwgp_fia_subtype'});
+        stSubType = stSubType.custrecord_cwgp_fia_subtype;
         log.debug('stPoId',stPoId);
-        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' #' +stPoId});
+        const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] + ' '+stSubType+' #' +stPoId});
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
         //add field group

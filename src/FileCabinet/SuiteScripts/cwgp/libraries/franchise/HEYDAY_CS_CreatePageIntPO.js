@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/runtime'], (https, util, url, ClientEPLib, currentRecord, message, runtime) => {
+define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord','N/record', 'N/ui/message','N/runtime','N/ui/dialog','N/file'], (https, util, url, ClientEPLib, currentRecord, record, message, runtime, dialog, file) => {
     /**
      * Function to be executed when field is changed.
      *
@@ -26,8 +26,9 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
             ClientEPLib.getAuthenticationScript();
         }
         //
+        console.log('set start');
         ClientEPLib.setScanBtnOnClick();
-
+        console.log('set success');
         const stQuery = window.location.search;
         const objParams = new URLSearchParams(stQuery);
         const stSubType = objParams.get('subtype');
@@ -1834,6 +1835,112 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
+    const saveDraftIC = (stUserId, stAccessType, stStep) =>{
+        var options = {
+		    title: "Save as Draft",
+		    message: "Are you sure you want to Save this as Draft?"
+		};
+    	function success(result) {
+        	console.log('result '+result);
+        	console.log('Ok');
+        	if(result){
+                const currRec = currentRecord.get();
+                console.log('currRec '+currRec);
+                createICDraftFile(stUserId, stStep, currRec);
+                console.log('redirect');
+                const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        
+                let stFranchiseUrl = url.resolveScript({
+                    deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                    scriptId            : objFranchiseUrl.SCRIPT_ID,
+                    returnExternalUrl   : true,
+                    params: {
+                        pageMode    : 'list',
+                        userId      : stUserId,
+                        accesstype  : stAccessType,
+                        rectype     : 'inventorycount'
+                    }
+                });
+                window.onbeforeunload = null;
+                window.location = stFranchiseUrl;
+        	}
+            console.log('cancel');
+    	}
+    	function failure(reason) {
+    		//console.log('result '+result);
+    		console.log('Cancel');
+    	}
+    	
+		dialog.confirm(options).then(success).catch(failure);
+   
+    };
+
+    const createICDraftFile = (stOperator, stStep, rec) => {
+        try{
+        console.log(stOperator);
+        console.log(stStep);
+        let objDraft = {};
+        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+
+        var numLines = rec.getLineCount({
+            sublistId: stSublistName
+        });
+        console.log('numLines '+numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                sublistId: stSublistName,
+                fieldId: 'custpage_cwgp_item',
+                line: i
+            });
+            
+            if(stStep == 1){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                });
+                if(inFirstCount){
+                    objDraft[stItem] = inFirstCount;
+                }
+                
+            }
+            else if(stStep == 2){
+                var inSecondCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+            }
+            else if(stStep == 3){
+                var inSecondCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+            }
+        }
+        var stSubType = rec.getValue({
+            fieldId: 'custpage_cwgp_adjustmentsubtype'
+        });
+        var userObj = runtime.getCurrentUser();
+        console.log('Internal ID of current user role: ' + userObj.role);
+        record.submitFields({
+            type: 'customrecord_cwgp_externalsl_creds',
+            id: parseInt(stOperator),
+            values: {
+                'custrecord_cwgp_icdraft': JSON.stringify(objDraft),
+                'custrecord_cwgp_icdraftstep': stStep,
+                'custrecord_cwgp_icdrafttype': stSubType
+            }
+        });
+        }
+        catch(e){
+            console.error(e.message);
+        }
+        
+
+    };
+
     return {
         pageInit,
         fieldChanged,
@@ -1845,6 +1952,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         calculateSummary,
         nextStep,
         validateInventoryCount,
-        scanInputViaBtn
+        scanInputViaBtn,
+        saveDraftIC
     };
 });
