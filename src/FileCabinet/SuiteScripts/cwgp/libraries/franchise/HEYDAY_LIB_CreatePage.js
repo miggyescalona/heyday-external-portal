@@ -1682,12 +1682,9 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stStep,
             stSubType,
             objOperator,
-            objIC
+            stDraft,
         } = options;
-        log.debug('options',options);
-        log.debug('stCustomer',stCustomer);
-        log.debug('stSubtype',stSubType);
-        log.debug('stType',stType);
+        log.debug('stDraft',stDraft);
         const stTitle = 'First Count';
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - '+stTitle});
 
@@ -1893,7 +1890,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         /*if(objICparsed && stStep != 1){
             utilLib.setSublistValues(sbl, objICparsed);
         }*/
-        populateFirstCountLines(stCustomer,form,sbl,stSubType);
+        populateFirstCountLines(stCustomer,form,sbl,stSubType,stDraft,stUserId);
 
         form.addSubmitButton({ label: 'Submit - First Count' });
 
@@ -1914,22 +1911,17 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
 
     const renderInventoryCountSecond = (request,response) => {
         log.debug('request', request);
+        log.debug('response', response);
         var rec = request;
         
-
+        log.debug('request.parameters', request.parameters);
         var stCustomer = rec.parameters.custpage_cwgp_customer;
-        log.debug('stCustomer', stCustomer);
         var stSubsidiary = rec.parameters.custpage_cwgp_subsidiary;
-        log.debug('stSubsidiary', stSubsidiary);
         var stStep = '2';
-        log.debug('stStep', stStep);
         var stUserId = rec.parameters.custpage_cwgp_userid;
-        log.debug('stUserId', stUserId);
         // var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
-        log.debug('stAccessType', stAccessType);
-        var stPageMode = rec.parameters.custpage_cwgp_pagemode;
-        log.debug('stPageMode', stPageMode);
+        var stPageMode = 'create';
         var stType = 'inventorycount';
         var stOperator = rec.parameters.custpage_cwgp_operator;
         var stLocation = rec.parameters.custpage_cwgp_location;
@@ -1937,6 +1929,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var stType = rec.parameters.custpage_cwgp_rectype;
         var stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
+        var stDraft = rec.parameters.draft;
         log.debug('stOperator', stOperator);
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Second Count'});
 
@@ -2148,8 +2141,15 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                 };
             }
         });
+        if(stDraft){
+            log.debug('populateSecondCountLinesDraft', '');
+            populateSecondCountLinesDraft(stCustomer,form,sbl,stSubType,stUserId);
+        }
+        else{
+            log.debug('populateSecondCountLines', '');
+            populateSecondCountLines(stCustomer,rec,sbl,form,stSubType);
+        }
         
-        populateSecondCountLines(stCustomer,rec,sbl,form,stSubType);
         utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
@@ -2161,7 +2161,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
         });
         response.writePage(form);
     };
@@ -2190,20 +2190,14 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             arrItemFirstCount.push(stItem);
             arrQtyFirstCount.push(inFirstCount);
         }
-
+        
         var stCustomer = rec.parameters.custpage_cwgp_customer;
-        log.debug('stCustomer', stCustomer);
         var stSubsidiary = rec.parameters.custpage_cwgp_subsidiary;
-        log.debug('stSubsidiary', stSubsidiary);
         var stStep = '3';
-        log.debug('stStep', stStep);
         var stUserId = rec.parameters.custpage_cwgp_userid;
-        log.debug('stUserId', stUserId);
         var objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});	
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
-        log.debug('stAccessType', stAccessType);
-        var stPageMode = rec.parameters.custpage_cwgp_pagemode;
-        log.debug('stPageMode', stPageMode);
+        var stPageMode = 'create';
         var stType = 'inventorycount';
         var stOperator = rec.parameters.custpage_cwgp_operator;
         var stLocation = rec.parameters.custpage_cwgp_location;
@@ -2211,8 +2205,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var stType = rec.parameters.custpage_cwgp_rectype;
         var stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
-        // var stUpcMap = rec.parameters.custpage_cwgp_upccodemap;
-        log.debug('stOperator', stOperator);
+        var stDraft = rec.parameters.draft;
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Final Review'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
@@ -2409,9 +2402,17 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                 };
             }
         });
-        
-        //populateFinalCountLines(stCustomer,arrItemFirstCount,arrQtyFirstCount,sbl);
-        populateFinalCountLines(request,sbl,form);
+        log.debug('stDraft', stDraft);
+        if(stDraft){
+            log.debug('populateFinalCountLinesDraft', '');
+            populateFinalCountLinesDraft(stCustomer,form,sbl,stSubType,stUserId);
+        }
+        else{
+            log.debug('populateFinalCountLines', '');
+            log.debug('rec 3', rec);
+            populateFinalCountLines(stCustomer,rec,sbl,form,stSubType);
+        }
+
         utilLib.createICLineBackupFile(stOperator, 2, rec);
         form.addSubmitButton({ label: 'Submit - Final Review' });
 
@@ -2423,12 +2424,12 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
         });
         response.writePage(form);
     };
 
-    const populateFirstCountLines = (stCustomer,form,itemLines,stSubType) => {
+    const populateFirstCountLines = (stCustomer,form,itemLines,stSubType,stDraft,stUserId) => {
         log.debug('IC Subtype', stSubType);
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
 
@@ -2465,6 +2466,12 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             start += pageSize;
         } while (count == pageSize);
 
+        //If load from Draft
+        let objDraft = {};
+        if(stDraft){
+            objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraft);
+        }
+
         let inCounter = 0;
         for(var i=0; i<results.length; i++){
             var result = results[i];
@@ -2499,6 +2506,18 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                 line : inCounter,
                 value: result.getValue(result.columns[6]) || ' '
             });
+
+            if(stDraft){
+                if(objDraft.hasOwnProperty(result.id)){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: objDraft[result.id]
+                    });
+                }
+                
+            }
+
             inCounter++;
         }
     };
@@ -2596,10 +2615,6 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             var stItem = result.getValue(result.columns[0]);
             var intQtyOnhand = result.getValue(result.columns[2]);
             var index = arrItemFirstCount.indexOf(stItem);
-            log.debug('stItem', stItem);
-            log.debug('intQtyOnhand', intQtyOnhand);
-            log.debug('index', index);
-            log.debug('arrQtyFirstCount[index]', arrQtyFirstCount[index]);
             
             if(arrQtyFirstCount[index]){
                 log.debug('arrQtyFirstCount[index] exists', '');
@@ -2800,13 +2815,206 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
 
     };
 
-    const populateFinalCountLines = (request,itemLines,form) => {
-        var rec = request;
+    const populateSecondCountLinesDraft = (stCustomer,form,itemLines,stSubType,stUserId) => {
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var arrQtySecondCount = [];
+        var arrDescFirstCount = [];
+        var arrSkuFirstCount = [];
+        var arrUpcFirstCount = [];
+        var arrQtyOH = [];
+        log.debug('IC Subtype', stSubType);
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
+
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+
+        do {
+            var subresults = ssItemPerLocationIC.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        //If load from Draft
+        let objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraft);
+
+        let inCounter = 0;
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            if(objDraft.hasOwnProperty(result.id)){
+                /*if(objDraft[result.id][0] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: objDraft[result.id][0]
+                    });
+                }
+                if(objDraft[result.id][1] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_secondcount',
+                        line : inCounter,
+                        value: objDraft[result.id][1]
+                    });
+                }*/
+                arrItemFirstCount.push(result.id);
+                arrQtyFirstCount.push(objDraft[result.id][0] || '');
+                arrQtySecondCount.push(objDraft[result.id][1] || '');
+                arrDescFirstCount.push(result.getValue(result.columns[6]) || ' ');
+                arrSkuFirstCount.push(result.getValue(result.columns[2]) || ' ');
+                arrUpcFirstCount.push(result.getValue(result.columns[3]) || ' ');
+                arrQtyOH.push(0);
+                inCounter++;
+            }
+            
+        }
+
+        const ssItemPerLocationICOH = search.load({ id: "customsearch_cwgp_franchise_itemperlocic", type: "customrecord_cwgp_franchise_tranline" });
+        if(stSubType=='Retail'){
+            ssItemPerLocationICOH.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationICOH.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        ssItemPerLocationICOH.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+
+        do {
+            var subresults = ssItemPerLocationICOH.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            var intQtyOnhand = result.getValue(result.columns[2]);
+            var index = arrItemFirstCount.indexOf(stItem);
+            if(index != -1){
+                arrQtyOH[index]= intQtyOnhand;
+            }
+            
+        }
+        log.debug('arrQtyFirstCount', arrQtyFirstCount);
+        log.debug('arrQtySecondCount', arrQtySecondCount);
+        for(var i=0; i<arrItemFirstCount.length; i++){
+            if(arrQtyFirstCount[i]){
+                log.debug('item as', arrItemFirstCount[i]);
+                if(arrQtyFirstCount[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : i,
+                        value: arrQtyFirstCount[i]
+                    });
+                }
+                if(arrQtySecondCount[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_secondcount',
+                        line : i,
+                        value: arrQtySecondCount[i]
+                    });
+                }
+                
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                
+                log.debug('desc', arrDescFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : i,
+                    value: arrDescFirstCount[i]
+                });
+                log.debug('sku', arrSkuFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : i,
+                    value: arrSkuFirstCount[i]
+                });
+                log.debug('upc', arrUpcFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : i,
+                    value: arrUpcFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : i,
+                    value: arrQtyOH[i]
+                });
+            }
+            
+        }
+
+        var fldTotalDiscrepancy = form.getField({
+            id : 'custpage_cwgp_totaldiscrepancy'
+        });
+        fldTotalDiscrepancy.defaultValue = arrItemFirstCount.length;
+    };
+
+    const populateFinalCountLines = (request,rec,itemLines,form,numLines) => {
+        //var rec = request;
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var numLines = rec.getLineCount({
             group: 'custpage_inventoryadjustmentinventorycount_items'
         });
+        
         log.debug('numLines', numLines);
         let inCounter = 0;
         for(var i=0; i<numLines; i++){
@@ -3005,6 +3213,189 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         });
         fldTotalDiscrepancy.defaultValue = inCounter;
 
+    };
+
+    const populateFinalCountLinesDraft = (stCustomer,form,itemLines,stSubType,stUserId) => {
+        var arrItemFirstCount = [];
+        var arrQtyEnteredCount = [];
+        var arrDescFirstCount = [];
+        var arrSkuFirstCount = [];
+        var arrUpcFirstCount = [];
+        var arrQtyOH = [];
+        log.debug('IC Subtype', stSubType);
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
+
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+
+        do {
+            var subresults = ssItemPerLocationIC.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        //If load from Draft
+        let objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraft);
+
+        let inCounter = 0;
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            if(objDraft.hasOwnProperty(result.id)){
+                /*if(objDraft[result.id][0] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: objDraft[result.id][0]
+                    });
+                }
+                if(objDraft[result.id][1] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_secondcount',
+                        line : inCounter,
+                        value: objDraft[result.id][1]
+                    });
+                }*/
+                arrItemFirstCount.push(result.id);
+                arrQtyEnteredCount.push(objDraft[result.id] || 0);
+                arrDescFirstCount.push(result.getValue(result.columns[6]) || ' ');
+                arrSkuFirstCount.push(result.getValue(result.columns[2]) || ' ');
+                arrUpcFirstCount.push(result.getValue(result.columns[3]) || ' ');
+                arrQtyOH.push(0);
+                inCounter++;
+            }
+            
+        }
+
+        const ssItemPerLocationICOH = search.load({ id: "customsearch_cwgp_franchise_itemperlocic", type: "customrecord_cwgp_franchise_tranline" });
+        if(stSubType=='Retail'){
+            ssItemPerLocationICOH.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationICOH.filters.push(search.createFilter({
+                name: 'name',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        ssItemPerLocationICOH.filters.push(search.createFilter({
+            name: 'custrecord_cwgp_ftl_customer',
+            operator: 'anyof',
+            values: stCustomer,
+        }));
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+
+        do {
+            var subresults = ssItemPerLocationICOH.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            var intQtyOnhand = result.getValue(result.columns[2]);
+            var index = arrItemFirstCount.indexOf(stItem);
+            if(index != -1){
+                arrQtyOH[index]= intQtyOnhand;
+            }
+            
+        }
+        log.debug('arrItemFirstCount', arrItemFirstCount);
+        log.debug('arrQtyEnteredCount', arrQtyEnteredCount);
+        for(var i=0; i<arrItemFirstCount.length; i++){
+            //if(arrQtyEnteredCount[i]){
+                log.debug('item as', arrItemFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : i,
+                    value: arrDescFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : i,
+                    value: arrSkuFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : i,
+                    value: arrUpcFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : i,
+                    value: arrQtyOH[i]
+                });
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_enteredquantity',
+                    line : i,
+                    value: arrQtyEnteredCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_discrepancy',
+                    line : i,
+                    value: arrQtyEnteredCount[i] - arrQtyOH[i]
+                });
+            //}
+            
+        }
+
+        var fldTotalDiscrepancy = form.getField({
+            id : 'custpage_cwgp_totaldiscrepancy'
+        });
+        fldTotalDiscrepancy.defaultValue = arrItemFirstCount.length;
     };
 
     
