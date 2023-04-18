@@ -814,7 +814,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             stType,
             stAccessType,
             stUserId,
-            objSearch
+            objSearch,
+            stCustomer,
+            stSubsidiary,
+            stLocation
         } = options;
 
 
@@ -896,13 +899,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
-        const objInventoryCountDraft = getInventoryCountDraft(stUserId);
-        log.debug('stInventoryCountDraft', objInventoryCountDraft);
+        const objInventoryCountDraft = util.getInventoryCountDraft(stUserId);
+        log.debug('stInventoryCountDraft stringify', objInventoryCountDraft);
+        log.debug('stInventoryCountDraft', `loadInventoryCountDraft(${stUserId}, ${stAccessType}, `+ JSON.stringify(objInventoryCountDraft) + `)`);
         if(objInventoryCountDraft){
             form.addButton({
                 id: 'custpage_loaddraft_button',
                 label: 'Load Draft',
-                functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${objInventoryCountDraft})`
+                functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'${objInventoryCountDraft.stSubtype}', ${objInventoryCountDraft.stStep} )`
             });
         }
 
@@ -974,40 +978,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
         }
 
         
-    };
-
-    const getInventoryCountDraft = (stId) => {
-        const ssCredentials = search.create({
-            type: 'customrecord_cwgp_externalsl_creds',
-            filters:
-                [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: parseInt(stId)
-                    })
-                ],
-            columns:
-                [
-                    search.createColumn({ name: 'custrecord_cwgp_icdraft' }),
-                    search.createColumn({ name: 'custrecord_cwgp_icdraftstep' }),
-                    search.createColumn({ name: 'custrecord_cwgp_icdrafttype' })
-                ]
-        }).run().getRange({
-            start: 0,
-            end: 1
-        });
-
-        if (ssCredentials.length > 0) {
-            const objDraft = {
-                stDraft: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraft' }),
-                stStep: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraftstep' }),
-                stSubtype: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdrafttype' })
-            };
-            return objDraft;
-        }
-        
-        return false;
     };
 
     const htmlCss = () => {

@@ -355,23 +355,20 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         var mrTask = task.create({taskType: task.TaskType.SCHEDULED_SCRIPT});
         mrTask.scriptId = 'customscript_cwgp_sc_createiclines';
         mrTask.params = {custscript_cwgp_iclines: JSON.stringify(arrPOSblFields)};
-        //mrTask.deploymentId = custdeploy1;
         var mrTaskId = mrTask.submit();
-        /*arrPOSblFields.forEach((objPOBodyFields) => {
-            log.debug('objPOBodyFields', objPOBodyFields);
-            const recICLine = record.create({
-                type: 'customrecord_cwgp_franchise_tranline'
-            });
-            
-            util.each(objPOBodyFields, (value,fieldId) => {
-                recICLine.setValue({
-                    fieldId: fieldId,
-                    value: value
-                });
-            });
-            let recIcLineID = recICLine.save();
-            //log.debug('recIALineID', recIALineID);
-        });*/
+
+        //Clear Draft
+        record.submitFields({
+		    type: 'customrecord_cwgp_externalsl_creds',
+		    id: objIABodyFields.custrecord_cwgp_fia_operator,
+		    values: {
+		    	custrecord_cwgp_icdraftstep: '',
+                custrecord_cwgp_icdrafttype: '',
+                custrecord_cwgp_icdraft: ''
+		         },
+		});
+
+        
         return idIC;
     }
     

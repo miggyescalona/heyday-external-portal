@@ -1916,6 +1916,40 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
     };
 
+    const getInventoryCountDraft = (stId) => {
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_icdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_icdraftstep' }),
+                    search.createColumn({ name: 'custrecord_cwgp_icdrafttype' })
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            const objDraft = {
+                stDraft: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraft' }),
+                stStep: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraftstep' }),
+                stSubtype: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdrafttype' })
+            };
+            return objDraft;
+        }
+        
+        return false;
+    };
+
     
 
     
@@ -1951,6 +1985,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         getTotalQtyFranchise,
         getItemPerLocationColumns,
         getItemPerLocationTotalColumns,
-        createICLineBackupFile
+        createICLineBackupFile,
+        getInventoryCountDraft 
     }
 });

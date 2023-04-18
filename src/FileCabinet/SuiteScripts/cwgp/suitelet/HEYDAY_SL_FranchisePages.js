@@ -365,7 +365,9 @@ define([
             subtype: stSubType,
             //tranid: stTranId,
             step: stStep,
-            objIC: objIC
+            objIC: objIC,
+            draft: stDraft,
+
         } = request.parameters;
 
         log.debug('ic params',request.parameters);
@@ -383,7 +385,10 @@ define([
                     stType: 'inventorycount',
                     stAccessType,
                     stUserId,
-                    objSearch: objInventoryCountSearch
+                    objSearch: objInventoryCountSearch,
+                    stCustomer,
+                    stSubsidiary,
+                    stLocation
                 });
 
                 break;
@@ -425,49 +430,21 @@ define([
                         stSubsidiary,
                         stLocation,
                         stCustomer,
-                        stPageMode,
+                        stPageMode: 'create',
                         stUserId,
                         stPoId,
                         stAccessType,
                         stStep,
                         stSubType,
                         objOperator,
-                        objIC
+                        stDraft
                     });
                 }
                 else if(stStep == 2){
-                    createPage.renderInventoryCountSecond({
-                        response,
-                        stType: 'inventorycount',
-                        stSubsidiary,
-                        stLocation,
-                        stCustomer,
-                        stPageMode,
-                        stUserId,
-                        stPoId,
-                        stAccessType,
-                        stStep,
-                        stSubType,
-                        objOperator,
-                        objIC
-                    });
+                    createPage.renderInventoryCountSecond(request,response);
                 }
                 else if(stStep == 3){
-                    createPage.renderInventoryCountFinal({
-                        response,
-                        stType: 'inventorycount',
-                        stSubsidiary,
-                        stLocation,
-                        stCustomer,
-                        stPageMode,
-                        stUserId,
-                        stPoId,
-                        stAccessType,
-                        stStep,
-                        stSubType,
-                        objOperator,
-                        objIC
-                    });
+                    createPage.renderInventoryCountFinal(request,response);
                 }
                 
 
@@ -654,7 +631,7 @@ define([
                     break;
                 case 'inventorycount':
                     const stStep = request.parameters.custpage_cwgp_step;
-                    log.debug('stRecType', stRecType);
+                    log.debug('stStep', stStep);
                     if(stStep == '1'){
                         log.debug('Go to Step 2', stRecType);
                         createPage.renderInventoryCountSecond(request,response);

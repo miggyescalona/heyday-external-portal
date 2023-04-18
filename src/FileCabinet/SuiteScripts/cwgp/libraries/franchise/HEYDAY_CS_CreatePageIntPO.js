@@ -1905,18 +1905,26 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 
             }
             else if(stStep == 2){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                }) || '';
                 var inSecondCount = rec.getSublistValue({
                     sublistId: stSublistName,
                     fieldId: 'custpage_cwgp_secondcount',
                     line: i
                 }) || '';
+                objDraft[stItem] = [inFirstCount,inSecondCount];
             }
             else if(stStep == 3){
-                var inSecondCount = rec.getSublistValue({
+                var inFirstCount = rec.getSublistValue({
                     sublistId: stSublistName,
-                    fieldId: 'custpage_cwgp_secondcount',
+                    fieldId: 'custpage_cwgp_enteredquantity',
                     line: i
                 }) || '';
+
+                objDraft[stItem] = inFirstCount;
             }
         }
         var stSubType = rec.getValue({
