@@ -441,10 +441,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
             stPageMode,
             stUserId,
             stPoId,
-            stOperator
+            stOperator,
+            stShopLocation
         } = options;
       
-        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary,stShopLocation});
         // const {
         //     objItemResultSet,
         //     objUpcMap,

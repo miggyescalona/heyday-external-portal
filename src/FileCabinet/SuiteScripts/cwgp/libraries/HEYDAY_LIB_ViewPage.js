@@ -1371,6 +1371,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('stPoId',stPoId);
         let stSubType = search.lookupFields({type: search.Type.INVENTORY_ADJUSTMENT,id:stPoId, columns: ['custbody_cwgp_adjustmentsubtype']});
         stSubType = stSubType.custbody_cwgp_adjustmentsubtype;
+        stSubType = stSubType.toLowerCase();
         log.debug('before',stType+'_'+stSubType);
         if(!stSubType){
             stSubType = 'standard'

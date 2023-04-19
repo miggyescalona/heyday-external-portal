@@ -1186,7 +1186,8 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stAccessType,
             stCustomer,
             stLocation,
-            stOperator
+            stOperator,
+            stShopLocation
         } = options;
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
@@ -1194,7 +1195,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
         
         //Initialize Add Scanner Field Group and Fields
-        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary,stShopLocation});
         // const {
         //     objItemResultSet,
         //     objUpcMap,
@@ -1512,7 +1513,8 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stCustomer,
             stLocation,
             stSubType,
-            stOperator
+            stOperator,
+            stShopLocation
         } = options;
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType+'_'+stSubType] });
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
@@ -1525,7 +1527,8 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stType,
             stSubType,
             stSubsidiary,
-            _CONFIG
+            _CONFIG,
+            stShopLocation
         })
 
         let stUpcMap = ''
@@ -1682,7 +1685,8 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             stStep,
             stSubType,
             objOperator,
-            objIC
+            objIC,
+            stShopLocation
         } = options;
         log.debug('options',options);
         log.debug('stCustomer',stCustomer);
@@ -1893,7 +1897,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         /*if(objICparsed && stStep != 1){
             utilLib.setSublistValues(sbl, objICparsed);
         }*/
-        populateFirstCountLines(stCustomer,form,sbl,stSubType);
+        populateFirstCountLines(stCustomer,form,sbl,stSubType,stShopLocation);
 
         form.addSubmitButton({ label: 'Submit - First Count' });
 
@@ -2428,7 +2432,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         response.writePage(form);
     };
 
-    const populateFirstCountLines = (stCustomer,form,itemLines,stSubType) => {
+    const populateFirstCountLines = (stCustomer,form,itemLines,stSubType,stShopLocation) => {
         log.debug('IC Subtype', stSubType);
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
 
@@ -2444,6 +2448,14 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                 name: 'name',
                 operator: 'contains',
                 values: 'backbar',
+            }));
+        }
+
+        if(stShopLocation){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: search.Operator.ANYOF,
+                values: stShopLocation
             }));
         }
 

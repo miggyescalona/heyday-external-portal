@@ -1127,14 +1127,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stPageMode,
             stUserId,
             stAccessType,
-            objOperator
+            objOperator,
+            stShopLocation
         } = options;
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
 
-        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
+        log.debug('shoplocation',stShopLocation);
+    
+
+        objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary,stShopLocation});
 
         //add field group
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
@@ -1475,7 +1479,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stUserId,
             stAccessType,
             stSubType,
-            objOperator
+            objOperator,
+            stShopLocation
         } = options;
 
         log.debug(stType+'_'+stSubType);
@@ -1490,7 +1495,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stType,
             stSubType,
             stSubsidiary,
-            _CONFIG
+            _CONFIG,
+            stShopLocation
         })
         
         let stUpcMap = ''
@@ -1700,7 +1706,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stStep,
             objOperator,
             requestParams,
-            customRecordId
+            customRecordId,
+            stShopLocation
         } = options;
 
         log.debug('requestParams',requestParams);
@@ -1733,7 +1740,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }= EPLib.initScanner({	
             stType,	
             stSubsidiary,	
-            _CONFIG	
+            _CONFIG	,
+            stShopLocation
         })	
 
         let stUpcMap = ''
@@ -1973,7 +1981,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
-        populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType);
+        populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType,stShopLocation);
         form.addSubmitButton({ label: 'Submit First Count' });
 
         form.addButton({
@@ -2048,7 +2056,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }= EPLib.initScanner({	
             stType,	
             stSubsidiary,	
-            _CONFIG	
+            _CONFIG	,
         })	
 
         let stUpcMap = ''
@@ -2158,11 +2166,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
         
 
-           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
-                 log.debug('fld',JSON.stringify({
-                    fld: id,
-                    val: objDefaultValues[fld.id]
-                 }));
+            if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
 
@@ -2434,11 +2438,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 };	
             }
 
-           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
-                 log.debug('fld',JSON.stringify({
-                    fld: id,
-                    val: objDefaultValues[fld.id]
-                 }));
+            if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
 
@@ -2548,7 +2548,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         log.debug('===CREATE===','===End Create Inventory Count Final===');
     };
 
-    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines,stSubType) => {
+    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines,stSubType,stShopLocation) => {
 
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
         if(stSubType=='Retail'){
@@ -2563,6 +2563,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 name: 'name',
                 operator: 'contains',
                 values: 'backbar',
+            }));
+        }
+        
+        if(stShopLocation){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: search.Operator.ANYOF,
+                values: stShopLocation
             }));
         }
 
@@ -2629,7 +2637,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
     };
 
-    const populateSecondCountLines = (arrItemFirstCount,rec,itemLines,stLocation,stSubsidiary,form,stSubType) => {
+    const populateSecondCountLines = (arrItemFirstCount,rec,itemLines,stLocation,stSubsidiary,form,stSubType, stShopLocation) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var arrIndexFirstCount = [];
@@ -2674,6 +2682,14 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 name: 'name',
                 operator: 'contains',
                 values: 'backbar',
+            }));
+        }
+
+        if(stShopLocation){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                values: stShopLocation
             }));
         }
 
@@ -3138,8 +3154,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
         else if(stType == 'inventorycount'){
             scanbhtml = EPLib.getScanButtonCss({
-                stPageType: stType,
-                stStep
+                stPageType: stType
             });
             stMapVendor = 19082;
             log.debug('scanbhtml', scanbhtml)
@@ -3186,8 +3201,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
     
         body {
             font-family: 'Roboto', sans-serif !important;
-            filter: blur(100px);
-            pointer-events: none;
         }
     
         div#div__body {

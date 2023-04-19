@@ -26,8 +26,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_franchisepages2',
-            DEPLOY: 'customdeploy_cwgp_sl_franchisepages2'
+            ID: 'customscript_cwgp_sl_franchisepages',
+            DEPLOY: 'customdeploy_cwgp_sl_franchisepages'
         }
     };
     /**
@@ -108,6 +108,7 @@ define([
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stCustomer,stStatus,stReceiving);
         const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
+        const stShopLocation = getShopLocation(stUserId);
        
         switch (stPageMode) {
             case 'list':
@@ -131,7 +132,8 @@ define([
                     stAccessType,
                     stCustomer,
                     stLocation,
-                    stOperator
+                    stOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -180,7 +182,8 @@ define([
                     stPageMode,
                     stUserId,
                     stPoId,
-                    stOperator
+                    stOperator,
+                    stShopLocation
                 });
                 break;
             default:
@@ -201,6 +204,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stCustomer);
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
+        const stShopLocation = getShopLocation(stUserId);
         switch (stPageMode) {
             case 'list':
                 listPage.renderItemReceipt({
@@ -222,7 +226,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stOperator
+                    stOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -247,7 +252,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stTranId,
+                    stShopLocation
                 });
                 break;
             default:
@@ -271,6 +277,7 @@ define([
         log.debug('stCustomer',stCustomer);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
+        const stShopLocation = getShopLocation(stUserId);
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryAdjustment({
@@ -295,7 +302,8 @@ define([
                     stPoId,
                     stAccessType,
                     stSubType,
-                    stOperator
+                    stOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -320,7 +328,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stTranId,
+                    stShopLocation
                 });
                 break;
             default:
@@ -375,6 +384,8 @@ define([
         const objOperator = getOperator(stUserId);
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
+        const stShopLocation = getShopLocation(stUserId);
+
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryCount({
@@ -401,7 +412,8 @@ define([
                     stStep,
                     stSubType,
                     objOperator,
-                    objIC
+                    objIC,
+                    stShopLocation
                 });
 
                 break;
@@ -432,7 +444,8 @@ define([
                         stStep,
                         stSubType,
                         objOperator,
-                        objIC
+                        objIC,
+                        stShopLocation
                     });
                 }
                 else if(stStep == 2){
@@ -449,7 +462,8 @@ define([
                         stStep,
                         stSubType,
                         objOperator,
-                        objIC
+                        objIC,
+                        stShopLocation
                     });
                 }
                 else if(stStep == 3){
@@ -466,7 +480,8 @@ define([
                         stStep,
                         stSubType,
                         objOperator,
-                        objIC
+                        objIC,
+                        stShopLocation
                     });
                 }
                 
@@ -542,6 +557,31 @@ define([
 
         if (ssCredentials.length > 0) {
             return ssCredentials[0].getValue({ name: 'custrecord_cwgp_subsidiary' });
+        }
+    };
+
+    const getShopLocation = (stId) => {
+        const ssCredentials = search.create({
+            type: _CONFIG.RECORD.CREDENTIALS,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_shop_location' }),
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_shop_location' });
         }
     };
     

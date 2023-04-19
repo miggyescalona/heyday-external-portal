@@ -28,8 +28,8 @@ define([
             CREDENTIALS: 'customrecord_cwgp_externalsl_creds'
         },
         SCRIPT: {
-            ID: 'customscript_cwgp_sl_retailpages2',
-            DEPLOY: 'customdeploy_cwgp_sl_retailpages2'
+            ID: 'customscript_cwgp_sl_retailpages',
+            DEPLOY: 'customdeploy_cwgp_sl_retailpages'
         }
     };
     /**
@@ -91,6 +91,7 @@ define([
         const stLocation = getLocation(stUserId);
         const objIntercompanyPOSearch = buildIntercompanyPOSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const stShopLocation = getShopLocation(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -113,7 +114,8 @@ define([
                     stPageMode,
                     stUserId,
                     stAccessType,
-                    objOperator
+                    objOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -138,7 +140,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stTranId,
+                    stShopLocation
                 });
                 break;
             default:
@@ -159,6 +162,7 @@ define([
         const stSubsidiary = getSubsidiary(stUserId);
         const objItemReceiptSearch = buildItemReceiptSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const stShopLocation = getShopLocation(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -182,7 +186,8 @@ define([
                     stPoId,
                     stTranId,
                     stAccessType,
-                    objOperator
+                    objOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -207,7 +212,8 @@ define([
                     stUserId,
                     stPoId,
                     stAccessType,
-                    stTranId
+                    stTranId,
+                    stShopLocation
                 });
                 break;
             default:
@@ -230,6 +236,7 @@ define([
         const stLocation = getLocation(stUserId);
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const stShopLocation = getShopLocation(stUserId);
 
         switch (stPageMode) {
             case 'list':
@@ -255,7 +262,8 @@ define([
                     stPoId,
                     stAccessType,
                     stSubType,
-                    objOperator
+                    objOperator,
+                    stShopLocation
                 });
 
                 break;
@@ -358,6 +366,7 @@ define([
         const stLocation = getLocation(stUserId);
         const objInventoryCountSearch = buildInventoryCountSearch(stSubsidiary);
         const objOperator = getOperator(stUserId);
+        const stShopLocation = getShopLocation(stUserId);
         const requestParams = request.parameters;
 
         switch (stPageMode) {
@@ -388,7 +397,8 @@ define([
                     objOperator,
                     objIC,
                     requestParams,
-                    customRecordId
+                    customRecordId,
+                    stShopLocation
                 });
 
                 break;
@@ -895,6 +905,32 @@ define([
             return ssCredentials[0].getValue({ name: 'custrecord_cwgp_location' });
         }
     };
+
+    const getShopLocation = (stId) => {
+        const ssCredentials = search.create({
+            type: _CONFIG.RECORD.CREDENTIALS,
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_shop_location' }),
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            return ssCredentials[0].getValue({ name: 'custrecord_cwgp_shop_location' });
+        }
+    };
+
 
     const getOperator = (stId) => {
         let arrCredentials = [];
