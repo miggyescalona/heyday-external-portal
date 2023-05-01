@@ -37,6 +37,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         let stRecType = getParameterFromURL('rectype');
 
         if (context.fieldId == 'custpage_cwgp_page' && stRecType != 'itemperlocation') {
+
             const intPage = currentRecord.getValue({ fieldId: 'custpage_cwgp_page' });
             console.log('page', intPage);
 

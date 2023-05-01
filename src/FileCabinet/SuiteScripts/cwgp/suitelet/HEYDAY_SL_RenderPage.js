@@ -238,7 +238,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
                         <br>
                         <button type="button" id="cwgp_ia_btn" class="navbutton">Inventory Adjustment</button>
                         <br>
-                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Item Per Location</button>
+                        <button type="button" id="cwgp_ipl_btn" class="navbutton">Inventory On Hand</button>
                         <br>
                         <button type="button" id="cwgp_ic_btn" class="navbutton">Inventory Count</button>
                     </div>
@@ -446,7 +446,7 @@ define(['N/ui/serverWidget', 'N/url', '../libraries/HEYDAY_LIB_ExternalPortal'],
 
                 <div class="row">
                     <div class="column signin">
-                        <h1 class="signintxt">Sign In - Alpha</h1>
+                        <h1 class="signintxt">Sign In - ALPHA</h1>
                     </div>
                     <div class="column loginform">
                         <p class="form_message">Please Enter Your Details</p>
