@@ -195,8 +195,6 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                 objConfProperty : 'FIELD',
                 stType       
             })
-           
-            log.debug('_CONFIG', _CONFIG.FIELD)
             
             return  {
                 objItemResultSet,
@@ -235,7 +233,17 @@ define(['N/search', 'N/ui/serverWidget', './HEYDAY_LIB_ConfExternalPortal.js'], 
                         <button id="custpage_cwgp_backbar_scan_btn" type="button" class="scanbutton">Add to<br />Backbar Usage</button>
                     `
                     break;
-                case 'inventoryadjustment_damagetestertheft':
+                case 'inventoryadjustment_damage':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_dtt_scan_btn" type="button" class="scanbutton">Remove<br />Item</button>
+                    `
+                    break;
+                case 'inventoryadjustment_tester':
+                    stBtnDefCss = `
+                        <button id="custpage_cwgp_dtt_scan_btn" type="button" class="scanbutton">Remove<br />Item</button>
+                    `
+                    break;
+                case 'inventoryadjustment_theft':
                     stBtnDefCss = `
                         <button id="custpage_cwgp_dtt_scan_btn" type="button" class="scanbutton">Remove<br />Item</button>
                     `

@@ -230,8 +230,10 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
             buttons: [
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
-                { label: 'Damage/Tester/Theft', value: 3 },
-                { label: 'Cancel', value: 0 }
+                { label: 'Damage', value: 3 },
+                { label: 'Tester', value: 4 },
+                { label: 'Theft', value: 5 },
+                { label: 'Cancel', value: 0 },
             ]
         };
         function success(result) { 
@@ -247,13 +249,16 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
                     break;
                 case 2:
                     subType = 'backbar';
-                    break;
+                break;
                 case 3:
-                    subType = 'damagetestertheft';
-                    break;
+                    subType = 'damage';
+                break;
                 case 4:
-                    subType = 'inventorycountinitial';
-                    break;
+                    subType = 'tester';
+                break;
+                case 5:
+                    subType = 'theft';
+                break;
             }
             
             let stCreateIntPOUrl = url.resolveScript({
@@ -319,6 +324,63 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         dialog.create(options).then(success).catch(failure);
     }
 
+    const loadInventoryCountDraft = (stUserId, stOperatorName, stAccessType, stSubsidiary, stLocation,stSubtype, stStep) => {
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        let stCreateIntPOUrl = '';
+        if(stStep == 1){
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+                scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true
+                }
+            });
+        }
+        else{
+            let intAdjustmentAccount;
+            if(stSubtype=='Retail'){
+                intAdjustmentAccount = 972;
+            }
+            else if(stSubtype=='Backbar'){
+                intAdjustmentAccount = 973;
+            }
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+                scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true,
+                    custpage_cwgp_userid      : stUserId,
+                    custpage_cwgp_operator: stOperatorName,
+                    custpage_cwgp_operatorhidden: stUserId,
+                    custpage_cwgp_adjustmentlocation: stLocation,
+                    custpage_cwgp_accesstype  : stAccessType,
+                    custpage_cwgp_rectype     : 'inventorycount',
+                    custpage_cwgp_adjustmentsubtype     : stSubtype,
+                    custpage_cwgp_subsidiary: stSubsidiary,
+                    custpage_cwgp_adjustmentaccount: intAdjustmentAccount
+                }
+            });
+        }
+        
+        window.location = stCreateIntPOUrl;
+    }
+
+
+
     const getParameterFromURL = (param) => {
         if (param = (new RegExp('[?&]' + encodeURIComponent(param) + '=([^&]*)')).exec(location.search))
             return decodeURIComponent(param[1].replace(/\+/g, ' '));
@@ -331,6 +393,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         back,
         toCreateTransaction,
         createInventoryAdjustment,
-        createInventoryCount
+        createInventoryCount,
+        loadInventoryCountDraft
     };
 });

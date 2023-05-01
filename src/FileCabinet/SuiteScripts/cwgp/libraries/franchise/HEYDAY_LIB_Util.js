@@ -234,13 +234,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             switch (stSubtype) {
                 case 'standard':
                     stType = 'Standard';
-    
                     break;
                 case 'backbar':
                     stType = 'Backbar';
                     break;
                 case 'damagetestertheft':
                     stType = 'Damage/Tester/Theft'
+                    break;
+                case 'damage':
+                    stType = 'Damage'
+                    break;
+                case 'tester':
+                    stType = 'Tester'
+                    break;
+                case 'theft':
+                    stType = 'Theft'
                     break;
                 default:
                     stType = 'Standard'
@@ -1164,7 +1172,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     search.createFilter({
                         name: 'status',
                         operator: search.Operator.ANYOF,
-                        values: ["SalesOrd:D","SalesOrd:F","SalesOrd:E"]
+                        values: ["SalesOrd:D","SalesOrd:E","SalesOrd:F","SalesOrd:G"]
                     }),
                     search.createFilter({
                         name: 'custbody_cwgp_canreceive',
@@ -1241,9 +1249,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
     
     const setSublistValues = (sbl, objPO, stType) => {
         const arrListValues = stType == 'inventorycount' ? objPO : objPO.item;
-        log.debug('arrListValues', arrListValues);
-        log.debug('sbl',sbl);
-
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
                 if(fieldId == 'custpage_cwgp_datetime'){
@@ -1748,7 +1753,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         });
 
         let stTypes;
-        if(stSubType == 'damagetestertheft'){
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
             stTypes = [3,4,5];
         }
         else if(stSubType =='standard'){
@@ -1929,9 +1934,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 ],
             columns:
                 [
-                    search.createColumn({ name: 'custrecord_cwgp_icdraft' }),
-                    search.createColumn({ name: 'custrecord_cwgp_icdraftstep' }),
-                    search.createColumn({ name: 'custrecord_cwgp_icdrafttype' })
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraftstep' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraftstep' })
                 ]
         }).run().getRange({
             start: 0,
@@ -1940,9 +1946,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
         if (ssCredentials.length > 0) {
             const objDraft = {
-                stDraft: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraft' }),
-                stStep: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdraftstep' }),
-                stSubtype: ssCredentials[0].getValue({ name: 'custrecord_cwgp_icdrafttype' })
+                stDraftRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraft' }),
+                stStepRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraftstep' }),
+                stDraftBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraft' }),
+                stStepBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraftstep' })
             };
             return objDraft;
         }

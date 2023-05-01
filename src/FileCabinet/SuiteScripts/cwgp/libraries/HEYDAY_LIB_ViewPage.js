@@ -1025,7 +1025,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -1172,7 +1171,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
         
 
         arrFlds.forEach((stCol) => {
@@ -1371,6 +1369,37 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('stPoId',stPoId);
         let stSubType = search.lookupFields({type: search.Type.INVENTORY_ADJUSTMENT,id:stPoId, columns: ['custbody_cwgp_adjustmentsubtype']});
         stSubType = stSubType.custbody_cwgp_adjustmentsubtype;
+
+        let stAdjustmentType = '';
+        switch (stSubType) {
+            case 'standard':
+                stAdjustmentType = 'Standard';
+
+                break;
+            case 'backbar':
+                stAdjustmentType = 'Backbar';
+                break;
+            case 'damagetestertheft':
+                stAdjustmentType = 'Damage/Tester/Theft'
+                break;
+            case 'damage':
+                stAdjustmentType = 'Damage'
+                break;
+            case 'tester':
+                stAdjustmentType = 'Tester'
+                break;
+            case 'theft':
+                stAdjustmentType = 'Theft'
+                break;
+            default:
+                stAdjustmentType = 'Standard'
+        }
+
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
+            stSubType = 'damagetestertheft';
+        }
+
+
         log.debug('before',stType+'_'+stSubType);
         if(!stSubType){
             stSubType = 'standard'
@@ -1399,8 +1428,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
-        objPO.body.custpage_cwgp_adjustmenttype = subType;
+        //let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
+        objPO.body.custpage_cwgp_adjustmenttype = stAdjustmentType;
         
         //log.debug('objPO', objPO);
 
@@ -1408,7 +1437,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
         
 
         arrFlds.forEach((stCol) => {
@@ -1540,7 +1568,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
         
 
         arrFlds.forEach((stCol) => {

@@ -249,6 +249,33 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     }
                 }
                 break;
+            case 'inventoryadjustment_damage':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_adjustqtyby'
+                    }
+                }
+                break;
+            case 'inventoryadjustment_tester':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_adjustqtyby'
+                    }
+                }
+                break;
+            case 'inventoryadjustment_theft':   
+                UI_CONFIG = {
+                    SUBLIST_ID      : 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    SUBLIST_FIELDS  : {
+                        ITEM    : 'custpage_cwgp_item',
+                        QTY     : 'custpage_cwgp_adjustqtyby'
+                    }
+                }
+                break;
             case 'inventorycount':
                 UI_CONFIG = {
                     SUBLIST_ID      : 'custpage_inventoryadjustmentinventorycount_items',
@@ -550,7 +577,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                     sublistId   : UI_CONFIG.SUBLIST_ID
                 })
             }
-            else if(stPageType == 'inventoryadjustment_backbar' || stPageType == 'inventoryadjustment_damagetestertheft'){
+            else if(stPageType == 'inventoryadjustment_backbar' || stPageType == 'inventoryadjustment_damage' || stPageType == 'inventoryadjustment_tester' || stPageType == 'inventoryadjustment_theft' ){
 
                 let intScannedQty = 0;
 
@@ -911,7 +938,7 @@ define(['N/currentRecord', 'N/ui/dialog', 'N/url', './HEYDAY_LIB_ConfExternalPor
                 addBtnListener({stBtnAction: 'BACKBAR'})
                 console.log('Backbar Scan Button Set')
             }
-            else if(stPageType == 'inventoryadjustment_damagetestertheft'){
+            else if(stPageType == 'inventoryadjustment_damage' || stPageType == 'inventoryadjustment_tester' || stPageType == 'inventoryadjustment_theft'){
                 addBtnListener({stBtnAction: 'DTT'})
                 console.log('Damage/Tester/Theft Scan Button Set')
             }

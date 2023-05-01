@@ -129,7 +129,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             });
             recIA.setValue({
                 fieldId: 'custrecord_cwgp_fia_subtype',
-                value: 'damagetestertheft'
+                value: 'damage'
             });
             
             recIA.setValue({
@@ -358,15 +358,27 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         var mrTaskId = mrTask.submit();
 
         //Clear Draft
-        record.submitFields({
-		    type: 'customrecord_cwgp_externalsl_creds',
-		    id: objIABodyFields.custrecord_cwgp_fia_operator,
-		    values: {
-		    	custrecord_cwgp_icdraftstep: '',
-                custrecord_cwgp_icdrafttype: '',
-                custrecord_cwgp_icdraft: ''
-		         },
-		});
+        if(objIABodyFields.custrecord_cwgp_fia_subtype == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: objIABodyFields.custrecord_cwgp_fia_operatorid,
+                values: {
+                    custrecord_cwgp_ricdraftstep: '',
+                    custrecord_cwgp_ricdraft: ''
+                     },
+            });
+        }
+        else if(objIABodyFields.custrecord_cwgp_fia_subtype == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: objIABodyFields.custrecord_cwgp_fia_operatorid,
+                values: {
+                    custrecord_cwgp_bbicdraftstep: '',
+                    custrecord_cwgp_bbicdraft: ''
+                     },
+            });
+        }
+        
 
         
         return idIC;
@@ -432,6 +444,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stOperatorId = request.parameters.custpage_cwgp_userid;
+        let stAdjustmentSubTypeId = '';
+        if(stAdjustmentSubType == 'damage'){
+            stAdjustmentSubTypeId = 3;
+        }
+        else if(stAdjustmentSubType == 'tester'){
+            stAdjustmentSubTypeId = 4;
+        }
+        else if(stAdjustmentSubType == 'theft'){
+            stAdjustmentSubTypeId = 5;
+        }
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fia_customer': stCustomer,
@@ -439,6 +461,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             'custrecord_cwgp_fia_memo': stMemoMain,
             'custrecord_cwgp_fia_operator': stMemoMain,
             'custrecord_cwgp_fia_subtype': stAdjustmentSubType,
+            'custrecord_cwgp_fia_adjustmenttype': stAdjustmentSubTypeId,
             'custrecord_cwgp_fia_operator': stOperator,
             'custrecord_cwgp_fia_operatorid': stOperatorId,
             'custrecord_cwgp_fia_itemsummary': stTotalAdjustment
@@ -671,10 +694,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             'totalEstRepVal': flTotal
         });
 
-        log.debug('arrMapSblFields', arrMapSblFields);
+        /*log.debug('arrMapSblFields', arrMapSblFields);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
-        log.debug('arrMapDamagedSummary', arrMapDamagedSummary);
+        log.debug('arrMapDamagedSummary', arrMapDamagedSummary);*/
         return [arrMapSblFields,arrMapDamagedItems,arrMapVariance,arrMapDamagedSummary];
     };
 
@@ -683,7 +706,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         let arrMapSblFields = [];
         const intLineCountStandard = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
-        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : stSubType == 'damage' ? 'custpage_inventoryadjustmentdamagetestertheft_items': stSubType == 'tester' ? 'custpage_inventoryadjustmentdamagetestertheft_items':stSubType == 'theft' ? 'custpage_inventoryadjustmentdamagetestertheft_items': '';
         log.debug('stSubType', stSubType);
         log.debug('subTypeSublist', subTypeSublist);
 
@@ -796,7 +819,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             }
         }
 
-        if(stSubType == 'damagetestertheft'){
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
             const intLineCountBackbar = request.getLineCount({ group: subTypeSublist });
             for (let i = 0; i < intLineCountBackbar; i++) {
                 let inAdjustQty = request.getSublistValue({
@@ -835,7 +858,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
     
             }
         }
-        log.debug('arrMapSblFields', arrMapSblFields)
         return arrMapSblFields;
     };
 
@@ -861,12 +883,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             if(!inEndingQty){
                 inEndingQty = 0;
             }
-            log.debug('i', i);
-            log.debug('inEndingQty', inEndingQty);
-            log.debug('inStartingQty', inStartingQty);
+            //log.debug('i', i);
+            //log.debug('inEndingQty', inEndingQty);
+            //log.debug('inStartingQty', inStartingQty);
             let inActualQty = 0;
             inActualQty = inEndingQty - inStartingQty;
-            log.debug('inActualQty', inActualQty);
+            //log.debug('inActualQty', inActualQty);
             arrMapSblFields.push({
                 'custrecord_cwgp_ftl_parentia': id,
                 'custrecord_cwgp_ftl_customer': stCustomer,
@@ -919,7 +941,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             
             
         }
-        log.debug('arrMapSblFields', arrMapSblFields)
         return arrMapSblFields;
     };
 
@@ -1122,11 +1143,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             }
 
             util.each(objUpdateLines, (value, fieldId) => {
-                recPO.setCurrentSublistValue({
-                    sublistId: 'item',
-                    fieldId: fieldId,
-                    value: value
-                });
+                if(fieldId != 'price'){
+                    recPO.setCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                }
+                
             });
 
             recPO.commitLine({ sublistId: 'item' });

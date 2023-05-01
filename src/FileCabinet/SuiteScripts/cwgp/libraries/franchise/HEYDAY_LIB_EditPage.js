@@ -574,7 +574,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
 
         utilLib.setSublistValues(sbl, objPO);
 
-        form.addSubmitButton({ label: 'Save' });
+        form.addSubmitButton({ label: 'Submit' });
         
         form.addButton({
             id: 'custpage_back_button',
@@ -812,7 +812,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', '../HEYDAY_LIB_ExternalPort
         }
         
         
-        form.addSubmitButton({ label: 'Save' });
+        form.addSubmitButton({ label: 'Submit' });
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',

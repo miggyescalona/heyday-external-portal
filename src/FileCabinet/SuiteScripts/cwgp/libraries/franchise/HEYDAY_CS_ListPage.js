@@ -141,7 +141,9 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
             buttons: [
                 { label: 'Standard', value: 1 },
                 { label: 'Backbar', value: 2 },
-                { label: 'Damage/Tester/Theft', value: 3 },
+                { label: 'Damage', value: 3 },
+                { label: 'Tester', value: 4 },
+                { label: 'Theft', value: 5 },
                 { label: 'Cancel', value: 0 },
             ]
         };
@@ -160,7 +162,13 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
                     subType = 'backbar';
                 break;
                 case 3:
-                    subType = 'damagetestertheft';
+                    subType = 'damage';
+                break;
+                case 4:
+                    subType = 'tester';
+                break;
+                case 5:
+                    subType = 'theft';
                 break;
             }
             
@@ -227,7 +235,7 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
         dialog.create(options).then(success).catch(failure);
     }
 
-    const loadInventoryCountDraft = (stUserId, stAccessType, stCustomer, stSubsidiary,stLocation,stSubtype, stStep) => {
+    const loadInventoryCountDraft = (stUserId, stOperatorName,stAccessType, stCustomer, stSubsidiary,stLocation,stSubtype, stStep) => {
         const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
         let stCreateIntPOUrl = '';
         if(stStep == 1){
@@ -260,7 +268,7 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
                     step        : stStep,
                     draft       : true,
                     custpage_cwgp_userid      : stUserId,
-                    custpage_cwgp_operator: stUserId,
+                    custpage_cwgp_operator: stOperatorName,
                     custpage_cwgp_location: stLocation,
                     custpage_cwgp_accesstype  : stAccessType,
                     custpage_cwgp_rectype     : 'inventorycount',

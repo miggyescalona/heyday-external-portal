@@ -817,7 +817,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             objSearch,
             stCustomer,
             stSubsidiary,
-            stLocation
+            stLocation,
+            objOperator
         } = options;
 
 
@@ -900,13 +901,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
         const objInventoryCountDraft = util.getInventoryCountDraft(stUserId);
-        log.debug('stInventoryCountDraft stringify', objInventoryCountDraft);
-        log.debug('stInventoryCountDraft', `loadInventoryCountDraft(${stUserId}, ${stAccessType}, `+ JSON.stringify(objInventoryCountDraft) + `)`);
-        if(objInventoryCountDraft){
+        log.debug('objOperator', objOperator);
+        if(objInventoryCountDraft.stDraftRetail != ''){
             form.addButton({
-                id: 'custpage_loaddraft_button',
-                label: 'Load Draft',
-                functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'${objInventoryCountDraft.stSubtype}', ${objInventoryCountDraft.stStep} )`
+                id: 'custpage_loaddraftretail_button',
+                label: 'Load Draft - Retail',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'Retail', ${objInventoryCountDraft.stStepRetail} )`
+            });
+        }
+        if(objInventoryCountDraft.stDraftBackbar != ''){
+            form.addButton({
+                id: 'custpage_loaddraftbackbar_button',
+                label: 'Load Draft - Backbar',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'Backbar', ${objInventoryCountDraft.stStepBackbar} )`
             });
         }
 
@@ -1007,7 +1014,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             font-weight: 200 !important;
         }
     
-        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton, input#custpage_loaddraft_button, input#secondarycustpage_loaddraft_button{
+        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton, input#custpage_loaddraftretail_button, input#secondarycustpage_loaddraftretail_button, input#custpage_loaddraftbackbar_button, input#secondarycustpage_loaddraftbackbar_button{
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;

@@ -21,7 +21,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             itemreceipt: 'Receive Items',
             inventoryadjustment_standard: 'Inventory Adjustment',
             inventoryadjustment_backbar: 'Backbar Usage',
-            inventoryadjustment_damagetestertheft: 'Damage/Tester/Theft',
+            inventoryadjustment_damage: 'Inventory Adjustment - Damage',
+            inventoryadjustment_tester: 'Inventory Adjustment - Tester',
+            inventoryadjustment_theft: 'Inventory Adjustment - Theft',
             inventorycount: 'Inventory Count'
         },
         TAB: {
@@ -29,7 +31,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             itemreceipt: 'custpage_itemreceipt_itemstab',
             inventoryadjustment_standard: 'custpage_inventoryadjustment_itemstab',
             inventoryadjustment_backbar: 'custpage_inventoryadjustmentbackbar_itemstab',
-            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
+            inventoryadjustment_damage: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
+            inventoryadjustment_tester: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
+            inventoryadjustment_theft: 'custpage_inventoryadjustmentdamagetestertheft_itemstab',
             inventorycount: 'custpage_inventoryadjustmentinventorycount_itemstab'
         },
         SUBLIST: {
@@ -37,7 +41,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             itemreceipt: 'custpage_itemreceipt_items',
             inventoryadjustment_standard: 'custpage_inventorayadjustment_items',
             inventoryadjustment_backbar: 'custpage_inventorayadjustmentbackbar_items',
-            inventoryadjustment_damagetestertheft: 'custpage_inventoryadjustmentdamagetestertheft_items',
+            inventoryadjustment_damage: 'custpage_inventoryadjustmentdamagetestertheft_items',
+            inventoryadjustment_tester: 'custpage_inventoryadjustmentdamagetestertheft_items',
+            inventoryadjustment_theft: 'custpage_inventoryadjustmentdamagetestertheft_items',
             inventorycount: 'custpage_inventoryadjustmentinventorycount_items',
         },
         FIELD: {
@@ -341,13 +347,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     container: 'CLASS',
                     displayType: 'hidden'
                 },
-                /*TOTAL_ESTIMATED_RECPLACEMENT_VALUE_HTML: {
-                    id: 'custpage_cwgp_totalestimatedreplacementvalue',
-                    type: serverWidget.FieldType.TEXTAREA,
-                    label: '   ',
-                    container: 'TOTAL_ESTIMATED_REPLACEMENT_VALUE',
-                    displayType:'inline'
-                },*/
                 TOTAL_ADJUSTMENT_HTML: {
                     id: 'custpage_cwgp_totaladjustment',
                     type: serverWidget.FieldType.TEXTAREA,
@@ -852,7 +851,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: '*Adjustment Reason',
                     }
                 },
-                inventoryadjustment_damagetestertheft: {
+                inventoryadjustment_damage: {
                     ITEM: {
                         id: 'custpage_cwgp_item',
                         type: serverWidget.FieldType.SELECT,
@@ -889,11 +888,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Location',
                         displayType: 'hidden'
                     },
-                   /* DATE_TIME: {
-                        id: 'custpage_cwgp_datetime',
-                        type: serverWidget.FieldType.DATETIMETZ,
-                        label: '*Date/Time (M/D/YYYY hhmm)',
-                    },*/
                     QTY_ON_HAND: {
                         id: 'custpage_cwgp_qtyonhand',
                         type: serverWidget.FieldType.INTEGER,
@@ -921,6 +915,151 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         id: 'custpage_cwgp_adjustmenttype',
                         type: serverWidget.FieldType.SELECT,
                         label: '*Adjustment Type',
+                        displayType:'disabled'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: '*Adjustment Reason',
+                    }
+                },
+                inventoryadjustment_tester: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        mandatory: true
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    LOCATION: {
+                        id: 'custpage_cwgp_location',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Location',
+                        displayType: 'hidden'
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity in Saleable Inventory',
+                        displayType: 'disabled'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Quantity Removed'
+                    },
+                    ESTIMATED_REPLACEMENT_VALUE:{
+                        id: 'custpage_cwgp_estimatedreplacementvalue',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Estimated Replacement Value',
+                        displayType: 'disabled'
+                    },
+                    BUSINESS_LINE: {
+                        id: 'custpage_cwgp_businessline',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Business Line',
+                        displayType: 'hidden'
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: '*Adjustment Type',
+                        displayType:'disabled'
+                    },
+                    ADJUSTMENT_REASON: {
+                        id: 'custpage_cwgp_adjustmentreason',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: '*Adjustment Reason',
+                    }
+                },
+                inventoryadjustment_theft: {
+                    ITEM: {
+                        id: 'custpage_cwgp_item',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Items',
+                        mandatory: true
+                    },
+                    ITEM_ID: {
+                        id: 'custpage_cwgp_itemid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Item Id',
+                        displayType: 'hidden'
+                    },
+                    DESCRIPTION: {
+                        id: 'custpage_cwgp_description',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Description',
+                        displayType: 'disabled'
+                    },
+                    INTERNAL_SKU: {
+                        id: 'custpage_cwgp_internalsku',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Internal SKU',
+                        displayType:'disabled'
+                    },
+                    UPC_CODE: {
+                        id: 'custpage_cwgp_upccode',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'UPC Code',
+                        displayType:'disabled'
+                    },
+                    LOCATION: {
+                        id: 'custpage_cwgp_location',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Location',
+                        displayType: 'hidden'
+                    },
+                    QTY_ON_HAND: {
+                        id: 'custpage_cwgp_qtyonhand',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: 'Starting Quantity in Saleable Inventory',
+                        displayType: 'disabled'
+                    },
+                    ADJUST_QUANTITY_BY: {
+                        id: 'custpage_cwgp_adjustqtyby',
+                        type: serverWidget.FieldType.INTEGER,
+                        label: '*Quantity Removed'
+                    },
+                    ESTIMATED_REPLACEMENT_VALUE:{
+                        id: 'custpage_cwgp_estimatedreplacementvalue',
+                        type: serverWidget.FieldType.FLOAT,
+                        label: 'Estimated Replacement Value',
+                        displayType: 'disabled'
+                    },
+                    BUSINESS_LINE: {
+                        id: 'custpage_cwgp_businessline',
+                        type: serverWidget.FieldType.SELECT,
+                        label: 'Business Line',
+                        displayType: 'hidden'
+                    },
+                    ADJUSTMENT_TYPE: {
+                        id: 'custpage_cwgp_adjustmenttype',
+                        type: serverWidget.FieldType.SELECT,
+                        label: '*Adjustment Type',
+                        displayType:'disabled'
                     },
                     ADJUSTMENT_REASON: {
                         id: 'custpage_cwgp_adjustmentreason',
@@ -1076,25 +1215,57 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Classification'
                 }
             },
-            inventoryadjustment_damagetestertheft: {
+            inventoryadjustment_damage: {
                 PRIMARY: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_pi_grp',
+                    id: 'custpage_inventoryadjustmentdamage_pi_grp',
                     label: 'Primary Information'
                 },
                 CLASS: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_class_grp',
+                    id: 'custpage_inventoryadjustmentdamage_class_grp',
                     label: 'Classification'
                 },
                 TOTAL_ADJUSTMENT: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_total_grp',
+                    id: 'custpage_inventoryadjustmentdamage_total_grp',
                     label: 'Total Quantity by Adjustment Type Summary'
                 },
-                /*TOTAL_ESTIMATED_REPLACEMENT_VALUE: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_totalestreplacementval_grp',
-                    label: 'Total Estimated Replacement Value'
-                },*/
                 ITEM_SUMMARY: {
-                    id: 'custpage_inventoryadjustmentdamagetestertheft_itemsum_grp',
+                    id: 'custpage_inventoryadjustmentdamage_itemsum_grp',
+                    label: 'Item Summary'
+                }
+            },
+            inventoryadjustment_tester: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustmentester_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustmenttester_class_grp',
+                    label: 'Classification'
+                },
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmenttester_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
+                ITEM_SUMMARY: {
+                    id: 'custpage_inventoryadjustmenttester_itemsum_grp',
+                    label: 'Item Summary'
+                }
+            },
+            inventoryadjustment_theft: {
+                PRIMARY: {
+                    id: 'custpage_inventoryadjustmenttheft_pi_grp',
+                    label: 'Primary Information'
+                },
+                CLASS: {
+                    id: 'custpage_inventoryadjustmenttheft_class_grp',
+                    label: 'Classification'
+                },
+                TOTAL_ADJUSTMENT: {
+                    id: 'custpage_inventoryadjustmenttheft_total_grp',
+                    label: 'Total Quantity by Adjustment Type Summary'
+                },
+                ITEM_SUMMARY: {
+                    id: 'custpage_inventoryadjustmenttheft_itemsum_grp',
                     label: 'Item Summary'
                 }
             },
@@ -1321,7 +1492,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -1417,7 +1587,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
-        log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, source, displayType } = objItemCols[stCol];
@@ -1517,7 +1686,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -1548,7 +1716,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             if (displayType) {
                 fld.updateDisplayType({ displayType });
             }
-            if ((id =='custpage_cwgp_totaladjustment' || id == 'custpage_cwgp_itemsummary') && stSubType != 'damagetestertheft') {
+            if ((id =='custpage_cwgp_totaladjustment' || id == 'custpage_cwgp_itemsummary') && (stSubType != 'damage' && stSubType != 'tester' && stSubType != 'theft')) {
                 fld.updateDisplayType({ displayType: 'hidden' });
             }
 
@@ -1615,8 +1783,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         const arrCols = Object.keys(objItemCols);
 
-        log.debug('arrCols',arrCols);
-
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];
 
@@ -1669,7 +1835,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         form.addSubmitButton({ label: 'Save' });
 
-        if(stSubType == 'damagetestertheft'){
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
             form.addButton({
                 id: 'custpage_back_calculatesummary',
                 label: 'Calculate Summary',
@@ -1700,7 +1866,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stStep,
             objOperator,
             requestParams,
-            customRecordId
+            customRecordId,
+            stDraft
         } = options;
 
         log.debug('requestParams',requestParams);
@@ -1763,7 +1930,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         const stOperator = objOperator[0].stOperator;
         const stOperatorId = objOperator[0].stOperatorId;
@@ -1788,8 +1954,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stOperatorId,
             stStep,
         });
-
-        log.debug('objDefaultValues',objDefaultValues);
 
        /* var fileObj2 = file.create({
             name: 'test3.txt',
@@ -1973,7 +2137,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
-        populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType);
+        populateFirstCountLines(stSubsidiary,stLocation,form,sbl,stSubType,stDraft,stUserId);
 
         form.addSubmitButton({ label: 'Submit First Count' });
 
@@ -1981,6 +2145,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             id: 'custpage_back_button',
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
         });
 
         log.debug('form',form);
@@ -1998,7 +2168,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         var numLines = rec.getLineCount({
             group: 'custpage_inventoryadjustmentinventorycount_items'
         });
-        log.debug('numLines', numLines);
         for(var i=0; i<numLines; i++){
             var stItem = rec.getSublistValue({
                 group: 'custpage_inventoryadjustmentinventorycount_items',
@@ -2019,14 +2188,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         let stStep = '2';
         const stUserId = rec.parameters.custpage_cwgp_userid;	
         const stAccessType = rec.parameters.custpage_cwgp_accesstype;
-        const stPageMode = rec.parameters.custpage_cwgp_pagemode;
+        const stPageMode = 'create';
         const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
         const stMemo = rec.parameters.custpage_cwgp_memomain;
         const stType = rec.parameters.custpage_cwgp_rectype;
         const stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = rec.parameters.custpage_cwgp_operator;
         const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
-
+        log.debug('stOperatorId', stOperatorId);
+        const stDraft = rec.parameters.draft;
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Second Count'});
         log.debug('second count params',JSON.stringify({
             intAdjustmentAccount: intAdjustmentAccount,
@@ -2076,7 +2246,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         //const stOperator = objOperator[0].stOperator;
         //const stOperatorId = objOperator[0].stOperatorId;
@@ -2095,8 +2264,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stStep,
             stMemo
         });
-
-        log.debug('objDefaultValues',objDefaultValues);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -2159,14 +2326,10 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
         
 
-           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
-                 log.debug('fld',JSON.stringify({
-                    fld: id,
-                    val: objDefaultValues[fld.id]
-                 }));
+            if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
-
+            
 
         });
 
@@ -2191,9 +2354,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
-
-        log.debug('arrCols',arrCols);
-
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
 
@@ -2255,8 +2415,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 };
             }
         });
-        
-        populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form,stSubType);
+
+        if(stDraft){
+            log.debug('populateSecondCountLinesDraft', '');
+            populateSecondCountLinesDraft(arrItemFirstCount,sbl,stLocation,stSubsidiary,form,stSubType,stUserId);
+        }
+        else{
+            log.debug('populateSecondCountLines', '');
+            populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form,stSubType);
+        }
+
         utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit Second Count' });
 
@@ -2264,6 +2432,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             id: 'custpage_back_button',
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
+        });
+
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
         });
 
         log.debug('form',form);
@@ -2281,7 +2455,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         var numLines = rec.getLineCount({
             group: 'custpage_inventoryadjustmentinventorycount_items'
         });
-        log.debug('numLines', numLines);
         for(var i=0; i<numLines; i++){
             var stItem = rec.getSublistValue({
                 group: 'custpage_inventoryadjustmentinventorycount_items',
@@ -2302,14 +2475,15 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         let stStep = '3';
         const stUserId = rec.parameters.custpage_cwgp_userid;	
         const stAccessType = rec.parameters.custpage_cwgp_accesstype;
-        const stPageMode = rec.parameters.custpage_cwgp_pagemode;
+        const stPageMode = 'create';
         const stLocation = rec.parameters.custpage_cwgp_adjustmentlocation;
         const stMemo = rec.parameters.custpage_cwgp_memomain;
         const stType = rec.parameters.custpage_cwgp_rectype;
         const stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = rec.parameters.custpage_cwgp_operator;
         const stOperatorId = rec.parameters.custpage_cwgp_operatorhidden;
-
+        const stDraft = rec.parameters.draft;
+        log.debug('stOperatorId', stOperatorId);
         //Add scanner UI for step 2 and 3 only
 
         const objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary});
@@ -2351,7 +2525,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds);
 
         //const stOperator = objOperator[0].stOperator;
         //const stOperatorId = objOperator[0].stOperatorId;
@@ -2371,8 +2544,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stMemo,
             stSubType
         });
-
-        log.debug('objDefaultValues',objDefaultValues);
 
         arrFlds.forEach((stCol) => {
             const {
@@ -2435,11 +2606,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 };	
             }
 
-           if (objDefaultValues[fld.id] != 'undefined' && objDefaultValues[fld.id] && id != 'custpage_cwgp_htmlcss') {
-                 log.debug('fld',JSON.stringify({
-                    fld: id,
-                    val: objDefaultValues[fld.id]
-                 }));
+            if (objDefaultValues[fld.id] != 'undefined') {
                 fld.defaultValue = objDefaultValues[fld.id]
             }
 
@@ -2467,8 +2634,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
-
-        log.debug('arrCols',arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
@@ -2532,8 +2697,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 };
             }
         });
-        
-        populateFinalCountLines(request,sbl,form);
+
+        if(stDraft){
+            log.debug('populateFinalCountLinesDraft', '');
+            populateFinalCountLinesDraft(arrItemFirstCount,sbl,stLocation,stSubsidiary,form,stSubType,stUserId);
+        }
+        else{
+            log.debug('populateFinalCountLines', '');
+            populateFinalCountLines(arrItemFirstCount,rec,sbl,form,stSubType);
+            
+            
+            
+        }
         utilLib.createICLineBackupFile(stOperator, 2, rec);
         form.addSubmitButton({ label: 'Submit Final Count' });
 
@@ -2543,13 +2718,19 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
+        form.addButton({
+            id: 'custpage_savedraft_button',
+            label: 'Save as Draft',
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+        });
+
         log.debug('form',form);
         log.debug('response',response);
         response.writePage(form);
         log.debug('===CREATE===','===End Create Inventory Count Final===');
     };
 
-    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines,stSubType) => {
+    const populateFirstCountLines = (stSubsidiary,stLocation,form,itemLines,stSubType,stDraft,stUserId) => {
 
         const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
         if(stSubType=='Retail'){
@@ -2592,6 +2773,18 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             count = subresults.length;
             start += pageSize;
         } while (count == pageSize);
+
+        //If load from Draft
+        let objDraft = {};
+        if(stDraft){
+            if(stSubType=='Retail'){
+                objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftRetail);
+            }
+            else if(stSubType=='Backbar'){
+                objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftBackbar);
+            }
+        }
+        
         let inCounter = 0;
         for(var i=0; i<results.length; i++){
             var result = results[i];
@@ -2626,10 +2819,21 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                 line : inCounter,
                 value: result.getValue(result.columns[1]) || ' '
             });
+
+            if(stDraft){
+                if(objDraft.hasOwnProperty(result.id)){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : inCounter,
+                        value: objDraft[result.id]
+                    });
+                }
+                
+            }
+
             inCounter++;
         }
     };
-
     const populateSecondCountLines = (arrItemFirstCount,rec,itemLines,stLocation,stSubsidiary,form,stSubType) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
@@ -2638,7 +2842,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         var numLines = rec.getLineCount({
             group: 'custpage_inventoryadjustmentinventorycount_items'
         });
-        log.debug('numLines', numLines);
         for(var i=0; i<numLines; i++){
             var stItem = rec.getSublistValue({
                 group: 'custpage_inventoryadjustmentinventorycount_items',
@@ -2715,12 +2918,12 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             var intQtyOnhand = result.getValue(result.columns[4]);
             var index = arrItemFirstCount.indexOf(stItem);
 
-            log.debug('stItem0',JSON.stringify({
+            /*log.debug('stItem0',JSON.stringify({
                 stItem: stItem,
                 intQtyOnhand: intQtyOnhand,
                 index: index,
                 arrQtyFirstCounindex:arrQtyFirstCount[index]
-            }));
+            }));*/
             
             if(index != -1 && intQtyOnhand != arrQtyFirstCount[index] && arrQtyFirstCount[index]){
                 log.debug('stItem1', JSON.stringify({
@@ -2866,14 +3069,158 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
     };
 
-    const populateFinalCountLines = (request,itemLines,form) => {
-        var rec = request;
+    const populateSecondCountLinesDraft = (arrItemFirstCount,itemLines,stLocation,stSubsidiary,form,stSubType,stUserId) => {
+        var arrItemFirstCount = [];
+        var arrQtyFirstCount = [];
+        var arrQtySecondCount = [];
+        var arrDescFirstCount = [];
+        var arrSkuFirstCount = [];
+        var arrUpcFirstCount = [];
+        var arrQtyOH = [];
+
+
+
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+        do {
+            var subresults = ssItemPerLocationIC.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        //If load from Draft
+        let objDraft = {};
+        if(stSubType=='Retail'){
+            objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftRetail);
+        }
+        else if(stSubType=='Backbar'){
+            objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftBackbar);
+        }
+        
+        let inCounter = 0;
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            var intQtyOnhand = result.getValue(result.columns[4] || 0);
+            if(objDraft.hasOwnProperty(stItem)){
+                log.debug('result', result);
+                arrItemFirstCount.push(stItem);
+                arrQtyFirstCount.push(objDraft[stItem][0] || '');
+                arrQtySecondCount.push(objDraft[stItem][1] || '');
+                arrDescFirstCount.push(result.getValue(result.columns[1]) || ' ');
+                arrSkuFirstCount.push(result.getValue(result.columns[2]) || ' ');
+                arrUpcFirstCount.push(result.getValue(result.columns[3]) || ' ');
+                arrQtyOH.push(intQtyOnhand);
+                inCounter++;
+            }
+            
+        }
+
+        for(var i=0; i<arrItemFirstCount.length; i++){
+            //if(arrQtyFirstCount[i]){
+                log.debug('item as', arrItemFirstCount[i]);
+                if(arrQtyFirstCount[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_firstcount',
+                        line : i,
+                        value: arrQtyFirstCount[i]
+                    });
+                }
+                if(arrQtySecondCount[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_secondcount',
+                        line : i,
+                        value: arrQtySecondCount[i]
+                    });
+                }
+                
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                
+                log.debug('desc', arrDescFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : i,
+                    value: arrDescFirstCount[i]
+                });
+                log.debug('sku', arrSkuFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : i,
+                    value: arrSkuFirstCount[i]
+                });
+                log.debug('upc', arrUpcFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : i,
+                    value: arrUpcFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : i,
+                    value: arrQtyOH[i]
+                });
+            //}
+            
+        }
+
+
+        var fieldTotalSku = form.getField({
+            id : 'custpage_cwgp_itemsummary'
+        });
+        fieldTotalSku.defaultValue = inCounter;
+
+
+    };
+    //= (arrItemFirstCount,itemLines,stLocation,stSubsidiary,form,stSubType,stUserId) => {
+    const populateFinalCountLines = (arrItemFirstCount,rec,itemLines,form,stSubType) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var numLines = rec.getLineCount({
             group: 'custpage_inventoryadjustmentinventorycount_items'
         });
-        log.debug('numLines', numLines);
         let inCounter = 0;
         let totalDiscrepancy = 0;
         for(var i=0; i<numLines; i++){
@@ -3108,6 +3455,170 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
     };
 
+    const populateFinalCountLinesDraft = (arrItemFirstCount,itemLines,stLocation,stSubsidiary,form,stSubType,stUserId) => {
+        var arrItemFirstCount = [];
+        var arrQtyEnteredCount = [];
+        var arrAdjustmentReason = [];
+        var arrDescFirstCount = [];
+        var arrSkuFirstCount = [];
+        var arrUpcFirstCount = [];
+        var arrQtyOH = [];
+
+
+
+        const ssItemPerLocationIC = search.load({ id: "customsearch_cwgp_retail_icitemsearch", type: "item" });
+        if(stSubType=='Retail'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'doesnotcontain',
+                values: 'backbar',
+            }));
+        }
+        else if(stSubType=='Backbar'){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'name',
+                operator: 'contains',
+                values: 'backbar',
+            }));
+        }
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'inventorylocation',
+            operator: 'anyof',
+            values: stLocation,
+        }));
+
+        ssItemPerLocationIC.filters.push(search.createFilter({
+            name: 'subsidiary',
+            operator: 'anyof',
+            values: stSubsidiary,
+        }));
+
+        var results = [];
+        var count = 0;
+        var pageSize = 1000;
+        var start = 0;
+        do {
+            var subresults = ssItemPerLocationIC.run().getRange({
+                start: start,
+                end: start + pageSize
+            });
+            results = results.concat(subresults);
+            count = subresults.length;
+            start += pageSize;
+        } while (count == pageSize);
+
+        //If load from Draft
+        let objDraft = {};
+        if(stSubType=='Retail'){
+            objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftRetail);
+        }
+        else if(stSubType=='Backbar'){
+            objDraft = JSON.parse(utilLib.getInventoryCountDraft(stUserId).stDraftBackbar);
+        }
+        
+        let inCounter = 0;
+        for(var i=0; i<results.length; i++){
+            var result = results[i];
+            var stItem = result.getValue(result.columns[0]);
+            var intQtyOnhand = result.getValue(result.columns[4] || 0);
+            if(objDraft.hasOwnProperty(stItem)){
+                
+                arrItemFirstCount.push(stItem);
+                arrQtyEnteredCount.push(objDraft[stItem][0] || '');
+                arrAdjustmentReason.push(objDraft[stItem][1] || '');
+                arrDescFirstCount.push(result.getValue(result.columns[1]) || ' ');
+                arrSkuFirstCount.push(result.getValue(result.columns[2]) || ' ');
+                arrUpcFirstCount.push(result.getValue(result.columns[3]) || ' ');
+                arrQtyOH.push(intQtyOnhand);
+                inCounter++;
+            }
+            
+        }
+        log.debug('arrAdjustmentReason', arrAdjustmentReason);
+        log.debug('arrQtyOH', arrQtyOH);
+        log.debug('arrQtyEnteredCount', arrQtyEnteredCount);
+        for(var i=0; i<arrItemFirstCount.length; i++){
+            //if(arrQtyEnteredCount[i]){
+                log.debug('item as', arrItemFirstCount[i]);
+                
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_item',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_itemid',
+                    line : i,
+                    value: arrItemFirstCount[i]
+                });
+                
+                log.debug('desc', arrDescFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_description',
+                    line : i,
+                    value: arrDescFirstCount[i]
+                });
+                log.debug('sku', arrSkuFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_internalsku',
+                    line : i,
+                    value: arrSkuFirstCount[i]
+                });
+                log.debug('upc', arrUpcFirstCount[i]);
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_upccode',
+                    line : i,
+                    value: arrUpcFirstCount[i]
+                });
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_qtyonhand',
+                    line : i,
+                    value: arrQtyOH[i]
+                });
+                
+                if(arrQtyEnteredCount[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_enteredquantity',
+                        line : i,
+                        value: arrQtyEnteredCount[i]
+                    });
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_finalquantity',
+                        line : i,
+                        value: arrQtyEnteredCount[i]
+                    });
+                }
+                
+
+                if(arrAdjustmentReason[i] != ''){
+                    itemLines.setSublistValue({
+                        id : 'custpage_cwgp_adjustmentreason',
+                        line : i,
+                        value: arrAdjustmentReason[i]
+                    });
+                }
+
+                
+
+                itemLines.setSublistValue({
+                    id : 'custpage_cwgp_discrepancy',
+                    line : i,
+                    value: arrQtyEnteredCount[i] - arrQtyOH[i]
+                });
+            //}
+            
+        }
+
+
+        var fieldTotalSku = form.getField({
+            id : 'custpage_cwgp_itemsummary'
+        });
+        fieldTotalSku.defaultValue = inCounter;
+
+
+    };
+
 
     const mapDefaultValues = (options) => {
         const {
@@ -3139,8 +3650,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
         else if(stType == 'inventorycount'){
             scanbhtml = EPLib.getScanButtonCss({
-                stPageType: stType,
-                stStep
+                stPageType: stType
             });
             stMapVendor = 19082;
             log.debug('scanbhtml', scanbhtml)
@@ -3149,7 +3659,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             scanbhtml= EPLib.getScanButtonCss({stPageType: `${stType}_${stSubType}`})
             stMapVendor = 19082;
         }
-        stSubTypeId = stSubType == 'standard' ? '1' : stSubType == 'backbar' ? '2' : stSubType == 'damagetestertheft' ? '3' : 'inventorycount' ;
+        stSubTypeId = stSubType == 'standard' ? '6' : stSubType == 'backbar' ? '2' : stSubType == 'damage' ? '3' : stSubType == 'tester' ? '4' : stSubType == 'theft' ? '5' : stSubType == 'Retail' ? '1': stSubType == 'Backbar' ? '1': '' ;
 
         return {
             custpage_cwgp_adjustmentlocation: stLocation,
@@ -3187,8 +3697,6 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
     
         body {
             font-family: 'Roboto', sans-serif !important;
-            filter: blur(100px);
-            pointer-events: none;
         }
     
         div#div__body {
@@ -3206,7 +3714,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             font-weight: 200 !important;
         }
     
-        input#submitter, input#secondarysubmitter, input#custpage_interpo_items_addedit {
+        input#submitter, input#secondarysubmitter, input#custpage_interpo_items_addedit , input#custpage_savedraft_button, input#secondarycustpage_savedraft_button, input#custpage_back_calculatesummary, input#secondarycustpage_back_calculatesummary{
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;
@@ -3251,7 +3759,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
     </style>`;
 
-        return stHtmlCss;
+     return stHtmlCss;
     };
 
     return {

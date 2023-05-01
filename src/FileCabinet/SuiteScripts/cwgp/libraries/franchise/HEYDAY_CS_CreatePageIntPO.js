@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord','N/record', 'N/ui/message','N/runtime','N/ui/dialog','N/file'], (https, util, url, ClientEPLib, currentRecord, record, message, runtime, dialog, file) => {
+define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord','N/record', 'N/ui/message','N/ui/dialog'], (https, util, url, ClientEPLib, currentRecord, record, message, dialog) => {
     /**
      * Function to be executed when field is changed.
      *
@@ -25,22 +25,13 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         if(!window.location.href.endsWith("scriptlet.nl")){
             ClientEPLib.getAuthenticationScript();
         }
-        //
-        console.log('set start');
         ClientEPLib.setScanBtnOnClick();
-        console.log('set success');
         const stQuery = window.location.search;
         const objParams = new URLSearchParams(stQuery);
         const stSubType = objParams.get('subtype');
         const stRecType = objParams.get('rectype');
         const stPageMode = objParams.get('pageMode');
         const stStep = objParams.get('step');
-
-
-        /*if(stSubType == 'damagetestertheft'){
-            jQuery('#custpage_cwgp_totaladjustment_fs_lbl').hide();
-            jQuery('#custpage_cwgp_itemsummary_fs_lbl').hide();
-        }*/
 
         if(stRecType == 'franchisepo' && stPageMode == 'create'){
             let messageUI = message.create({
@@ -71,9 +62,9 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
         if(stRecType == 'inventorycount' && stPageMode == 'create'){
             const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
-            if(intICLineCount == 0){
-                alert('You cannot save a submit without adding at least one line.');
-                return false;
+            if(intICLineCount == 0 && stStep == '3'){
+                alert('Inventory Count Completed! No discrepancies on Items during Inventory Count');
+                //return false;
             }
             
 
@@ -565,11 +556,6 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_adjustqtyby'
                 }));
 
-                /*let dtDateTime = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_datetime'
-                });*/
-
                 let stAdjustmentType = currentRecord.getCurrentSublistValue({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_adjustmenttype'
@@ -749,60 +735,6 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
             }
         }
-        /*if(sublistId === 'custpage_inventorayadjustment_items'){
-            if (fieldId === 'custpage_cwgp_item') {
-                const stItem = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_item'
-                });
-                console.log('stItem', stItem);
-
-                const objItem = getItemDetails(stItem);
-                console.log('objItem', objItem);
-
-                util.each(objItem, function (value, fieldId) {
-                    currentRecord.setCurrentSublistValue({
-                        sublistId: 'custpage_inventorayadjustment_items',
-                        fieldId: fieldId,
-                        value: value
-                    });
-                });
-
-                const stCustomer = currentRecord.getValue({fieldId: 'custpage_cwgp_customer'});
-                console.log('stCustomer', stCustomer);
-                const qtyOnHand = getQtyOnHandFranchise(stItem,stCustomer);
-                
-                currentRecord.setCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_qtyonhand',
-                    value: qtyOnHand
-                });
-                
-
-            }
-
-            if (fieldId === 'custpage_cwgp_qtyonhand' || fieldId === 'custpage_cwgp_adjustqtyby') {
-
-                
-                const flQtyOnHand = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_qtyonhand'
-                });
-
-                const flAdjustQtyBy = currentRecord.getCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_adjustqtyby'
-                });
-
-                const flNewQty = flQtyOnHand + flAdjustQtyBy;
-                currentRecord.setCurrentSublistValue({
-                    sublistId: 'custpage_inventorayadjustment_items',
-                    fieldId: 'custpage_cwgp_newquantity',
-                    value: flNewQty
-                });
-            }
-
-        }*/
 
         ///Item Receipt
         if (sublistId === 'custpage_itemreceipt_items') {
@@ -905,6 +837,31 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId === 'custpage_inventoryadjustmentdamagetestertheft_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
+                const stSubType = currentRecord.getValue({fieldId: 'custpage_cwgp_adjustmentsubtype'});
+                console.log('stSubType s', stSubType);
+                if(stSubType == 'damage'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 3
+                    });
+                }
+                else if(stSubType == 'tester'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 4
+                    });
+                }
+                if(stSubType == 'theft'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 5
+                    });
+                }
+
+                
                 const stItem = currentRecord.getCurrentSublistValue({
                     sublistId: sublistId,
                     fieldId: 'custpage_cwgp_item'
@@ -1923,24 +1880,40 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     fieldId: 'custpage_cwgp_enteredquantity',
                     line: i
                 }) || '';
+                var stAdjustmentReason = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
 
-                objDraft[stItem] = inFirstCount;
+                objDraft[stItem] = [inFirstCount,stAdjustmentReason];
             }
         }
         var stSubType = rec.getValue({
             fieldId: 'custpage_cwgp_adjustmentsubtype'
         });
-        var userObj = runtime.getCurrentUser();
-        console.log('Internal ID of current user role: ' + userObj.role);
-        record.submitFields({
-            type: 'customrecord_cwgp_externalsl_creds',
-            id: parseInt(stOperator),
-            values: {
-                'custrecord_cwgp_icdraft': JSON.stringify(objDraft),
-                'custrecord_cwgp_icdraftstep': stStep,
-                'custrecord_cwgp_icdrafttype': stSubType
-            }
-        });
+
+        if(stSubType == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_ricdraftstep': stStep
+                }
+            });
+        }
+        else if(stSubType == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_bbicdraftstep': stStep
+                }
+            });
+        }
+        
         }
         catch(e){
             console.error(e.message);
