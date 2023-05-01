@@ -552,7 +552,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             stType,
             stAccessType,
             stUserId,
-            objSearch
+            objSearch,
+            stLocation,
+            objOperator
         } = options;
 
 
@@ -635,6 +637,26 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+
+        const objInventoryCountDraft = util.getInventoryCountDraft(stUserId);
+        log.debug('objInventoryCountDraft', objInventoryCountDraft);
+        log.debug('objOperator', objOperator);
+
+        if(objInventoryCountDraft.stDraftRetail != ''){
+            form.addButton({
+                id: 'custpage_loaddraftretail_button',
+                label: 'Load Draft - Retail',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stSubsidiary},${stLocation},'Retail', ${objInventoryCountDraft.stStepRetail} )`
+            });
+        }
+        if(objInventoryCountDraft.stDraftBackbar != ''){
+            form.addButton({
+                id: 'custpage_loaddraftbackbar_button',
+                label: 'Load Draft - Backbar',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stSubsidiary},${stLocation},'Backbar', ${objInventoryCountDraft.stStepBackbar} )`
+            });
+
+        }
 
         response.writePage(form);
     };
@@ -974,17 +996,17 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 });
             }
 
-            log.debug('objPagedData',objPagedData);
+            //log.debug('objPagedData',objPagedData);
             log.debug('stType',stType);
 
            if(objPagedData.count != 0 && stType != 'itemperlocation'){
-                log.debug('objPagedData1', objPagedData);
+                //log.debug('objPagedData1', objPagedData);
                 objPage = objPagedData.fetch({ index: intPage });
-                log.debug('objPage', objPage);
+                //log.debug('objPage', objPage);
 
            }
            else if((objPagedData || objPagedDataQoH) && stType == 'itemperlocation'){
-                log.debug('objPagedData2', objPagedData);
+                //log.debug('objPagedData2', objPagedData);
                 if(stType == 'itemperlocation' && objPagedDataQoH.count != 0){
                     log.debug('intPage',intPage);
 
@@ -1133,7 +1155,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             font-weight: 200 !important;
         }
     
-        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton {
+        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton , input#custpage_loaddraftretail_button, input#secondarycustpage_loaddraftretail_button, input#custpage_loaddraftbackbar_button, input#secondarycustpage_loaddraftbackbar_button{
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;

@@ -11,7 +11,7 @@
  * @NScriptType ClientScript
  */
 
-define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record','N/ui/dialog'], (https, util, url, ClientEPLib, currentRecord, message, record, dialog) => {
+define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPortal.js', 'N/currentRecord', 'N/ui/message','N/record', 'N/ui/dialog'], (https, util, url, ClientEPLib, currentRecord, message, record, dialog) => {
     
     /**
      * Function to be executed after page is initialized.
@@ -54,7 +54,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
      const saveRecord = (context) => {
         const { currentRecord } = context;
 
-        
+  
 
         let stQuery = window.location.search;
         let objParams = new URLSearchParams(stQuery);
@@ -74,6 +74,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 let objHasDuplicates = [];
                 let blHasDuplicates = false;
                 let stHasDuplicates = 'You have entered duplicate items for: ';
+
+                let arrIsEmpty = [];
+                let stHasEmptyValues = 'You have empty values for lines/s: ';
+
                 for(let x = 0; x < intICLineCount;x++){
                     
                     intFirstQty = currentRecord.getSublistValue({
@@ -94,6 +98,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                         line: x
                     });
 
+                    if(!intFirstQty){
+                        arrIsEmpty.push(x+1);
+                    }
+
                     if(intFirstQty < 0 && stItemName){
                         arrIsNegative.push(x+1);
                     }
@@ -112,10 +120,62 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     alert('You cannot enter a negative quantity at line/s: ' + arrIsNegative.toString())
                     return false;
                 }
-                if(blHasDuplicates){
+                /*if(blHasDuplicates){
                     alert(stHasDuplicates);
                     return false;
                 }
+                if(arrIsEmpty.length > 0){
+                    alert(stHasEmptyValues + arrIsEmpty.toString());
+                    return false;
+                }*/
+            }
+            if(currentRecord.getValue('custpage_cwgp_step') == '2'){
+                let intFirstQty;
+                let stItemName;
+                let stItemText;
+                let arrIsNegative = [];
+
+                /*let arrIsEmpty = [];
+                let stHasEmptyValues = 'You have empty values for lines/s: ';*/
+
+                for(let x = 0; x < intICLineCount;x++){
+                    
+                    intSecondQty = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_secondcount',
+                        line: x
+                    });
+
+                    stItemName = currentRecord.getSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    stItemText = currentRecord.getSublistText({
+                        sublistId: 'custpage_inventoryadjustmentinventorycount_items',
+                        fieldId: 'custpage_cwgp_item',
+                        line: x
+                    });
+
+                    /*if(!intFirstQty){
+                        arrIsEmpty.push(x+1);
+                    }*/
+
+                    if(intSecondQty < 0 && stItemName){
+                        arrIsNegative.push(x+1);
+                    }
+                }
+
+                //If has discrepancy
+                if(arrIsNegative.length > 0){
+                    alert('You cannot enter a negative quantity at line/s: ' + arrIsNegative.toString())
+                    return false;
+                }
+                /*if(arrIsEmpty.length > 0){
+                    alert(stHasEmptyValues + arrIsEmpty.toString());
+                    return false;
+                }*/
             }
             if(currentRecord.getValue('custpage_cwgp_step') == '3'){
                 let intDiscrepancy;
@@ -243,6 +303,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let blNotReceived= true;
             let pageMode = getParameterFromURL('pageMode');
             let intDamagedAccountLine = [];
+            let itemSummary = [];
 
                 function getParameterFromURL(param){
                     var query = window.location.search.substring(1);
@@ -283,6 +344,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_damagedadjustingaccount'
                 });
 
+                
                 if(intDamagedQuantity && !intDamagedAdjustingAccount){
                     intDamagedAccountLine.push(x+1);
                 }
@@ -484,6 +546,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             let blNegativeQuantity = [];
             let blEmptyFields = [];
             let itemSummary = [];
+            let flDamageEstValue = 0;
+            let flTesterEstValue = 0;
+            let flTheftEstValue = 0;
+
+            
             for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
                 currentRecord.selectLine({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -514,6 +581,22 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                     fieldId: 'custpage_cwgp_qtyonhand'
                 })) || 0
 
+                
+                let flEstimatedReplacementValue = parseFloat(currentRecord.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+                })) || 0
+
+                let stAdjustType = currentRecord.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustmenttype'
+                })
+
+                flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+                flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+                flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
+
                 itemSummary.push({
                     stItem: currentRecord.getCurrentSublistText({
                         sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -541,8 +624,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             }
             console.log('itemSummary: ' + JSON.stringify(itemSummary));
-            let result = []
-            if(itemSummary){
+            let result = [];
+            if(itemSummary.length > 0){
                 itemSummary.reduce(function(res, value) {
                 if (!res[value.stAdjustType]) {
                     res[value.stAdjustType] = { Id: value.stAdjustType, intQty: 0 };
@@ -551,6 +634,12 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 res[value.stAdjustType].intQty += value.intQty;
                     return res;
                 }, {});
+            }
+
+            console.log('result: ' + JSON.stringify(result));
+
+            for(let x = 0; x < result.length; x++){
+                result[x]['totalEstRepVal'] = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : ' ';
             }
             currentRecord.setValue('custpage_cwgp_totaladjustmenthidden',JSON.stringify(result));
             console.log(currentRecord.getValue('custpage_cwgp_totaladjustmenthidden'));
@@ -721,7 +810,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
                 const intFinalQty = intStartingQty+intReceivedQty-intDamagedQty
 
-                if(intFinalQty){
+                if(!isNaN(intFinalQty)){
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_finalquantity',
@@ -747,7 +836,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
            
                 const intVariance = intShippedQty-intQty;
 
-                if(intVariance){
+                if(!isNaN(intVariance)){
+                    console.log('Variance: ' + intVariance);
                     currentRecord.setCurrentSublistValue({
                         sublistId: 'custpage_itemreceipt_items',
                         fieldId: 'custpage_cwgp_variance',
@@ -763,6 +853,30 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         if (sublistId === 'custpage_inventorayadjustment_items' || sublistId === 'custpage_inventorayadjustmentbackbar_items' || sublistId === 'custpage_inventoryadjustmentdamagetestertheft_items') {
             //default item details
             if (fieldId === 'custpage_cwgp_item') {
+                const stSubType = currentRecord.getValue({fieldId: 'custpage_cwgp_adjustmentsubtype'});
+                console.log('stSubType s', stSubType);
+                if(stSubType == 'damage'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 3
+                    });
+                }
+                else if(stSubType == 'tester'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 4
+                    });
+                }
+                if(stSubType == 'theft'){
+                    currentRecord.setCurrentSublistValue({
+                        sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                        fieldId: 'custpage_cwgp_adjustmenttype',
+                        value: 5
+                    });
+                }
+
                 const stItem = currentRecord.getCurrentSublistValue({
                     sublistId: sublistId,
                     fieldId: 'custpage_cwgp_item'
@@ -1048,7 +1162,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
             'custpage_cwgp_amount': item.franchiseprice || 0,
             'custpage_cwgp_internalsku': item.custitem_heyday_sku || '',
             'custpage_cwgp_upccode': item.custitemheyday_upccode,
-            'custpage_cwgp_itemid': item.internalid[0].value
+            'custpage_cwgp_itemid': item.internalid[0].value,
+            'custpage_cwgp_estimatedreplacementvalue': 1*item.franchiseprice
         };
     };
 
@@ -1131,25 +1246,45 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
        const intIaLineCountDamageTesterTheft = currRec.getLineCount('custpage_inventoryadjustmentdamagetestertheft_items');
        let qtyByType = [];
        let itemSummary = [];
+       let flDamageEstValue = 0;
+       let flTesterEstValue = 0;
+       let flTheftEstValue = 0;
 
-       for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
-        currRec.selectLine({
+        for(let x = 0; x < intIaLineCountDamageTesterTheft; x++){
+            currRec.selectLine({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                 line: x
             });
+
+            let flEstimatedReplacementValue = parseFloat(currRec.getCurrentSublistValue({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_estimatedreplacementvalue'
+            })) || 0
+
+            let stAdjustType = currRec.getCurrentSublistText({
+                sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                fieldId: 'custpage_cwgp_adjustmenttype'
+            })
+            
+            flDamageEstValue += stAdjustType == 'Damage' ? flEstimatedReplacementValue : 0;
+            flTesterEstValue += stAdjustType == 'Tester' ? flEstimatedReplacementValue : 0;
+            flTheftEstValue += stAdjustType == 'Theft' ? flEstimatedReplacementValue : 0;
+
             qtyByType.push({
+
+                intQty: parseInt(currRec.getCurrentSublistText({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })),
+                sublistId: parseInt(currRec.getCurrentSublistValue({
+                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
+                    fieldId: 'custpage_cwgp_adjustqtyby'
+                })) || 0,
                 stItem: currRec.getCurrentSublistText({
                     sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
                     fieldId: 'custpage_cwgp_item'
                 }),
-                 intQty: parseInt(currRec.getCurrentSublistValue({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustqtyby'
-                })) || 0,
-                 stAdjustType: currRec.getCurrentSublistText({
-                    sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
-                    fieldId: 'custpage_cwgp_adjustmenttype'
-                })
+                stAdjustType: stAdjustType
             });
             let qtyTempQtyOnHand = parseInt(currRec.getCurrentSublistValue({
                 sublistId: 'custpage_inventoryadjustmentdamagetestertheft_items',
@@ -1176,9 +1311,10 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
                 intFinalOnHand: qtyTempQtyOnHand-qtyTempIntQty
             });
         }
-          console.log(JSON.stringify(qtyByType));
-          console.log(JSON.stringify(itemSummary));
+          console.log('qtyByType: '+ JSON.stringify(qtyByType));
+          //console.log(JSON.stringify(itemSummary));
 
+        //Total Quantity by Adjustment Type Summary
         if(qtyByType.length > 0){
             let result = []
             qtyByType.reduce(function(res, value) {
@@ -1192,17 +1328,24 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
 
             let stTextAreaVal = '';
 
+           /* console.log(JSON.stringify({
+                flDamageEstValue: flDamageEstValue,
+                flTesterEstValue: flTesterEstValue,
+                flTheftEstValue: flTheftEstValue
+            }));*/
+
             stTextAreaVal += '<div><table style="width:100%; border-collapse: collapse;" border="1px solid black" ">'
-            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</tr>';
+            stTextAreaVal+= '<tr><td style="font-weight: bold;padding:3px">Type</td><td style="font-weight: bold;padding:3px">Quantity</td><td style="font-weight: bold;padding:3px">Total Estimated Replacement Value</td>';
             for(let x = 0; x < result.length; x++){
-                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</tr>';
+                let flTotalEstVal = result[x].Id == 'Damage' ? flDamageEstValue : result[x].Id == 'Tester' ? flTesterEstValue : result[x].Id == 'Theft' ? flTheftEstValue : 0;
+                stTextAreaVal+= '<tr><td style="padding:3px">'+ result[x].Id+'</td><td style="padding:3px">'+result[x].intQty+'</td><td>'+flTotalEstVal.toFixed(2)+'</td></tr>';
             }
             stTextAreaVal += '</div></table>'
 
             currRec.setValue('custpage_cwgp_totaladjustment',stTextAreaVal)
         }
 
-           
+        //Item Summary
         if(itemSummary.length > 0){
             let result = []
 
@@ -1246,7 +1389,7 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }
     };
 
-    function nextStep(stUserId,stAccessType,stLocation,stSubsidiary,stStep,objBodyDefaultValues,customRecordId,stRecType){
+    /*function nextStep(stUserId,stAccessType,stLocation,stSubsidiary,stStep,objBodyDefaultValues,customRecordId,stRecType){
         console.log('nextStep');
 
         const blReturnError = validateInventoryCount(stStep);
@@ -1570,12 +1713,11 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         }));
 
         return [blIsError,stErrorMessage]
-    }
+    }*/
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
-    const saveDraftIC = () =>{
-   
+    const saveDraftIC = (stUserId, stAccessType, stStep) =>{
         var options = {
 		    title: "Save as Draft",
 		    message: "Are you sure you want to Save this as Draft?"
@@ -1584,17 +1726,123 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         	console.log('result '+result);
         	console.log('Ok');
         	if(result){
+                const currRec = currentRecord.get();
+                console.log('currRec '+currRec);
+                createICDraftFile(stUserId, stStep, currRec);
                 console.log('redirect');
+                const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+                let stRetailUrl = url.resolveScript({
+                    deploymentId        : objRetailUrl.DEPLOY_ID,
+                    scriptId            : objRetailUrl.SCRIPT_ID,
+                    returnExternalUrl   : true,
+                    params: {
+                        pageMode    : 'list',
+                        userId      : stUserId,
+                        accesstype  : stAccessType,
+                        rectype     : 'inventorycount'
+                    }
+                });
+                window.onbeforeunload = null;
+                window.location = stRetailUrl;
         	}
             console.log('cancel');
     	}
     	function failure(reason) {
-    		console.log('result '+result);
+    		//console.log('result '+result);
     		console.log('Cancel');
     	}
     	
 		dialog.confirm(options).then(success).catch(failure);
    
+    };
+
+    const createICDraftFile = (stOperator, stStep, rec) => {
+        try{
+        console.log(stOperator);
+        console.log(stStep);
+        let objDraft = {};
+        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+
+        var numLines = rec.getLineCount({
+            sublistId: stSublistName
+        });
+        console.log('numLines '+numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                sublistId: stSublistName,
+                fieldId: 'custpage_cwgp_item',
+                line: i
+            });
+            
+            if(stStep == 1){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                });
+                if(inFirstCount){
+                    objDraft[stItem] = inFirstCount;
+                }
+                
+            }
+            else if(stStep == 2){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                }) || '';
+                var inSecondCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+                objDraft[stItem] = [inFirstCount,inSecondCount];
+            }
+            else if(stStep == 3){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_enteredquantity',
+                    line: i
+                }) || '';
+                var stAdjustmentReason = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
+
+                objDraft[stItem] = [inFirstCount,stAdjustmentReason];
+            }
+        }
+        var stSubType = rec.getValue({
+            fieldId: 'custpage_cwgp_adjustmentsubtype'
+        });
+        if(stSubType == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_ricdraftstep': stStep
+                }
+            });
+        }
+        else if(stSubType == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_bbicdraftstep': stStep
+                }
+            });
+        }
+        }
+        catch(e){
+            console.error(e.message);
+        }
+        
+
     };
 
 
@@ -1606,8 +1854,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         lineInit,
         back,
         calculateSummary,
-        nextStep,
-        validateInventoryCount,
         scanInputViaBtn,
         saveDraftIC
     };

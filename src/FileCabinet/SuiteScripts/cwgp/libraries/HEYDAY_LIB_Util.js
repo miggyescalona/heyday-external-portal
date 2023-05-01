@@ -405,7 +405,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
-                [_CONFIG.COLUMN.LIST.ADJUSTMENT_TYPE.id]: stAdjustmentType == 'backbar' ? 'Backbar' : stAdjustmentType == 'standard' ? 'Standard' : 'Damage/Tester/Theft'
+                [_CONFIG.COLUMN.LIST.ADJUSTMENT_TYPE.id]: stAdjustmentType == 'backbar' ? 'Backbar' : stAdjustmentType == 'standard' ? 'Standard' : stAdjustmentType == 'damage' ? 'Damage': stAdjustmentType == 'tester' ? 'Tester': stAdjustmentType == 'theft' ? 'Theft': 'Damage/Tester/Theft'
             })
         });
 
@@ -895,8 +895,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             value: '',
             text: ''
         });
-
-        log.debug('objResultSet', objResultSet)
 
         objResultSet.each(function (result) {
             fld.addSelectOption({
@@ -1949,6 +1947,42 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
     };
 
+    const getInventoryCountDraft = (stId) => {
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraftstep' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraftstep' })
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            const objDraft = {
+                stDraftRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraft' }),
+                stStepRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraftstep' }),
+                stDraftBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraft' }),
+                stStepBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraftstep' })
+            };
+            return objDraft;
+        }
+        
+        return false;
+    };
+
 
     
 
@@ -1977,6 +2011,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         lookUpItem,
         setDeliverByDate,
         buildInventoryCountItemSearch,
-        createICLineBackupFile
+        createICLineBackupFile,
+        getInventoryCountDraft
     }
 });

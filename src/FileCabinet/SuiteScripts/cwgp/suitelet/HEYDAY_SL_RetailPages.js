@@ -291,7 +291,8 @@ define([
                 tranid: stTranId,
                 step: stStep,
                 objIC: objIC,
-                customRecordId: customRecordId
+                customRecordId: customRecordId,
+                draft: stDraft,
             } = request.parameters)
         }
         else{
@@ -369,7 +370,10 @@ define([
                     stType: 'inventorycount',
                     stAccessType,
                     stUserId,
-                    objSearch: objInventoryCountSearch
+                    objSearch: objInventoryCountSearch,
+                    stLocation,
+                    objOperator
+
                 });
 
                 break;
@@ -402,6 +406,32 @@ define([
                     stAccessType,
                     stTranId
                 });
+
+                break;
+            case 'load':
+                if(stStep == 1){
+                    createPage.renderInventoryCount({
+                        response,
+                        stType: 'inventorycount',
+                        stSubsidiary,
+                        stLocation,
+                        stPageMode: 'create',
+                        stUserId,
+                        stPoId,
+                        stAccessType,
+                        stStep,
+                        stSubType,
+                        objOperator,
+                        stDraft
+                    });
+                }
+                else if(stStep == 2){
+                    createPage.renderInventoryCountSecond(request,response);
+                }
+                else if(stStep == 3){
+                    createPage.renderInventoryCountFinal(request,response);
+                }
+                
 
                 break;
             default:

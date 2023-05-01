@@ -388,7 +388,8 @@ define([
                     objSearch: objInventoryCountSearch,
                     stCustomer,
                     stSubsidiary,
-                    stLocation
+                    stLocation,
+                    objOperator
                 });
 
                 break;
