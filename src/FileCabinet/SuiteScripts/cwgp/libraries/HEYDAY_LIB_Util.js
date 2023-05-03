@@ -200,6 +200,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             stUserId,
             arrPagedData,
             arrPagedQoH,
+            arrPagedDataExport,
+            arrPagedDataQoHExport,
             blForReceiving,
             stApprovalStatus,
             blItermPerLocTotal
@@ -220,7 +222,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         };
         const mapValues = MAP_VALUES[newStType];
 
-        return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus,arrPagedQoH);
+        return mapValues(stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus,arrPagedQoH,arrPagedDataExport,arrPagedDataQoHExport);
     };
 
     const mapIntercompanyPO = (stUserId, stAccessType, arrPagedData, blForReceiving, stApprovalStatus) => {
@@ -343,7 +345,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             }
         }
 
-        return arrFinalMapIntercoPO;
+        return [arrFinalMapIntercoPO,null];
     }
 
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
@@ -375,7 +377,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             })
         });
 
-        return arrMapItemReceipt;
+        return [arrMapItemReceipt,null];
     };
 
     const mapInventoryAdjustment = (stUserId, stAccessType, arrPagedData) => {
@@ -408,7 +410,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             })
         });
 
-        return arrMapInventoryAdjustment;
+        return [arrMapInventoryAdjustment,null];
     };
 
     const mapInventoryCount = (stUserId, stAccessType, arrPagedData) => {
@@ -440,18 +442,24 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             })
         });
 
-        return arrMapInventoryAdjustment;
+        return [arrMapInventoryAdjustment,null];
     };
 
 
-    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH) => {
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH,arrPagedDataExport,arrPagedDataQoHExport) => {
         log.debug('mapItemPerLocation');
         log.debug('mapItemPerLocation arrPagedData', arrPagedData); 
         log.debug('mapItemPerLocation arrPagedQoH', arrPagedQoH);
+        log.debug('mapItemPerLocation arrPagedDataExport', arrPagedDataExport);
+        log.debug('mapItemPerLocation arrPagedDataQoHExport', arrPagedDataQoHExport);
         let arrMapItemperLocation = [];
+        let arrMapItemperLocationCSV = [];
         let arrMapItemQoH = [];
+        let arrMapItemQoHCSV = [];
         let arrItemList = [];
+        let arrItemListCSV = [];
         let arrFinalItemPerLocation;
+        let arrFinalItemPerLocationCSV;
         const keysCheck = ['custpage_cwgp_onhand','custpage_cwgp_backbar','custpage_cwgp_damage','custpage_cwgp_tester','custpage_cwgp_theft','custpage_cwgp_sold','custpage_cwgp_discrepancy'];
 
         if(arrPagedData){
@@ -482,10 +490,40 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     [_CONFIG.COLUMN.LIST.DISCREPANCY.id]: stDiscrepancy != 0 ? Math.abs(parseInt(stDiscrepancy)) : '0',
                 })
             });
+
+            //arrPagedDataExport.forEach((result, index) => {
+            arrPagedDataExport.run().each(function(result){
+                const stItemName = result.getText({ name: 'item' , summary: 'GROUP'});
+                const stItemId = result.getValue({ name: 'item' , summary: 'GROUP'});
+                const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
+                const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
+                const stBackbar =result.getValue(result.columns[3]);
+                const stDamage = result.getValue(result.columns[4]);
+                const stTester = result.getValue(result.columns[5]);
+                const stTheft = result.getValue(result.columns[6]);
+                const stSold = result.getValue(result.columns[7]);
+                const stDiscrepancy = result.getValue(result.columns[8]);
+                arrItemListCSV.push(stItemId);
+    
+
+            
+                arrMapItemperLocationCSV.push({
+                    [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                    [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
+                    [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
+                    [_CONFIG.COLUMN.LIST.BACKBAR.id]: stBackbar != '0' ? Math.abs(parseInt(stBackbar)) : '0',
+                    [_CONFIG.COLUMN.LIST.DAMAGE.id]: stDamage != '0' ? Math.abs(parseInt(stDamage)) : '0',
+                    [_CONFIG.COLUMN.LIST.TESTER.id]: stTester != '0' ? Math.abs(parseInt(stTester)) : '0',
+                    [_CONFIG.COLUMN.LIST.THEFT.id]: stTheft != '0' ? Math.abs(parseInt(stTheft)) : '0',
+                    [_CONFIG.COLUMN.LIST.SOLD.id]: stSold,
+                    [_CONFIG.COLUMN.LIST.DISCREPANCY.id]: stDiscrepancy != 0 ? Math.abs(parseInt(stDiscrepancy)) : '0',
+                })
+            });
         }
 
         if(arrPagedQoH){
             arrItemList = [];
+            arrItemListCSV = [];
             arrPagedQoH.forEach((result, index) => {
                 const stItemName = result.getText(result.columns[0]);
                 const stItemId = result.getValue(result.columns[0]);
@@ -495,6 +533,27 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 arrItemList.push(stItemId);
 
                 arrMapItemQoH.push({
+                    [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
+                    [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                    [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
+                    [_CONFIG.COLUMN.LIST.UPC.id]: stUPCode,
+                    
+                    
+                })
+                //arrMapItemperLocation[index][_CONFIG.COLUMN.LIST.ON_HAND.id] = stOnHand
+            
+            });
+
+            //arrPagedDataQoHExport.forEach((result, index) => {
+            arrPagedDataQoHExport.run().each(function(result){
+                const stItemName = result.getText(result.columns[0]);
+                const stItemId = result.getValue(result.columns[0]);
+                const stOnHand = result.getValue(result.columns[1]);
+                const stInternalSku = result.getValue({ name: 'custitem_heyday_sku', join: 'item', summary: 'GROUP' });
+                const stUPCode = result.getValue({ name: 'custitemheyday_upccode', join: 'item', summary: 'GROUP' });
+                arrItemListCSV.push(stItemId);
+
+                arrMapItemQoHCSV.push({
                     [_CONFIG.COLUMN.LIST.NAME.id]: stItemName,
                     [_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
                     [_CONFIG.COLUMN.LIST.SKU.id]: stInternalSku,
@@ -527,6 +586,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     }
                 }
             });
+
+            arrMapItemperLocationCSV .forEach(item => map.set(item.custpage_cwgp_name, item));
+            arrMapItemQoHCSV .forEach(item => map.set(item.custpage_cwgp_name, {...map.get(item.custpage_cwgp_name), ...item}));
+            arrFinalItemPerLocationCSV = Array.from(map.values());
+
+            arrFinalItemPerLocationCSV.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                       arrFinalItemPerLocationCSV[index][keysCheck[x]] = "0";
+                       // log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+
+
         }else if(arrMapItemperLocation){
             arrFinalItemPerLocation = arrMapItemperLocation;
             arrFinalItemPerLocation.forEach((element,index) => {
@@ -534,6 +609,17 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     if(!element.hasOwnProperty(keysCheck[x])){
                        // log.debug(keysCheck[x]);
                         arrFinalItemPerLocation[index][keysCheck[x]] = "0";
+                       // log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+
+            arrFinalItemPerLocationCSV = arrMapItemperLocationCSV;
+            arrFinalItemPerLocationCSV.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                       arrFinalItemPerLocationCSV[index][keysCheck[x]] = "0";
                        // log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
                     }
                 }
@@ -546,6 +632,17 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     if(!element.hasOwnProperty(keysCheck[x])){
                        // log.debug(keysCheck[x]);
                         arrFinalItemPerLocation[index][keysCheck[x]] = "0";
+                      //  log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
+                    }
+                }
+            });
+
+            arrFinalItemPerLocationCSV = arrMapItemQoH;
+            arrFinalItemPerLocationCSV.forEach((element,index) => {
+                for(let x = 0; x < keysCheck.length; x++){
+                    if(!element.hasOwnProperty(keysCheck[x])){
+                       // log.debug(keysCheck[x]);
+                       arrFinalItemPerLocationCSV[index][keysCheck[x]] = "0";
                       //  log.debug(arrFinalItemPerLocation[index][keysCheck[x]]);
                     }
                 }
@@ -589,6 +686,42 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             });
         }
 
+        if(arrItemListCSV.length > 0){
+            let index = 0;
+            var itemSearchObj = search.create({
+                type: "item",
+                filters:
+                [
+                ["internalid","anyof",arrItemList],
+                "AND", 
+                ["pricing.pricelevel","anyof","6"]
+                ],
+                columns:
+                [
+                search.createColumn({
+                    name: "itemid",
+                    sort: search.Sort.ASC,
+                    label: "Name"
+                }),
+                search.createColumn({
+                    name: "formulanumeric",
+                    formula: "case when {pricing.pricelevel}='Franchise Price' then {pricing.unitprice} else 0 END",
+                    label: "Formula (Numeric)"
+                })
+                ]
+            });
+            var searchResultCount = itemSearchObj.runPaged().count;
+           
+            let tempEstCostPerUnit = 0;
+            itemSearchObj.run().each(function(result){
+                arrFinalItemPerLocationCSV [index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+                tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
+                arrFinalItemPerLocationCSV [index]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[index]['custpage_cwgp_onhand'])).toFixed(2);
+                index++;
+                return true;
+            });
+        }
+
        /* let fileObj = file.create({
             name: 'arrFinalItemPerLocation.txt',
             fileType: file.Type.PLAINTEXT,
@@ -601,8 +734,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         fileObj.save();*/
 
         log.debug('arrFinalItemPerLocation',arrFinalItemPerLocation);
+        log.debug('arrFinalItemPerLocationCSV',arrFinalItemPerLocationCSV);
 
-        return arrFinalItemPerLocation;
+        return [arrFinalItemPerLocation,arrFinalItemPerLocationCSV];
     };
 
     const mapItemPerLocationTotal = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH) => {
@@ -645,7 +779,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         log.debug('mapItemPerLocationTotal',arrMapItemperLocation);
 
-        return arrMapItemperLocation;
+        return [arrMapItemperLocation,null];
     };
 
 

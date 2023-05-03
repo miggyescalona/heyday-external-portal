@@ -20,7 +20,12 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
     
     const pageInit = (context) => {
 
-        console.log(window.location.href);
+        //jQuery("#custpage_inventoryadjustmentinventorycount_itemsrow0").hide();
+        //jQuery('.uir-list-row-cell listtext').attr('style','background-color: red!important');
+       // jQuery('#custpage_inventoryadjustmentinventorycount_itemsrow0').attr('style','background-color: red!important');
+        //jQuery('.custpage_inventoryadjustmentinventorycount_itemsrow0>*').attr('style','background-color: red');
+        // jQuery('#uir-list-row-cell listtext').attr('style', 'color: blue !important');
+       // console.log(window.location.href);
         
         if(!window.location.href.endsWith("scriptlet.nl")){
             ClientEPLib.getAuthenticationScript();

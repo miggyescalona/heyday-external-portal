@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (serverWidget, search, format, util) => {
+define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util.js'], (serverWidget, search, format, file, util) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page'
@@ -590,8 +590,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             stUserId,
             stSubsidiary,
             stCustomer,
-            objSearch
+            objSearch,
+            objOperator
         } = options;
+
 
 
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
@@ -779,7 +781,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             });
         });
 
-        setListValues({
+
+        log.debug('dtAsof dtFrom dtTo', dtAsof +'|'+ dtFrom +'|'+ dtTo)
+
+        const arrListValues = setListValues({
             objSearch,
             fldPage,
             intPage,
@@ -791,13 +796,63 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             dtFrom,
             dtTo
         });
-        log.debug('setListValues', '');
+
+        log.debug('arrValues1',arrListValues);
+
+        let objFileURL  = csvExport(arrListValues);
+        objFileURL = JSON.stringify(objFileURL);
+
+        
+        function csvExport(arrListValues){
+            let csvContents = "";
+            csvContents += 'Item Name' + ','+ 'UPC Code' +','+'Internal Sku' + ',' + 'Estimated Cost Per Unit' +',' +'Total Estimated Value' + ',' +'On Hand' +','+ 'Damage' + ',' + 'Tester' +',' +'Theft' +',' + 'Backbar'+','+ 'Sold'+','+'Discrepancy'+'\n';
+            for(x in arrListValues){
+                const stName = arrListValues[x].custpage_cwgp_name || ' ';
+                const stUPC = arrListValues[x].custpage_cwgp_upccode || ' ';
+                const stSku = arrListValues[x].custpage_cwgp_internalsku || ' ';
+                const stEstCos = arrListValues[x].custpage_cwgp_rate || ' ';
+                const stEstVal = arrListValues[x].custpage_cwgp_total || ' ';
+                const stOnHand = arrListValues[x].custpage_cwgp_onhand || ' ';
+                const stDamage = arrListValues[x].custpage_cwgp_damage || ' ';
+                const stTester = arrListValues[x].custpage_cwgp_tester || ' ';
+                const stTheft = arrListValues[x].custpage_cwgp_theft || ' ';
+                const stBackbar = arrListValues[x].custpage_cwgp_backbar || ' ';
+                const stSold = arrListValues[x].custpage_cwgp_sold || ' ';
+                const stDiscrepancy = arrListValues[x].custpage_cwgp_discrepancy || ' ';
+                
+                csvContents+=stName+','+ stUPC +','+stSku+','+stEstCos+','+stEstVal+','+stOnHand+','+stDamage+','+stTester+','+stTheft+','+stBackbar+ ','+ stSold+','+stDiscrepancy+'\n';
+            }
+
+            var csvFile = file.create({
+				name: 'franchise_'+objOperator[0].stOperator+'_'+new Date().toString(),
+				fileType: file.Type.CSV,
+				contents: csvContents,
+				folder: 929
+			});
+
+            csvFile.isOnline = true;
+
+			const stFiledId = csvFile.save();
+            var fileObj = file.load({
+                id: stFiledId
+            });
+
+            return fileObj.url;
+        }
+        
 
         form.addButton({
             id : 'search',
             label : 'Search',
             functionName:`searchItemPerLocation(${stUserId}, ${stAccessType}, 'itemperlocation')`
         });
+
+        form.addButton({
+            id: 'custpage_export_button',
+            label: 'Export',
+            functionName: 'csvExport('+objFileURL+')'
+        });
+
         form.addButton({
             id: 'custpage_back_button',
             label: 'Back',
@@ -896,7 +951,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
-        const objInventoryCountDraft = getInventoryCountDraft(stUserId);
+        /*const objInventoryCountDraft = getInventoryCountDraft(stUserId);
         log.debug('stInventoryCountDraft', objInventoryCountDraft);
         if(objInventoryCountDraft){
             form.addButton({
@@ -904,7 +959,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                 label: 'Load Draft',
                 functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${objInventoryCountDraft})`
             });
-        }
+        }*/
 
         response.writePage(form);
     };
@@ -948,6 +1003,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
             //log.debug('objPagedData', objPagedData);
             const arrPagedData = objPagedData.data;
             //log.debug('arrPagedData', arrPagedData);
+            log.debug('objSearch count', objSearch.runPaged().count);
 
             const arrListValues = util.mapValues({
                 stType, 
@@ -956,11 +1012,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                 arrPagedData,
                 dtAsof,
                 dtFrom,
-                dtTo
+                dtTo,
+                objSearch
             });
             //log.debug('arrListValues', arrListValues);
 
-            arrListValues.forEach((value, i) => {
+            arrListValues[0].forEach((value, i) => {
                 const arrListValue = Object.keys(value);
 
                 arrListValue.forEach((fieldId) => {
@@ -971,6 +1028,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
                     });
                 });
             });
+
+            return arrListValues[1];
         }
 
         
@@ -1060,6 +1119,18 @@ define(['N/ui/serverWidget', 'N/search', 'N/format', './HEYDAY_LIB_Util.js'], (s
         }
         
         input#custpage_back_button, input#secondarycustpage_back_button {
+            background-color: white !important;
+            color: #105368 !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        input#custpage_export_button, input#secondarycustpage_export_button {
+            background-color: white !important;
+            color: #105368 !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        input#search, input#secondarysearch {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;

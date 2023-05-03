@@ -360,6 +360,15 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
             return decodeURIComponent(param[1].replace(/\+/g, ' '));
     };
 
+    const csvExport = (objFileURL) => {;
+        const stBaseDomain = url.resolveDomain({
+            hostType: url.HostType.APPLICATION,
+        });
+        console.log(stBaseDomain+objFileURL);
+        window.open(objFileURL);
+    }
+
+
     return {
         pageInit,
         fieldChanged,
@@ -368,6 +377,7 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
         createInventoryAdjustment,
         searchItemPerLocation,
         createInventoryCount,
-        loadInventoryCountDraft
+        loadInventoryCountDraft,
+        csvExport
     };
 });

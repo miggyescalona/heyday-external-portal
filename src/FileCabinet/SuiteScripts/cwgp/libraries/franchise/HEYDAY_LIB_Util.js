@@ -127,7 +127,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             arrPagedData,
             dtAsof,
             dtFrom,
-            dtTo
+            dtTo,
+            objSearch
         } = options;
 
         const MAP_VALUES = {
@@ -139,7 +140,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         };
         const mapValues = MAP_VALUES[stType];
 
-        return mapValues(stUserId, stAccessType, arrPagedData,dtAsof,dtFrom,dtTo);
+        return mapValues(stUserId, stAccessType, arrPagedData,dtAsof,dtFrom,dtTo,objSearch);
     };
 
     const mapFranchisePO = (stUserId, stAccessType, arrPagedData) => {
@@ -178,7 +179,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
             })
         });
-        return arrMapIntercompanyPO;
+        return [arrMapIntercompanyPO,null];
     };
     
     const mapItemReceipt = (stUserId, stAccessType, arrPagedData) => {
@@ -207,7 +208,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
             })
         });
-        return arrMapIntercompanyPO;
+        return [arrMapIntercompanyPO,null];
     };
 
     const mapInventoryAdjustment = (stUserId, stAccessType, arrPagedData) => {
@@ -255,7 +256,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
             })
         });
-        return arrMapIntercompanyPO;
+        return [arrMapIntercompanyPO,null];
     };
 
     const mapInventoryCount = (stUserId, stAccessType, arrPagedData) => {
@@ -287,10 +288,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
         });
 
-        return arrMapInventoryAdjustment;
+        return [arrMapInventoryAdjustment,null];
     };
 
-    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, dtAsof, dtFron, dtTo) => {
+    const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, dtAsof, dtFron, dtTo,objSearch) => {
 
         let arrMapItemperLocation= [];
         let arrItemIdList = [];
@@ -299,8 +300,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         let arrUpcList = [];
         let arrPriceList = [];
         const stCustomer = getCustomer(stUserId);
+
+
+        let arrMapItemperLocationCSV= [];
+        let arrItemIdListCSV = [];
+        let arrItemNameListCSV = [];
+        let arrSkuListCSV = [];
+        let arrUpcListCSV = [];
+        let arrPriceListCSV = [];
         arrPagedData.forEach((result, index) => {
-            log.debug('result', result);
             const stItemName = result.getValue({ name: 'itemid'});
             const stSKU= result.getValue({ name: 'custitem_heyday_sku' });
             const stUPC= result.getValue({ name: 'custitemheyday_upccode' });
@@ -390,9 +398,86 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
 
         }
-        log.debug('arrItemIdList', arrItemIdList);
-        log.debug('arrPriceList', arrPriceList);
-        return arrMapItemperLocation;
+        objSearch.run().each(function(result){
+            const stItemName = result.getValue({ name: 'itemid'});
+            const stSKU= result.getValue({ name: 'custitem_heyday_sku' });
+            const stUPC= result.getValue({ name: 'custitemheyday_upccode' });
+            const stPrice = result.getValue(result.columns[5]);
+            arrItemIdListCSV.push(result.id);
+            arrItemNameListCSV.push(stItemName);
+            arrSkuListCSV.push(stSKU);
+            arrUpcListCSV.push(stUPC);
+            arrPriceListCSV.push(stPrice);
+
+            return true;
+        });
+        const itemPerLocColumnsCSV = getItemPerLocationColumns(arrItemIdListCSV,stCustomer,dtAsof, dtFron, dtTo);
+
+        for(var i =0; i<arrItemIdListCSV.length; i++){
+
+            let inOnhand = 0;
+            let inDamage = 0;
+            let inTester = 0;
+            let inTheft = 0;
+            let inBackbar = 0;
+            let inSold = 0;
+            let inDiscrepancy = 0;
+            let flRate = arrPriceListCSV[i];
+            if(itemPerLocColumnsCSV.hasOwnProperty(arrItemIdListCSV[i])){
+                if(itemPerLocColumns[arrItemIdListCSV[i]].hasOwnProperty('onhand')){
+                    inOnhand = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['onhand'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('damage')){
+                    inDamage = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['damage'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('tester')){
+                    inTester = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['tester'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('theft')){
+                    inTheft = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['theft'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('backbar')){
+                    inBackbar = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['backbar'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('sold')){
+                    inSold = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['sold'];
+                }
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('discrepancy')){
+                    inDiscrepancy = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['discrepancy'];
+                }
+
+            }
+
+
+
+            let flTotal = inOnhand * flRate;
+            arrMapItemperLocationCSV.push({
+                [_CONFIG.COLUMN.LIST.NAME.id]: arrItemNameListCSV[i],
+                [_CONFIG.COLUMN.LIST.INTERNAL_SKU.id]: arrSkuListCSV[i],
+                [_CONFIG.COLUMN.LIST.UPC_CODE.id]: arrUpcListCSV[i],
+                [_CONFIG.COLUMN.LIST.RATE.id]: parseFloat(flRate) || '0',
+                [_CONFIG.COLUMN.LIST.TOTAL.id]: parseFloat(flTotal) || '0',
+                [_CONFIG.COLUMN.LIST.ON_HAND.id]: parseInt(inOnhand) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_DAMAGE.id]: parseInt(inDamage) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_TESTER.id]: parseInt(inTester) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_THEFT.id]: parseInt(inTheft) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_BACKBAR.id]: parseInt(inBackbar) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(inSold) || '0',
+                [_CONFIG.COLUMN.LIST.QUANTITY_DISCREPANCY.id]: parseInt(inDiscrepancy) || '0',
+                //[_CONFIG.COLUMN.LIST.QUANTITY_SOLD.id]: parseInt(getQtyCashSaleTypeFranchise(result.id,stCustomer)) || '0',
+                //[_CONFIG.COLUMN.LIST.LOCATION.id]: stLocation,
+                //[_CONFIG.COLUMN.LIST.AVAILABLE.id]: stAvailable,
+                //[_CONFIG.COLUMN.LIST.ON_HAND.id]: stOnHand,
+                //[_CONFIG.COLUMN.LIST.COMMITTED.id]: stCommitted
+            })
+
+        }
+
+        log.debug('arrMapItemperLocation',arrMapItemperLocation);
+        log.debug('arrMapItemperLocationCSV',arrMapItemperLocationCSV);
+
+
+        return [arrMapItemperLocation,arrMapItemperLocationCSV];
     };
 
     const getCustomer = (stId) => {

@@ -149,7 +149,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
 
     }
 
-    const createRetailInventoryAdjustment = (request, stSubType) => {
+    const createRetailInventoryAdjustment = (request, stSubType, stRecType) => {
 
         log.debug('createRetailInventoryAdjustment', '===createRetailInventoryAdjustment===');
         log.debug('createRetailInventoryAdjustment stSubType', stSubType);
@@ -167,7 +167,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
                 value: value
             });
         });
-        if(stSubType == 'Retail' || stSubType == 'Backbar'){
+        if(stRecType == 'inventorycount'){
             utilLib.createICLineBackupFile(objPOBodyFields.custbody_cwgp_externalportaloperator, 3, request);
         }
         

@@ -1996,7 +1996,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         log.debug('===CREATE===','===End of Create Inventory Count===');
     };
 
-    const renderInventoryCountSecond = (request,response) => {
+    const renderInventoryCountSecond = (request,response,stShopLocation) => {
         log.debug('===CREATE===','===Create Inventory Second Count===');
         log.debug('request', request);
         var rec = request;
@@ -2259,7 +2259,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
         });
         
-        populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form,stSubType);
+        populateSecondCountLines(arrItemFirstCount,rec,sbl,stLocation,stSubsidiary,form,stSubType,stShopLocation);
         utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit Second Count' });
 

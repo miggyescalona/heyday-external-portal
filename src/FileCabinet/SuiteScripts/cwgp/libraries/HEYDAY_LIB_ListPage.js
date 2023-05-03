@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/format'], (serverWidget, search, util, file, format) => {
+define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/format','N/config'], (serverWidget, search, util, file, format,config) => {
     const _CONFIG = {
         PARAMETER: {
             PAGE: 'custparam_cwgp_page',
@@ -653,14 +653,62 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             objSearchQoH,
             objSearchTotalQoH,
             stSubsidiary,
-            stLocation
+            stLocation,
+            objOperator
         } = options;
 
 
+       
+        var conf = config.load({
+            type: config.Type.USER_PREFERENCES
+        })
+
+        log.debug('conf',conf);
+        
+        var tz = conf.getValue({
+            fieldId: 'TIMEZONE'
+        });
+
+        log.debug('tz',tz);
+
+        log.debug('Account Time',format.format({
+            value: new Date(),
+            type: format.Type.DATETIME,
+            timezone: tz
+        }));
+        log.debug('Account Date', format.format({
+            value: new Date(),
+            type: format.Type.DATE,
+            timezone: tz
+        }));
+        log.debug('Account Date Tz', format.format({
+            value: new Date(),
+            type: format.Type.DATETIMETZ,
+            timezone: tz
+        }));
+        
+        let currentDate =  format.format({
+            value: new Date(),
+            type: format.Type.DATETIME,
+            timezone: tz
+        });
+
+        if(currentDate){
+            currentDate = currentDate.split(/[/| ]/g);
+            currentDate = currentDate[0]+'/'+currentDate[1]+'/'+currentDate[2];
+        }
+
         const intPage = request.parameters[_CONFIG.PARAMETER.PAGE] ? request.parameters[_CONFIG.PARAMETER.PAGE] : 0;
-        const dtAsOf = request.parameters[_CONFIG.PARAMETER.AS_OF] ? request.parameters[_CONFIG.PARAMETER.AS_OF] : new Date();
-        const dtFrom = request.parameters[_CONFIG.PARAMETER.DATE_FROM] ? request.parameters[_CONFIG.PARAMETER.DATE_FROM] : new Date();
-        const dtTo = request.parameters[_CONFIG.PARAMETER.DATE_TO] ? request.parameters[_CONFIG.PARAMETER.DATE_TO] : new Date();
+        const dtAsOf = request.parameters[_CONFIG.PARAMETER.AS_OF] ? request.parameters[_CONFIG.PARAMETER.AS_OF] : currentDate;
+        const dtFrom = request.parameters[_CONFIG.PARAMETER.DATE_FROM] ? request.parameters[_CONFIG.PARAMETER.DATE_FROM] : currentDate;
+        const dtTo = request.parameters[_CONFIG.PARAMETER.DATE_TO] ? request.parameters[_CONFIG.PARAMETER.DATE_TO] : currentDate;
+
+
+       log.debug('Param Dates',JSON.stringify({
+            dtAsOf: dtAsOf,
+            dtFrom: dtFrom,
+            dtTo: dtTo
+        }));
 
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
@@ -750,7 +798,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             label: 'As Of',
             container: _CONFIG.TAB[stType]  
         });
-        fldAsOf.defaultValue = dtAsOf ? new Date(dtAsOf) : null;
+        fldAsOf.defaultValue = dtAsOf ? dtAsOf : null;
+
+        log.debug('dtAsOf',dtAsOf);
 
         const fldFrom = form.addField({
             id: 'custpage_cwgp_from',
@@ -758,7 +808,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             label: 'From',
             container: _CONFIG.TAB[stType]  
         });
-        fldFrom.defaultValue = dtFrom ?  new Date(dtFrom) : null;
+        fldFrom.defaultValue = dtFrom ?  dtFrom : null;
+
+        log.debug('dtFrom',dtFrom);
 
         const fldTo = form.addField({
             id: 'custpage_cwgp_to',
@@ -766,7 +818,14 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             label: 'To',
             container: _CONFIG.TAB[stType]  
         });
-        fldTo.defaultValue = dtTo ?  new Date(dtTo) : null;
+        fldTo.defaultValue = dtTo ?  dtTo : null;
+
+        log.debug('Field Dates',JSON.stringify({
+            dtAsOf: dtAsOf,
+            dtFrom: dtFrom,
+            dtTo: dtTo
+        }));
+
 
         log.debug('objSearchTotalQoH1',objSearchTotalQoH);
 
@@ -817,7 +876,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
         });
         log.debug('objSearchTotalQoH2',objSearchTotalQoH);
 
-        setListValues({
+        const arrValues = setListValues({
             objSearch,
             objSearchTotal,
             objSearchQoH,
@@ -834,11 +893,61 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             dtTo
         });
 
+        log.debug('arrValues1',arrValues);
+
+        let objFileURL  = csvExport(arrValues);
+        objFileURL = JSON.stringify(objFileURL);
+
+        function csvExport(arrListValues){
+            let csvContents = "";
+            csvContents += 'Item Name' + ','+ 'UPC Code' +','+'Internal Sku' + ',' + 'Estimated Cost Per Unit' +',' +'Total Estimated Value' + ',' +'On Hand' +','+ 'Damage' + ',' + 'Tester' +',' +'Theft' +',' + 'Backbar'+','+ 'Sold'+','+'Discrepancy'+'\n';
+            for(x in arrListValues){
+                const stName = arrListValues[x].custpage_cwgp_name || ' ';
+                const stUPC = arrListValues[x].custpage_cwgp_upccode || ' ';
+                const stSku = arrListValues[x].custpage_cwgp_internalsku || ' ';
+                const stEstCos = arrListValues[x].custpage_cwgp_estimatedcostperunit || ' ';
+                const stEstVal = arrListValues[x].custpage_cwgp_totalestimatedvalue || ' ';
+                const stOnHand = arrListValues[x].custpage_cwgp_onhand || ' ';
+                const stDamage = arrListValues[x].custpage_cwgp_damage || ' ';
+                const stTester = arrListValues[x].custpage_cwgp_tester || ' ';
+                const stTheft = arrListValues[x].custpage_cwgp_theft || ' ';
+                const stBackbar = arrListValues[x].custpage_cwgp_backbar || ' ';
+                const stSold = arrListValues[x].custpage_cwgp_sold || ' ';
+                const stDiscrepancy = arrListValues[x].custpage_cwgp_discrepancy || ' ';
+                
+                csvContents+=stName+','+ stUPC +','+stSku+','+stEstCos+','+stEstVal+','+stOnHand+','+stDamage+','+stTester+','+stTheft+','+stBackbar+ ','+ stSold+','+stDiscrepancy+'\n';
+            }
+
+            var csvFile = file.create({
+				name: 'retail_'+objOperator[0].stOperator+'_'+new Date().toString(),
+				fileType: file.Type.CSV,
+				contents: csvContents,
+				folder: 929
+			});
+
+            csvFile.isOnline = true;
+
+			const stFiledId = csvFile.save();
+            var fileObj = file.load({
+                id: stFiledId
+            });
+
+            return fileObj.url;
+        }
         
         form.addButton({
             id: 'custpage_back_button',
             label: 'Search',
             functionName: `searchFilters(${stUserId}, ${stAccessType}, 'itemperlocation')`
+        });
+
+        log.debug('objFileURL',objFileURL);
+        log.debug('objFileURL type',typeof objFileURL);
+
+        form.addButton({
+            id: 'custpage_export_button',
+            label: 'Export',
+            functionName: 'csvExport('+objFileURL+')'
         });
 
         form.addButton({
@@ -931,6 +1040,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
         let objPage;
         let objPageQoH;
 
+        let objPagedDataExport;
+        let objPagedDataQoHExport;
+
         if(blItermPerLocTotal){
             ///Total Search
             log.debug('blItermPerLocTotal',blItermPerLocTotal);
@@ -950,6 +1062,9 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             if(stType == 'itemperlocation'){
                 objPagedData = objSearch.runPaged({ pageSize: stPageSize });
                 objPagedDataQoH = objSearchQoH.runPaged({ pageSize: stPageSize });
+
+                /*objPagedDataExport = objSearch.runPaged();
+                objPagedDataQoHExport = objSearchQoH.runPaged();*/
 
 
                 const maxPageIndex = objPagedData.pageRanges.length > objPagedDataQoH.pageRanges.length ? objPagedData.pageRanges.length : objPagedDataQoH.pageRanges.length;
@@ -1018,6 +1133,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                  log.debug('objPage null', objPage);
             }
         }
+        log.debug('objPagedDataExport',objPagedDataExport);
+        log.debug('objPagedDataQoHExport',objPagedDataQoHExport);
         return [objPage,objPageQoH];
     };
 
@@ -1042,14 +1159,21 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             dtTo
         } = options;
 
+        log.debug('objSearch',objSearch);
+        log.debug('objSearchQoH',objSearchQoH)
+
 
         const objPagedData = getPageData(objSearch, objSearchTotal, objSearchQoH, objSearchTotalQoH, blItermPerLocTotal, fldPage, intPage, stType, stApprovalStatus,dtAsOf,dtFrom,dtTo);
         log.debug('objSearchTotalQoH4',objSearchTotalQoH);
         log.debug('objPagedData',objPagedData)
         
         if(objPagedData[0] || objPagedData[1]){
+            log.debug('objPagedData[0]',objPagedData[0]);
+            log.debug('objPagedData[1]',objPagedData[1])
             let arrPagedData;
             let arrPagedQoH;
+            let arrPagedDataExport;
+            let arrPagedDataQoHExport;
 
 
             if(objPagedData[0]){
@@ -1063,6 +1187,19 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 log.debug('arrPagedQoH', arrPagedQoH);
             }
 
+            if(objSearch){
+                //Item Per Loc CSV
+                arrPagedDataExport = objSearch;
+                log.debug('arrPagedDataExport1', arrPagedDataExport);
+            }
+
+            if(objSearchQoH){
+                //Item Per Loc QoH CSV
+                arrPagedDataQoHExport = objSearchQoH;
+                log.debug('arrPagedDataQoHExport1', arrPagedDataQoHExport);
+            }
+
+
 
             const arrListValues = util.mapValues({
                 stType, 
@@ -1070,14 +1207,18 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 stUserId,
                 arrPagedData,
                 arrPagedQoH,
+                arrPagedDataExport,
+                arrPagedDataQoHExport,
                 blForReceiving,
                 stApprovalStatus,
                 blItermPerLocTotal
             });
-            log.debug('arrListValues', arrListValues);
+            log.debug('arrListValues[0]', arrListValues[0]);
+            log.debug('arrListValues[1]', arrListValues[1]);
+
 
             if(!blItermPerLocTotal){
-                arrListValues.forEach((value, i) => {
+                arrListValues[0].forEach((value, i) => {
                     const arrListValue = Object.keys(value);
 
                     arrListValue.forEach((fieldId) => {
@@ -1090,7 +1231,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 });
             }
             else{
-                arrListValues.forEach((value, i) => {
+                arrListValues[0].forEach((value, i) => {
                     const arrListValue = Object.keys(value);
                     arrListValue.forEach((fieldId) => {
                         sbtotal.setSublistValue({
@@ -1102,6 +1243,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
 
                 });
             }
+
+            return arrListValues[1];
         }
     };
 
@@ -1140,6 +1283,12 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
         }
         
         input#custpage_back_button, input#secondarycustpage_back_button {
+            background-color: white !important;
+            color: #105368 !important;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        input#custpage_export_button, input#secondarycustpage_export_button {
             background-color: white !important;
             color: #105368 !important;
             font-family: 'Roboto Mono', monospace;

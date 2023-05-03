@@ -1193,6 +1193,8 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType] });
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
+
+        log.debug('stShopLocation PO', stShopLocation);
         
         //Initialize Add Scanner Field Group and Fields
         objItemResultSet = EPLib.getInvItemsBySubsidiary({stSubsidiary,stShopLocation});
@@ -1916,7 +1918,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         response.writePage(form);
     };
 
-    const renderInventoryCountSecond = (request,response) => {
+    const renderInventoryCountSecond = (request,response,stShopLocation) => {
         log.debug('request', request);
         var rec = request;
         
@@ -1942,6 +1944,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var stSubType = rec.parameters.custpage_cwgp_adjustmentsubtype;
         var stAccessType = rec.parameters.custpage_cwgp_accesstype;
         log.debug('stOperator', stOperator);
+
         const form = serverWidget.createForm({ title: _CONFIG.TITLE[stType]+' '+stSubType+' - Second Count'});
 
         form.clientScriptModulePath = _CONFIG.CLIENT_SCRIPT;
@@ -2153,7 +2156,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             }
         });
         
-        populateSecondCountLines(stCustomer,rec,sbl,form,stSubType);
+        populateSecondCountLines(stCustomer,rec,sbl,form,stSubType,stShopLocation);
         utilLib.createICLineBackupFile(stOperator, 1, rec);
         form.addSubmitButton({ label: 'Submit - Second Count' });
 
@@ -2515,7 +2518,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         }
     };
 
-    const populateSecondCountLines = (stCustomer,rec,itemLines,form,stSubType) => {
+    const populateSecondCountLines = (stCustomer,rec,itemLines,form,stSubType,stShopLocation) => {
         var arrItemFirstCount = [];
         var arrQtyFirstCount = [];
         var arrIndexFirstCount = [];
@@ -2585,6 +2588,15 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             operator: 'anyof',
             values: stCustomer,
         }));
+
+        if(stShopLocation){
+            ssItemPerLocationIC.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                join: 'custrecord_cwgp_ftl_item',
+                operator: search.Operator.ANYOF,
+                values: stShopLocation,
+            }));
+        }
 
         var results = [];
         var count = 0;
@@ -3086,7 +3098,10 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
     }
 
     const htmlCss = () => {
-        const stHtmlCss = `<style>
+        const stHtmlCss = `<html><head>
+        <body>
+        </body>
+        <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;1,200&family=Roboto:wght@300&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap');
@@ -3164,7 +3179,33 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             font-size: 14px !important;
         }
 
-    </style>`;
+        .highlight
+        {
+            background-color: blue;
+        }
+        .find_selected
+        {
+            background-color: green;
+        }
+
+        .spacer30 {
+            margin: 600px 0;
+          }
+          #go {
+            float: right;
+            width: 50px;
+          }
+          #searchItem {
+            float: left;
+            width: 200px;
+            
+          }
+          .input-group {
+            width: 260px;
+          }
+          
+
+    </style></html>`;
 
         return stHtmlCss;
     };

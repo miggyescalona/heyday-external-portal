@@ -430,10 +430,12 @@ define([
         log.debug('itemp per loc params',request.parameters);
         const stLocation = getLocation(stUserId);
         const stSubsidiary = getSubsidiary(stUserId);
-        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary);
-        const objItemPerLocationTotalSearch = buildItemPerLocationTotalSearch(stLocation,stSubsidiary);
-        const objItemPerLocationQoHSearch = buildItemPerLocationQuantityOnHand(stLocation,stSubsidiary);
-        const objItemPerLocationTotalQuantityOnHand = buildItemPerLocationTotalQuantityOnHand(stLocation,stSubsidiary);
+        const stShopLocation = getShopLocation(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stLocation,stSubsidiary,stShopLocation);
+        const objItemPerLocationTotalSearch = buildItemPerLocationTotalSearch(stLocation,stSubsidiary,stShopLocation);
+        const objItemPerLocationQoHSearch = buildItemPerLocationQuantityOnHand(stLocation,stSubsidiary,stShopLocation);
+        const objItemPerLocationTotalQuantityOnHand = buildItemPerLocationTotalQuantityOnHand(stLocation,stSubsidiary,stShopLocation);
+        const objOperator = getOperator(stUserId);
 
         listPage.renderItemPerLocation({
             request,
@@ -446,7 +448,8 @@ define([
             objSearch: objItemPerLocationSearch,
             objSearchTotal: objItemPerLocationTotalSearch,
             objSearchQoH: objItemPerLocationQoHSearch,
-            objSearchTotalQoH: objItemPerLocationTotalQuantityOnHand
+            objSearchTotalQoH: objItemPerLocationTotalQuantityOnHand,
+            objOperator
         });
     };
 
@@ -536,16 +539,19 @@ define([
                     const stStep = request.parameters.custpage_cwgp_step;
                     log.debug('stRecType', stRecType);
                     log.debug('stStep', stStep);
+                    const stShopLocation = getShopLocation(stUserId);
                     if(stStep == '1'){
                         log.debug('Go to Step 2', stRecType);
-                        createPage.renderInventoryCountSecond(request,response);
+                        createPage.renderInventoryCountSecond(request,response,stShopLocation);
                     }
                     else if(stStep == '2'){
                         log.debug('Create IC', stRecType);
-                        createPage.renderInventoryCountFinal(request,response);
+                        createPage.renderInventoryCountFinal(request,response,stShopLocation);
                     }
                     else if(stStep == '3'){
-                        idRec = txnLib.createRetailInventoryAdjustment(request);
+                        const stSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
+                        log.debug('stSubType',stSubType);
+                        idRec = txnLib.createRetailInventoryAdjustment(request,stSubType,stRecType);
                         stTranId = getTranIdSearch(idRec,stRecType);
                         redirect.toSuitelet({
                             scriptId: objRetailUrl.SCRIPT_ID,
@@ -760,8 +766,18 @@ define([
         return ssItemReceipt;
     };
 
-    const buildItemPerLocationSearch = (stLocation,stSubsidiary) => {
+    const buildItemPerLocationSearch = (stLocation,stSubsidiary,stShopLocation) => {
         const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloc", type: "transaction" });
+
+                
+        if(stShopLocation){
+            ssItemPerLocation.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                join: 'item',
+                values: stShopLocation,
+            }));
+        }
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
@@ -779,9 +795,17 @@ define([
         return ssItemPerLocation;
     };
 
-    const buildItemPerLocationQuantityOnHand= (stLocation,stSubsidiary) => {
-        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperlocqoh", type: "transaction" });
-
+    const buildItemPerLocationQuantityOnHand= (stLocation,stSubsidiary,stShopLocation) => {
+        const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperlocqoh", type: "transaction" });            
+                
+        if(stShopLocation){
+            ssItemPerLocation.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                join: 'item',
+                values: stShopLocation,
+            }));
+        }
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
             operator: 'anyof',
@@ -806,8 +830,18 @@ define([
 
         
 
-    const buildItemPerLocationTotalSearch = (stLocation,stSubsidiary) => {
+    const buildItemPerLocationTotalSearch = (stLocation,stSubsidiary,stShopLocation) => {
         const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemperloctotal", type: "transaction" });
+
+                        
+        if(stShopLocation){
+            ssItemPerLocation.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                join: 'item',
+                values: stShopLocation,
+            }));
+        }
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',
@@ -825,8 +859,18 @@ define([
         return ssItemPerLocation;
     };
 
-    const buildItemPerLocationTotalQuantityOnHand = (stLocation,stSubsidiary) => {
+    const buildItemPerLocationTotalQuantityOnHand = (stLocation,stSubsidiary,stShopLocation) => {
         const ssItemPerLocation = search.load({ id: "customsearch_cwgp_retail_itemprloctotqoh", type: "transaction" });
+
+                        
+        if(stShopLocation){
+            ssItemPerLocation.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                join: 'item',
+                values: stShopLocation,
+            }));
+        }
 
         ssItemPerLocation.filters.push(search.createFilter({
             name: 'inventorylocation',

@@ -109,6 +109,7 @@ define([
         const stLocation = getFieldValue(stUserId,'custrecord_cwgp_location');
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         const stShopLocation = getShopLocation(stUserId);
+        log.debug('renderFranchisePO stShopLocation',stShopLocation);
        
         switch (stPageMode) {
             case 'list':
@@ -278,6 +279,7 @@ define([
         const objInventoryAdjustmentSearch = buildInventoryAdjustmentSearch(stCustomer);
         const stOperator = getFieldValue(stUserId,'custrecord_cwgp_username');
         const stShopLocation = getShopLocation(stUserId);
+
         switch (stPageMode) {
             case 'list':
                 listPage.renderInventoryAdjustment({
@@ -348,9 +350,11 @@ define([
         
         const stSubsidiary = getSubsidiary(stUserId);
         const stCustomer = getCustomer(stUserId);
-        const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer);
+        const stShopLocation = getShopLocation(stUserId);
+        const objItemPerLocationSearch = buildItemPerLocationSearch(stCustomer,stShopLocation);
         const stStatus = request.parameters['approvalstatus'] ? request.parameters['approvalstatus'] : '';
         const stReceiving = request.parameters['isreceiving'] ? request.parameters['isreceiving'] : '';
+        const objOperator = getOperator(stUserId);
 
         listPage.renderItemPerLocation({
             request,
@@ -361,6 +365,7 @@ define([
             stSubsidiary,
             stCustomer,
             objSearch: objItemPerLocationSearch,
+            objOperator
 
         });
     };
@@ -681,6 +686,8 @@ define([
         let idRec = null;
         log.debug('stPageMode', stPageMode);
         log.debug('stRecType', stRecType);
+        const stShopLocation = getShopLocation(stUserId);
+        log.debug('stShopLocation handleFranchiseTxn',stShopLocation)
         if (stPageMode == 'create') {
             switch (stRecType) {
                 case 'franchisepo':
@@ -697,11 +704,11 @@ define([
                     log.debug('stRecType', stRecType);
                     if(stStep == '1'){
                         log.debug('Go to Step 2', stRecType);
-                        createPage.renderInventoryCountSecond(request,response);
+                        createPage.renderInventoryCountSecond(request,response,stShopLocation);
                     }
                     else if(stStep == '2'){
                         log.debug('Create IC', stRecType);
-                        createPage.renderInventoryCountFinal(request,response);
+                        createPage.renderInventoryCountFinal(request,response,stShopLocation);
                     }
                     else if(stStep == '3'){
                         idRec = txnLib.createFranchiseIC(request);
@@ -833,7 +840,7 @@ define([
         return ssItemReceipt;
     };
 
-    const buildItemPerLocationSearch = (stCustomer) => {
+    const buildItemPerLocationSearch = (stCustomer,stShopLocation) => {
         const ssItemPerLocation = search.load({ id: "customsearch_cwgp_franchise_itemlist", type: "inventoryitem" });
 
         /*ssItemPerLocation.filters.push(search.createFilter({
@@ -841,6 +848,15 @@ define([
             operator: 'anyof',
             values: stCustomer,
         }));*/
+
+        if(stShopLocation){
+            ssItemPerLocation.filters.push(search.createFilter({
+                name: 'custitem_cwgp_extportalshoplocation',
+                operator: 'anyof',
+                values: stShopLocation,
+            }));
+        }
+
 
         return ssItemPerLocation;
     };

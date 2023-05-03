@@ -121,14 +121,21 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         const intPage = currRec.getValue({ fieldId: 'custpage_cwgp_page' });
         console.log('page', intPage);
 
-        const dtAsOf = currRec.getValue({ fieldId: 'custpage_cwgp_asof' });
+        let dtAsOf = currRec.getValue({ fieldId: 'custpage_cwgp_asof' });
+        dtAsOf = new Date(dtAsOf);
+        dtAsOf = (dtAsOf .getMonth() + 1) + "/" + dtAsOf.getDate() + "/" + dtAsOf.getFullYear();
         console.log('dtAsOf', dtAsOf);
 
-        const dtFrom = currRec.getValue({ fieldId: 'custpage_cwgp_from' });
+        let dtFrom = currRec.getValue({ fieldId: 'custpage_cwgp_from' });
+        dtFrom = new Date(dtFrom);
+        dtFrom = (dtFrom .getMonth() + 1) + "/" + dtFrom.getDate() + "/" + dtFrom.getFullYear();
         console.log('dtFrom', dtFrom);
 
-        const dtTo = currRec.getValue({ fieldId: 'custpage_cwgp_to' });
+        let dtTo = currRec.getValue({ fieldId: 'custpage_cwgp_to' });
+        dtTo = new Date(dtTo);
+        dtTo = (dtTo.getMonth() + 1) + "/" + dtTo.getDate() + "/" + dtTo.getFullYear();
         console.log('dtTo', dtTo);
+
 
         if((dtFrom && !dtTo) || (!dtFrom && dtTo)){
             alert('You need to enter both Date From and Date To');
@@ -325,6 +332,15 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
             return decodeURIComponent(param[1].replace(/\+/g, ' '));
     };
 
+    const csvExport = (objFileURL) => {;
+        const stBaseDomain = url.resolveDomain({
+            hostType: url.HostType.APPLICATION,
+        });
+        console.log(stBaseDomain+objFileURL);
+        window.open(objFileURL);
+    }
+
+
     return {
         pageInit,
         fieldChanged,
@@ -332,6 +348,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         back,
         toCreateTransaction,
         createInventoryAdjustment,
-        createInventoryCount
+        createInventoryCount,
+        csvExport
     };
 });
