@@ -847,11 +847,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             functionName:`searchItemPerLocation(${stUserId}, ${stAccessType}, 'itemperlocation')`
         });
 
-        form.addButton({
+        /*form.addButton({
             id: 'custpage_export_button',
             label: 'Export',
             functionName: 'csvExport('+objFileURL+')'
-        });
+        });*/
 
         form.addButton({
             id: 'custpage_back_button',
@@ -869,7 +869,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             stType,
             stAccessType,
             stUserId,
-            objSearch
+            objSearch,
+            stCustomer,
+            stSubsidiary,
+            stLocation,
+            objOperator
         } = options;
 
 
@@ -951,15 +955,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             label: 'Back',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
-        /*const objInventoryCountDraft = getInventoryCountDraft(stUserId);
-        log.debug('stInventoryCountDraft', objInventoryCountDraft);
-        if(objInventoryCountDraft){
+        const objInventoryCountDraft = util.getInventoryCountDraft(stUserId);
+        log.debug('objOperator', objOperator);
+        if(objInventoryCountDraft.stDraftRetail != ''){
             form.addButton({
-                id: 'custpage_loaddraft_button',
-                label: 'Load Draft',
-                functionName: `loadInventoryCountDraft(${stUserId}, ${stAccessType}, ${objInventoryCountDraft})`
+                id: 'custpage_loaddraftretail_button',
+                label: 'Load Draft - Retail',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'Retail', ${objInventoryCountDraft.stStepRetail} )`
             });
-        }*/
+        }
+        if(objInventoryCountDraft.stDraftBackbar != ''){
+            form.addButton({
+                id: 'custpage_loaddraftbackbar_button',
+                label: 'Load Draft - Backbar',
+                functionName: `loadInventoryCountDraft(${stUserId}, '${objOperator[0].stOperator}',${stAccessType}, ${stCustomer},${stSubsidiary},${stLocation},'Backbar', ${objInventoryCountDraft.stStepBackbar} )`
+            });
+        }
 
         response.writePage(form);
     };
@@ -1096,7 +1107,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             font-weight: 200 !important;
         }
     
-        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton, input#custpage_loaddraft_button, input#secondarycustpage_loaddraft_button{
+        input#custpage_createtxn_buton, input#secondarycustpage_createtxn_buton, input#custpage_loaddraftretail_button, input#secondarycustpage_loaddraftretail_button, input#custpage_loaddraftbackbar_button, input#secondarycustpage_loaddraftbackbar_button{
             background-color: #105368 !important;
             color: white !important;
             font-family: 'Roboto Mono', monospace;

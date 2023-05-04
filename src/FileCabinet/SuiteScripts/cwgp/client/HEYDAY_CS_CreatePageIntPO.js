@@ -1692,9 +1692,8 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
     }*/
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
-
-    const saveDraftIC = () =>{
-   
+	
+	const saveDraftIC = (stUserId, stAccessType, stStep) =>{
         var options = {
 		    title: "Save as Draft",
 		    message: "Are you sure you want to Save this as Draft?"
@@ -1703,12 +1702,30 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         	console.log('result '+result);
         	console.log('Ok');
         	if(result){
+                const currRec = currentRecord.get();
+                console.log('currRec '+currRec);
+                createICDraftFile(stUserId, stStep, currRec);
                 console.log('redirect');
+                const objRetailUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+
+                let stRetailUrl = url.resolveScript({
+                    deploymentId        : objRetailUrl.DEPLOY_ID,
+                    scriptId            : objRetailUrl.SCRIPT_ID,
+                    returnExternalUrl   : true,
+                    params: {
+                        pageMode    : 'list',
+                        userId      : stUserId,
+                        accesstype  : stAccessType,
+                        rectype     : 'inventorycount'
+                    }
+                });
+                window.onbeforeunload = null;
+                window.location = stRetailUrl;
         	}
             console.log('cancel');
     	}
     	function failure(reason) {
-    		console.log('result '+result);
+    		//console.log('result '+result);
     		console.log('Cancel');
     	}
     	
@@ -1716,6 +1733,93 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
    
     };
 
+    const createICDraftFile = (stOperator, stStep, rec) => {
+        try{
+        console.log(stOperator);
+        console.log(stStep);
+        let objDraft = {};
+        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+
+        var numLines = rec.getLineCount({
+            sublistId: stSublistName
+        });
+        console.log('numLines '+numLines);
+        for(var i=0; i<numLines; i++){
+            var stItem = rec.getSublistValue({
+                sublistId: stSublistName,
+                fieldId: 'custpage_cwgp_item',
+                line: i
+            });
+            
+            if(stStep == 1){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                });
+                if(inFirstCount){
+                    objDraft[stItem] = inFirstCount;
+                }
+                
+            }
+            else if(stStep == 2){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                }) || '';
+                var inSecondCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_secondcount',
+                    line: i
+                }) || '';
+                objDraft[stItem] = [inFirstCount,inSecondCount];
+            }
+            else if(stStep == 3){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_enteredquantity',
+                    line: i
+                }) || '';
+                var stAdjustmentReason = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
+
+                objDraft[stItem] = [inFirstCount,stAdjustmentReason];
+            }
+        }
+        var stSubType = rec.getValue({
+            fieldId: 'custpage_cwgp_adjustmentsubtype'
+        });
+        if(stSubType == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_ricdraftstep': stStep
+                }
+            });
+        }
+        else if(stSubType == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_bbicdraftstep': stStep
+                }
+            });
+        }
+        }
+        catch(e){
+            console.error(e.message);
+        }
+        
+
+    };
 
     return {
         pageInit,
@@ -1726,6 +1830,6 @@ define(['N/https', 'N/util', 'N/url', '../libraries/HEYDAY_LIB_ClientExternalPor
         back,
         calculateSummary,
         scanInputViaBtn,
-        saveDraftIC
+		saveDraftIC
     };
 });

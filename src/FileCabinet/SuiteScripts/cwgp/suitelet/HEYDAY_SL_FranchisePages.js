@@ -379,7 +379,8 @@ define([
             subtype: stSubType,
             //tranid: stTranId,
             step: stStep,
-            objIC: objIC
+            objIC: objIC,
+            draft: stDraft
         } = request.parameters;
 
         log.debug('ic params',request.parameters);
@@ -399,7 +400,11 @@ define([
                     stType: 'inventorycount',
                     stAccessType,
                     stUserId,
-                    objSearch: objInventoryCountSearch
+                    objSearch: objInventoryCountSearch,
+                    stCustomer,
+                    stSubsidiary,
+                    stLocation,
+                    objOperator
                 });
 
                 break;
@@ -442,7 +447,7 @@ define([
                         stSubsidiary,
                         stLocation,
                         stCustomer,
-                        stPageMode,
+                        stPageMode: 'create',
                         stUserId,
                         stPoId,
                         stAccessType,
@@ -450,44 +455,15 @@ define([
                         stSubType,
                         objOperator,
                         objIC,
-                        stShopLocation
+                        stShopLocation,
+						stDraft
                     });
                 }
                 else if(stStep == 2){
-                    createPage.renderInventoryCountSecond({
-                        response,
-                        stType: 'inventorycount',
-                        stSubsidiary,
-                        stLocation,
-                        stCustomer,
-                        stPageMode,
-                        stUserId,
-                        stPoId,
-                        stAccessType,
-                        stStep,
-                        stSubType,
-                        objOperator,
-                        objIC,
-                        stShopLocation
-                    });
+                    createPage.renderInventoryCountSecond(request,response);
                 }
                 else if(stStep == 3){
-                    createPage.renderInventoryCountFinal({
-                        response,
-                        stType: 'inventorycount',
-                        stSubsidiary,
-                        stLocation,
-                        stCustomer,
-                        stPageMode,
-                        stUserId,
-                        stPoId,
-                        stAccessType,
-                        stStep,
-                        stSubType,
-                        objOperator,
-                        objIC,
-                        stShopLocation
-                    });
+                    createPage.renderInventoryCountFinal(request,response);
                 }
                 
 

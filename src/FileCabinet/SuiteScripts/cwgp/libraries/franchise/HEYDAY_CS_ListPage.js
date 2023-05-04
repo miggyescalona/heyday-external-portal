@@ -227,35 +227,50 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
         dialog.create(options).then(success).catch(failure);
     }
 
-    const loadInventoryCountDraft = (stUserId, stAccessType, objInventoryCountDraft) => {
+    const loadInventoryCountDraft = (stUserId, stOperatorName,stAccessType, stCustomer, stSubsidiary,stLocation,stSubtype, stStep) => {
         const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT];
-        let subType;
-
-        switch(result){
-            case 0:
-                return;
-            case 1:
-                subType = 'Retail';
-                break;
-            case 2:
-                subType = 'Backbar';
-            break;
+        let stCreateIntPOUrl = '';
+        if(stStep == 1){
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                scriptId            : objFranchiseUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true
+                }
+            });
+        }
+        else{
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objFranchiseUrl.DEPLOY_ID,
+                scriptId            : objFranchiseUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true,
+                    custpage_cwgp_userid      : stUserId,
+                    custpage_cwgp_operator: stOperatorName,
+                    custpage_cwgp_location: stLocation,
+                    custpage_cwgp_accesstype  : stAccessType,
+                    custpage_cwgp_rectype     : 'inventorycount',
+                    custpage_cwgp_adjustmentsubtype     : stSubtype,
+                    custpage_cwgp_customer: stCustomer,
+                    custpage_cwgp_subsidiary: stSubsidiary
+                }
+            });
         }
         
-        let stCreateIntPOUrl = url.resolveScript({
-            deploymentId        : objFranchiseUrl.DEPLOY_ID,
-            scriptId            : objFranchiseUrl.SCRIPT_ID,
-            returnExternalUrl   : true,
-            params: {
-                pageMode    : 'load',
-                userId      : stUserId,
-                accesstype  : stAccessType,
-                rectype     : 'inventorycount',
-                subtype     : objInventoryCountDraft.stSubtype,
-                step        : objInventoryCountDraft.stStep,
-                draft       : objInventoryCountDraft.stDraft
-            }
-        });
         window.location = stCreateIntPOUrl;
     }
 

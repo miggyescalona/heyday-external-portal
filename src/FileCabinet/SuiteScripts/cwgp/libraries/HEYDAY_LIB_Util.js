@@ -2083,6 +2083,42 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return cur_day + "-" + hours + ":" + minutes + ":" + seconds;
 
     };
+	
+	const getInventoryCountDraft = (stId) => {
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters:
+                [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: parseInt(stId)
+                    })
+                ],
+            columns:
+                [
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_ricdraftstep' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraft' }),
+                    search.createColumn({ name: 'custrecord_cwgp_bbicdraftstep' })
+                ]
+        }).run().getRange({
+            start: 0,
+            end: 1
+        });
+
+        if (ssCredentials.length > 0) {
+            const objDraft = {
+                stDraftRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraft' }),
+                stStepRetail: ssCredentials[0].getValue({ name: 'custrecord_cwgp_ricdraftstep' }),
+                stDraftBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraft' }),
+                stStepBackbar: ssCredentials[0].getValue({ name: 'custrecord_cwgp_bbicdraftstep' })
+            };
+            return objDraft;
+        }
+        
+        return false;
+    };
 
 
     
@@ -2112,6 +2148,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         lookUpItem,
         setDeliverByDate,
         buildInventoryCountItemSearch,
-        createICLineBackupFile
+        createICLineBackupFile,
+		getInventoryCountDraft
     }
 });

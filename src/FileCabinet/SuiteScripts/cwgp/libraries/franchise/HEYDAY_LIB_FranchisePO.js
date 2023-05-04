@@ -357,21 +357,29 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         mrTask.params = {custscript_cwgp_iclines: JSON.stringify(arrPOSblFields)};
         //mrTask.deploymentId = custdeploy1;
         var mrTaskId = mrTask.submit();
-        /*arrPOSblFields.forEach((objPOBodyFields) => {
-            log.debug('objPOBodyFields', objPOBodyFields);
-            const recICLine = record.create({
-                type: 'customrecord_cwgp_franchise_tranline'
+        
+		//Clear Draft
+        if(objIABodyFields.custrecord_cwgp_fia_subtype == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: objIABodyFields.custrecord_cwgp_fia_operatorid,
+                values: {
+                    custrecord_cwgp_ricdraftstep: '',
+                    custrecord_cwgp_ricdraft: ''
+                     },
             });
-            
-            util.each(objPOBodyFields, (value,fieldId) => {
-                recICLine.setValue({
-                    fieldId: fieldId,
-                    value: value
-                });
+        }
+        else if(objIABodyFields.custrecord_cwgp_fia_subtype == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: objIABodyFields.custrecord_cwgp_fia_operatorid,
+                values: {
+                    custrecord_cwgp_bbicdraftstep: '',
+                    custrecord_cwgp_bbicdraft: ''
+                     },
             });
-            let recIcLineID = recICLine.save();
-            //log.debug('recIALineID', recIALineID);
-        });*/
+        }
+		
         return idIC;
     }
     
@@ -1125,11 +1133,14 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             }
 
             util.each(objUpdateLines, (value, fieldId) => {
-                recPO.setCurrentSublistValue({
-                    sublistId: 'item',
-                    fieldId: fieldId,
-                    value: value
-                });
+                if(fieldId != 'price'){
+                    recPO.setCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: fieldId,
+                        value: value
+                    });
+                }
+                
             });
 
             recPO.commitLine({ sublistId: 'item' });

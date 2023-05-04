@@ -340,6 +340,61 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         window.open(objFileURL);
     }
 
+    const loadInventoryCountDraft = (stUserId, stOperatorName, stAccessType, stSubsidiary, stLocation,stSubtype, stStep) => {
+        const objCreateIntPOUrl = ClientEPLib._CONFIG.RETAIL_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
+        let stCreateIntPOUrl = '';
+        if(stStep == 1){
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+                scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true
+                }
+            });
+        }
+        else{
+            let intAdjustmentAccount;
+            if(stSubtype=='Retail'){
+                intAdjustmentAccount = 972;
+            }
+            else if(stSubtype=='Backbar'){
+                intAdjustmentAccount = 973;
+            }
+            stCreateIntPOUrl = url.resolveScript({
+                deploymentId        : objCreateIntPOUrl.DEPLOY_ID,
+                scriptId            : objCreateIntPOUrl.SCRIPT_ID,
+                returnExternalUrl   : true,
+                params: {
+                    pageMode    : 'load',
+                    userId      : stUserId,
+                    accesstype  : stAccessType,
+                    rectype     : 'inventorycount',
+                    subtype     : stSubtype,
+                    step        : stStep,
+                    draft       : true,
+                    custpage_cwgp_userid      : stUserId,
+                    custpage_cwgp_operator: stOperatorName,
+                    custpage_cwgp_operatorhidden: stUserId,
+                    custpage_cwgp_adjustmentlocation: stLocation,
+                    custpage_cwgp_accesstype  : stAccessType,
+                    custpage_cwgp_rectype     : 'inventorycount',
+                    custpage_cwgp_adjustmentsubtype     : stSubtype,
+                    custpage_cwgp_subsidiary: stSubsidiary,
+                    custpage_cwgp_adjustmentaccount: intAdjustmentAccount
+                }
+            });
+        }
+        
+        window.location = stCreateIntPOUrl;
+    }
+
 
     return {
         pageInit,
@@ -349,6 +404,7 @@ define(['N/currentRecord','N/url', 'N/ui/dialog','../libraries/HEYDAY_LIB_Client
         toCreateTransaction,
         createInventoryAdjustment,
         createInventoryCount,
-        csvExport
+        csvExport,
+        loadInventoryCountDraft
     };
 });

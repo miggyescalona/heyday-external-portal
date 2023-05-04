@@ -21,11 +21,11 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
     const pageInit = (context) => {
 
         //jQuery("#custpage_inventoryadjustmentinventorycount_itemsrow0").hide();
-        //jQuery('.uir-list-row-cell listtext').attr('style','background-color: red!important');
+        jQuery('.uir-list-row-cell listtext').attr('style','background-color: red!important');
        // jQuery('#custpage_inventoryadjustmentinventorycount_itemsrow0').attr('style','background-color: red!important');
         //jQuery('.custpage_inventoryadjustmentinventorycount_itemsrow0>*').attr('style','background-color: red');
         // jQuery('#uir-list-row-cell listtext').attr('style', 'color: blue !important');
-       // console.log(window.location.href);
+        console.log(window.location.href);
         
         if(!window.location.href.endsWith("scriptlet.nl")){
             ClientEPLib.getAuthenticationScript();
@@ -76,9 +76,9 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
         if(stRecType == 'inventorycount' && stPageMode == 'create'){
             const intICLineCount = currentRecord.getLineCount('custpage_inventoryadjustmentinventorycount_items');
-            if(intICLineCount == 0){
-                alert('You cannot save a submit without adding at least one line.');
-                return false;
+            if(intICLineCount == 0 && stStep == '3'){
+                alert('Inventory Count Completed! No discrepancies on Items during Inventory Count');
+                //return false;
             }
             
 
@@ -1910,34 +1910,58 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 
             }
             else if(stStep == 2){
+                var inFirstCount = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_firstcount',
+                    line: i
+                }) || '';
                 var inSecondCount = rec.getSublistValue({
                     sublistId: stSublistName,
                     fieldId: 'custpage_cwgp_secondcount',
                     line: i
                 }) || '';
+                objDraft[stItem] = [inFirstCount,inSecondCount];
             }
             else if(stStep == 3){
-                var inSecondCount = rec.getSublistValue({
+                var inFirstCount = rec.getSublistValue({
                     sublistId: stSublistName,
-                    fieldId: 'custpage_cwgp_secondcount',
+                    fieldId: 'custpage_cwgp_enteredquantity',
                     line: i
                 }) || '';
+                var stAdjustmentReason = rec.getSublistValue({
+                    sublistId: stSublistName,
+                    fieldId: 'custpage_cwgp_adjustmentreason',
+                    line: i
+                }) || '';
+
+                objDraft[stItem] = [inFirstCount,stAdjustmentReason];
             }
         }
         var stSubType = rec.getValue({
             fieldId: 'custpage_cwgp_adjustmentsubtype'
         });
-        var userObj = runtime.getCurrentUser();
-        console.log('Internal ID of current user role: ' + userObj.role);
-        record.submitFields({
-            type: 'customrecord_cwgp_externalsl_creds',
-            id: parseInt(stOperator),
-            values: {
-                'custrecord_cwgp_icdraft': JSON.stringify(objDraft),
-                'custrecord_cwgp_icdraftstep': stStep,
-                'custrecord_cwgp_icdrafttype': stSubType
-            }
-        });
+
+        if(stSubType == 'Retail'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_ricdraftstep': stStep
+                }
+            });
+        }
+        else if(stSubType == 'Backbar'){
+            record.submitFields({
+                type: 'customrecord_cwgp_externalsl_creds',
+                id: parseInt(stOperator),
+                values: {
+                    'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
+                    'custrecord_cwgp_bbicdraftstep': stStep
+                }
+            });
+        }
+        
         }
         catch(e){
             console.error(e.message);
