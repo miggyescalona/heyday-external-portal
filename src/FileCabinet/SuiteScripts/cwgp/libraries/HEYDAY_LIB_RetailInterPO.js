@@ -167,8 +167,30 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
                 value: value
             });
         });
-        if(stRecType == 'inventorycount'){
+        if(objPOBodyFields.custbody_cwgp_adjustmentsubtype == 'Retail' || objPOBodyFields.custbody_cwgp_adjustmentsubtype == 'Backbar'){
             utilLib.createICLineBackupFile(objPOBodyFields.custbody_cwgp_externalportaloperator, 3, request);
+
+            //Clear Draft
+            if(objPOBodyFields.custbody_cwgp_adjustmentsubtype == 'Retail'){
+                record.submitFields({
+                    type: 'customrecord_cwgp_externalsl_creds',
+                    id: objPOBodyFields.custbody_cwgp_externalportaloperatorid,
+                    values: {
+                        custrecord_cwgp_ricdraftstep: '',
+                        custrecord_cwgp_ricdraft: ''
+                        },
+                });
+            }
+            else if(objPOBodyFields.custbody_cwgp_adjustmentsubtype == 'Backbar'){
+                record.submitFields({
+                    type: 'customrecord_cwgp_externalsl_creds',
+                    id: objPOBodyFields.custbody_cwgp_externalportaloperatorid,
+                    values: {
+                        custrecord_cwgp_bbicdraftstep: '',
+                        custrecord_cwgp_bbicdraft: ''
+                        },
+                });
+            }
         }
         
         const arrPOSblFields = mapInventoryAdjustmentSublistFields(request,stSubType);
@@ -447,6 +469,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
         const stDepartment = request.parameters.custpage_cwgp_department;
         const stAdjustmentSubType = request.parameters.custpage_cwgp_adjustmentsubtype;
         const stOperator = request.parameters.custpage_cwgp_operator;
+        const stOperatorId = request.parameters.custpage_cwgp_operatorhidden;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stSubTypeId = request.parameters.custpage_cwgp_adjustmentsubtypeid;
         let stTotalDiscrepancy = request.parameters.custpage_cwgp_totaldiscrepancy;
@@ -466,6 +489,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util','N/redirect','N/url','N/htt
             department: stDepartment,
             custbody_cwgp_adjustmentsubtype: stAdjustmentSubType,
             custbody_cwgp_externalportaloperator: stOperator,
+            custbody_cwgp_externalportaloperatorid: stOperatorId,
             custbody_cwgp_itemsummary: stTotalAdjustment,
            // custbody_cwgp_inventoryadjustmentsub: stSubTypeId,
             custbody_cwgp_totaldiscrepancy: stTotalDiscrepancy
