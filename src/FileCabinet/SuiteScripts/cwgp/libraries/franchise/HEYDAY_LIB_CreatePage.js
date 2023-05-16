@@ -1477,6 +1477,9 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             }
         });
 
+        //Search Bar
+        addSearchBar(form);
+
         //render sublist
         form.addSubtab({
             id: _CONFIG.TAB[stType],
@@ -1815,6 +1818,9 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
 
         });
 
+        //Search Bar
+        addSearchBar(form);
+
         
         //render sublist
         form.addSubtab({
@@ -2071,6 +2077,9 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             }*/
 
         });
+
+        //Search Bar
+        addSearchBar(form);
 
         //render sublist
         form.addSubtab({
@@ -2332,6 +2341,10 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             }*/
 
         });
+
+        //Search Bar
+        addSearchBar(form);
+
 
         //render sublist
         form.addSubtab({
@@ -3511,6 +3524,29 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
         var day = d.getDay();
         d.setDate(d.getDate() + n + (day === 6 ? 2 : +!day) + (Math.floor((n - 1 + (day % 6 || 1)) / 5) * 2));
         return d;
+    }
+
+    function addSearchBar(form){
+        let fldInlineHtm = form.addField({
+            id: 'custpage_inlinehtm',
+            label: 'Inline HTML',
+            type: serverWidget.FieldType.INLINEHTML,
+            source: null,
+            container: null
+        });
+        fldInlineHtm.defaultValue = ``;
+        fldInlineHtm.defaultValue += `<div id="find-div">`;
+        fldInlineHtm.defaultValue += `<input type="search" size="50" id="find-input"/>`;
+        fldInlineHtm.defaultValue += `<button id="find-button" class="search-button" type="button" onClick='findString(document.getElementById("find-input").value)'>&#x1F50D;</button>`;
+        fldInlineHtm.defaultValue += `</div>`;
+        fldInlineHtm.defaultValue += `<script>`;
+        fldInlineHtm.defaultValue += `function findString(text) { window.find(text); var arrElementRes = getElementsByText(text, 'tr');}`;
+        fldInlineHtm.defaultValue += `function getElementsByText(str, tag = 'a') { return Array.prototype.slice.call(document.getElementsByTagName(tag)).filter(el => el.textContent.trim() === str.trim());}`;
+        fldInlineHtm.defaultValue += `</script>`;
+        fldInlineHtm.defaultValue += `<style>`;
+        fldInlineHtm.defaultValue += `#find-div { position:fixed; right:0; bottom:0; z-index: 999; padding:5px; background-color: #878787; opacity: 0.7;}`;
+        fldInlineHtm.defaultValue += `</style>`;
+
     }
 
     const htmlCss = () => {

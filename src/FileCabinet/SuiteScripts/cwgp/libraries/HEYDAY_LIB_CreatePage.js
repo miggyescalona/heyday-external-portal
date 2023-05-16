@@ -574,7 +574,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         type: serverWidget.FieldType.SELECT,
                         label: 'Business Line',
                         displayType: 'hidden'
-                    },
+                    }
                 },    
                 itemreceipt: {
                     RECEIVE: {
@@ -1571,6 +1571,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
+        //Search Bar
+        addSearchBar(form);
+
         //render sublist
         form.addSubtab({
             id: _CONFIG.TAB[stType],
@@ -1587,6 +1590,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
+        log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, source, displayType } = objItemCols[stCol];
@@ -1783,6 +1787,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         const arrCols = Object.keys(objItemCols);
 
+        log.debug('arrCols',arrCols);
+
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory} = objItemCols[stCol];
 
@@ -1955,6 +1961,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stStep,
         });
 
+        log.debug('objDefaultValues',objDefaultValues);
+
        /* var fileObj2 = file.create({
             name: 'test3.txt',
             fileType: file.Type.PLAINTEXT,
@@ -2050,6 +2058,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             }
 
         });
+
+        //Search Bar
+        addSearchBar(form);
 
         
         //render sublist
@@ -2265,6 +2276,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stMemo
         });
 
+        log.debug('objDefaultValues',objDefaultValues);
+
         arrFlds.forEach((stCol) => {
             const {
                 id,
@@ -2333,6 +2346,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
+        //Search Bar
+        addSearchBar(form);
+
         
         //render sublist
         form.addSubtab({
@@ -2354,6 +2370,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
+
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
 
@@ -2545,6 +2564,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             stSubType
         });
 
+        log.debug('objDefaultValues',objDefaultValues);
+
         arrFlds.forEach((stCol) => {
             const {
                 id,
@@ -2613,6 +2634,9 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         });
 
+        //Search Bar
+        addSearchBar(form);
+
         
         //render sublist
         form.addSubtab({
@@ -2634,6 +2658,8 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
+
+        log.debug('arrCols',arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, displayType, source, mandatory, isInline, isHidden, isEntry} = objItemCols[stCol];
@@ -3688,6 +3714,29 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             custpage_cwgp_step: stStep
         }
     };
+    
+    function addSearchBar(form){
+        let fldInlineHtm = form.addField({
+            id: 'custpage_inlinehtm',
+            label: 'Inline HTML',
+            type: serverWidget.FieldType.INLINEHTML,
+            source: null,
+            container: null
+        });
+        fldInlineHtm.defaultValue = ``;
+        fldInlineHtm.defaultValue += `<div id="find-div">`;
+        fldInlineHtm.defaultValue += `<input type="search" size="50" id="find-input"/>`;
+        fldInlineHtm.defaultValue += `<button id="find-button" class="search-button" type="button" onClick='findString(document.getElementById("find-input").value)'>&#x1F50D;</button>`;
+        fldInlineHtm.defaultValue += `</div>`;
+        fldInlineHtm.defaultValue += `<script>`;
+        fldInlineHtm.defaultValue += `function findString(text) { window.find(text); var arrElementRes = getElementsByText(text, 'tr');}`;
+        fldInlineHtm.defaultValue += `function getElementsByText(str, tag = 'a') { return Array.prototype.slice.call(document.getElementsByTagName(tag)).filter(el => el.textContent.trim() === str.trim());}`;
+        fldInlineHtm.defaultValue += `</script>`;
+        fldInlineHtm.defaultValue += `<style>`;
+        fldInlineHtm.defaultValue += `#find-div { position:fixed; right:0; bottom:0; z-index: 999; padding:5px; background-color: #878787; opacity: 0.7;}`;
+        fldInlineHtm.defaultValue += `</style>`;
+
+    }
 
     const htmlCss = () => {
         const stHtmlCss = `<style>
