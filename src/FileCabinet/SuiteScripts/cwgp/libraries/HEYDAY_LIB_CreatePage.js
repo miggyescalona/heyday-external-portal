@@ -2158,10 +2158,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stLocation);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
 
         log.debug('form',form);
@@ -2453,10 +2454,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stLocation);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
 
         log.debug('form',form);
@@ -2744,10 +2746,11 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
 
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stLocation);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
 
         log.debug('form',form);
