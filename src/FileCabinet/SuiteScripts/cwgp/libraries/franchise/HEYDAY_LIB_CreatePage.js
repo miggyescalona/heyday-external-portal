@@ -1923,11 +1923,11 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
-        
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stCustomer);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
 
         response.writePage(form);
@@ -2186,10 +2186,11 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stCustomer);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
         response.writePage(form);
     };
@@ -2453,12 +2454,16 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
             label: 'Cancel',
             functionName: `back(${stUserId}, ${stAccessType}, 'inventorycount')`
         });
+        const arrCredentialList = utilLib.getInventoryCountDraftCredentialList(stAccessType,stCustomer);
+        log.debug('arrCredentialList', arrCredentialList);
+        log.debug('stAccessType', stAccessType);
         form.addButton({
             id: 'custpage_savedraft_button',
             label: 'Save as Draft',
-            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep})`
+            functionName: `saveDraftIC(${stUserId}, ${stAccessType} ,${stStep} ,`+JSON.stringify(arrCredentialList)+`)`
         });
         response.writePage(form);
+        
     };
 
     const populateFirstCountLines = (stCustomer,form,itemLines,stSubType,stDraft,stUserId) => {

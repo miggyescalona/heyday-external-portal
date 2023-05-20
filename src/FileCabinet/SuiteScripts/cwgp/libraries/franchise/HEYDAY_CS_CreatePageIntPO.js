@@ -503,7 +503,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                 });
 
                 //if(!stRoomNum || !stAssign || !dtDateTime || !stAdjustmentReason || !intQuantity){
-                if(!stItem || !stRoomNum || !stAdjustmentReason || !intQuantity){
+                if(!stItem || !stRoomNum || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -599,7 +599,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     })
                 });
 
-                if(!stAdjustmentReason || !stAdjustmentType || !intQuantity){
+                if(!stAdjustmentType || !intQuantity){
                     blEmptyFields.push(x+1);
                 }
 
@@ -1792,7 +1792,7 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
 
     const scanInputViaBtn = ClientEPLib.scanInputViaBtn;
 
-    const saveDraftIC = (stUserId, stAccessType, stStep) =>{
+    const saveDraftIC = (stUserId, stAccessType, stStep, arrCredentialList) =>{
         var options = {
 		    title: "Save as Draft",
 		    message: "Are you sure you want to Save this as Draft?"
@@ -1803,7 +1803,9 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         	if(result){
                 const currRec = currentRecord.get();
                 console.log('currRec '+currRec);
-                createICDraftFile(stUserId, stStep, currRec);
+                console.log('stUserId '+stUserId);
+                console.log('arrCredentialList '+arrCredentialList);
+                createICDraftFile(arrCredentialList, stStep, currRec);
                 console.log('redirect');
                 const objFranchiseUrl = ClientEPLib._CONFIG.FRANCHISE_PAGE[ClientEPLib._CONFIG.ENVIRONMENT]
         
@@ -1832,10 +1834,10 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
    
     };
 
-    const createICDraftFile = (stOperator, stStep, rec) => {
+    const createICDraftFile = (arrCredentialList, stStep, rec) => {
         try{
-        console.log(stOperator);
-        console.log(stStep);
+        console.log('arrCredentialList');
+        console.log(arrCredentialList);
         let objDraft = {};
         let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
 
@@ -1892,25 +1894,29 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         var stSubType = rec.getValue({
             fieldId: 'custpage_cwgp_adjustmentsubtype'
         });
-
+        console.log('stSubType '+stSubType);
         if(stSubType == 'Retail'){
-            record.submitFields({
-                type: 'customrecord_cwgp_externalsl_creds',
-                id: parseInt(stOperator),
-                values: {
-                    'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
-                    'custrecord_cwgp_ricdraftstep': stStep
-                }
+            arrCredentialList.forEach((id) => {
+                record.submitFields({
+                    type: 'customrecord_cwgp_externalsl_creds',
+                    id: parseInt(id),
+                    values: {
+                        'custrecord_cwgp_ricdraft': JSON.stringify(objDraft),
+                        'custrecord_cwgp_ricdraftstep': stStep
+                    }
+                });
             });
         }
         else if(stSubType == 'Backbar'){
-            record.submitFields({
-                type: 'customrecord_cwgp_externalsl_creds',
-                id: parseInt(stOperator),
-                values: {
-                    'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
-                    'custrecord_cwgp_bbicdraftstep': stStep
-                }
+            arrCredentialList.forEach((id) => {
+                record.submitFields({
+                    type: 'customrecord_cwgp_externalsl_creds',
+                    id: parseInt(id),
+                    values: {
+                        'custrecord_cwgp_bbicdraft': JSON.stringify(objDraft),
+                        'custrecord_cwgp_bbicdraftstep': stStep
+                    }
+                });
             });
         }
         
@@ -1919,7 +1925,6 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
             console.error(e.message);
         }
         
-
     };
 
     return {

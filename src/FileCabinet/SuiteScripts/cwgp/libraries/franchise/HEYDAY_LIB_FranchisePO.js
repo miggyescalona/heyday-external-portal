@@ -1077,10 +1077,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             fieldId: 'custbody_cwgp_modifiedbyfranchise',
             value: true
         });
-        recPO.setValue({
-            fieldId: 'custbody_cwgp_franchiseapprovalstatus',
-            value: 1
-        });
 
         const objPOEditBodyFields = objPOEditDetails.body;
         log.debug('objPOEditBodyFields', objPOEditBodyFields);

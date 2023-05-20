@@ -1984,6 +1984,39 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         return false;
     };
 
+    const getInventoryCountDraftCredentialList = (stAccessType,stLocation) => {
+        let arrCredentialList = [];
+        let filters = [];
+        if(stAccessType == '1'){//Franchise
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_customer',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+        else if(stAccessType == '2'){//Retail
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_location',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters: filters,
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each((result) => {
+            arrCredentialList.push(result.id);
+            return true;
+        });
+        
+        return arrCredentialList;
+    };
+
 
     
 
@@ -2013,6 +2046,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         setDeliverByDate,
         buildInventoryCountItemSearch,
         createICLineBackupFile,
-        getInventoryCountDraft
+        getInventoryCountDraft,
+        getInventoryCountDraftCredentialList
     }
 });
