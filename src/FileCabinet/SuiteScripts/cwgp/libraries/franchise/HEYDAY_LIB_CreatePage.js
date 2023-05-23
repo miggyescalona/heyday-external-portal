@@ -1196,7 +1196,7 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
                 DISCREPANCY: {
                     id: 'custpage_inventoryadjustmentinventorycount_discrepancy_grp',
                     label: 'Discrepancy'
-                },
+                }
             }
         },
         CLIENT_SCRIPT: '../franchise/HEYDAY_CS_CreatePageIntPO.js'
@@ -3532,26 +3532,28 @@ define(['N/ui/serverWidget', 'N/search','N/file' ,'./HEYDAY_LIB_Util.js', '../HE
     }
 
     function addSearchBar(form){
+
+        form.addFieldGroup({
+            id: 'custpage_inventoryadjustmentinventorycount_search_grp',
+            label: 'Item Search'
+        });
+
         let fldInlineHtm = form.addField({
             id: 'custpage_inlinehtm',
             label: 'Inline HTML',
             type: serverWidget.FieldType.INLINEHTML,
             source: null,
-            container: null
+            container: 'custpage_inventoryadjustmentinventorycount_search_grp'
         });
         fldInlineHtm.defaultValue = ``;
-        fldInlineHtm.defaultValue += `<div id="find-div">`;
-        fldInlineHtm.defaultValue += `<input type="search" size="50" id="find-input"/>`;
-        fldInlineHtm.defaultValue += `<button id="find-button" class="search-button" type="button" onClick='findString(document.getElementById("find-input").value)'>&#x1F50D;</button>`;
+        fldInlineHtm.defaultValue += `<div style="padding:5px;">`;
+        fldInlineHtm.defaultValue += `<input type="search" size="50" id="find-input"/>&nbsp;&nbsp;&nbsp;`;
+        fldInlineHtm.defaultValue += `<button id="find-button" class="search-button" type="button" onClick='findString(document.getElementById("find-input").value.trim())'>&#x1F50D;</button>`;
         fldInlineHtm.defaultValue += `</div>`;
         fldInlineHtm.defaultValue += `<script>`;
         fldInlineHtm.defaultValue += `function findString(text) { window.find(text); var arrElementRes = getElementsByText(text, 'tr');}`;
         fldInlineHtm.defaultValue += `function getElementsByText(str, tag = 'a') { return Array.prototype.slice.call(document.getElementsByTagName(tag)).filter(el => el.textContent.trim() === str.trim());}`;
         fldInlineHtm.defaultValue += `</script>`;
-        fldInlineHtm.defaultValue += `<style>`;
-        fldInlineHtm.defaultValue += `#find-div { position:fixed; right:0; bottom:0; z-index: 999; padding:5px; background-color: #878787; opacity: 0.7;}`;
-        fldInlineHtm.defaultValue += `</style>`;
-
     }
 
     const htmlCss = () => {
