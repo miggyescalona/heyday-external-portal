@@ -331,9 +331,21 @@ define(['N/url', 'N/ui/dialog', 'N/currentRecord', '../HEYDAY_LIB_ClientExternal
     const searchItemPerLocation = (stUserId, stAccessType, stType) => {
         let rec = currentRecord.get();
         let intPage = rec.getValue({ fieldId: 'custpage_cwgp_page' });
-        let dtAsOf = rec.getText({fieldId: 'custpage_cwgp_asof'});
-        let dtFrom = rec.getText({fieldId: 'custpage_cwgp_from'});
-		let dtTo = rec.getText({fieldId: 'custpage_cwgp_to'});
+
+        let dtAsOf = rec.getValue({ fieldId: 'custpage_cwgp_asof' });
+        dtAsOf = new Date(dtAsOf);
+        dtAsOf = (dtAsOf .getMonth() + 1) + "/" + dtAsOf.getDate() + "/" + dtAsOf.getFullYear();
+        console.log('dtAsOf', dtAsOf);
+
+        let dtFrom = rec.getValue({ fieldId: 'custpage_cwgp_from' });
+        dtFrom = new Date(dtFrom);
+        dtFrom = (dtFrom .getMonth() + 1) + "/" + dtFrom.getDate() + "/" + dtFrom.getFullYear();
+        console.log('dtFrom', dtFrom);
+
+        let dtTo = rec.getValue({ fieldId: 'custpage_cwgp_to' });
+        dtTo = new Date(dtTo);
+        dtTo = (dtTo.getMonth() + 1) + "/" + dtTo.getDate() + "/" + dtTo.getFullYear();
+        console.log('dtTo', dtTo);
     	let dtFromD = new Date(dtFrom);
 		let dtToD = new Date(dtTo);
         let params = {
