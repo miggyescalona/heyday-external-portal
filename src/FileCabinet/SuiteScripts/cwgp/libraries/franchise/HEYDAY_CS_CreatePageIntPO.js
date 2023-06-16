@@ -125,6 +125,11 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
                     }
                 }
 
+                var save = confirm("Are you sure you want to the next Page?\nClick OK to confirm.");
+    			if (!save) {
+    				return false;
+    			}
+
                 
             }
             else if(stStep == '3'){
@@ -1926,6 +1931,8 @@ define(['N/https', 'N/util', 'N/url', '../HEYDAY_LIB_ClientExternalPortal.js', '
         }
         
     };
+
+    
 
     return {
         pageInit,
