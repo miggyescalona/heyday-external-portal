@@ -1159,6 +1159,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'class' }),
                     search.createColumn({ name: 'custbody_cwgp_deliverbydate' }),
+                    search.createColumn({ name: 'custbody_cwgp_franchisetrackingnumbers' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -1173,6 +1174,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_sointercoid = result.getValue({ name: 'intercotransaction' });
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
                 objPO.body.custpage_cwgp_deliverbydate = result.getValue({ name: 'custbody_cwgp_deliverbydate' });
+                objPO.body.custpage_cwgp_trackingnumber = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_businessline: result.getValue({ name: 'class' }),

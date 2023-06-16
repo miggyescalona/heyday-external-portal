@@ -133,6 +133,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'PRIMARY',
                     displayType: 'inline',
                 },
+                TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_trackingnumber',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: 'Tracking Numbers',
+                    container: 'PRIMARY',
+                    displayType: 'inline',
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,

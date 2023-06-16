@@ -604,7 +604,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     search.createColumn({ name: 'custbody_cwgp_canreceive' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'amount' }),
-                    
+                    search.createColumn({ name: 'custbody_cwgp_franchisetrackingnumbers' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -621,6 +621,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
                 objPO.body.custpage_cwgp_status = result.getText({ name: 'custbody_cwgp_franchiseapprovalstatus' });
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
+                objPO.body.custpage_cwgp_trackingnumber = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
                 if(result.getValue({ name: 'custbody_cwgp_canreceive' })){
                     objPO.body.custpage_cwgp_forreceiving = 'T'
                 }
