@@ -216,6 +216,13 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                     label: 'Memo',
                     container: 'PRIMARY'
                 },
+                AMOUNT: {
+                    id: 'custpage_cwgp_amount',
+                    type: serverWidget.FieldType.CURRENCY,
+                    label: 'Amount',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
                 OPERATOR: {
                     id: 'custpage_cwgp_operator',
                     type: serverWidget.FieldType.TEXT,
@@ -371,11 +378,16 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
                         label: 'Received Quantity',
                         displayType: 'inline'
                     },
-                    /*RATE: {
+                    RATE: {
                         id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
+                        type: serverWidget.FieldType.CURRENCY,
                         label: 'Rate'
-                    },*/
+                    },
+                    AMOUNT: {
+                        id: 'custpage_cwgp_amount',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Amount'
+                    },
                 },
                 inventoryadjustment_damaged:{
                     INVENTORY_ADJUSTMENT: {
@@ -631,7 +643,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
 
         utilLib.setSublistValues(sbl, objPO);
 
-        form.addSubmitButton({ label: 'Save' });
+        form.addSubmitButton({ label: 'Submit' });
         
         form.addButton({
             id: 'custpage_back_button',
@@ -885,7 +897,7 @@ define(['N/ui/serverWidget', './HEYDAY_LIB_Util.js', './HEYDAY_LIB_ExternalPorta
         }
 
 
-        form.addSubmitButton({ label: 'Save' });
+        form.addSubmitButton({ label: 'Submit' });
         
         form.addButton({
             id: 'custpage_back_button',

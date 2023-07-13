@@ -136,6 +136,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     container: 'PRIMARY',
                     displayType: 'inline',
                 },
+				TRACKING_NUMBER: {
+                    id: 'custpage_cwgp_trackingnumber',
+                    type: serverWidget.FieldType.TEXTAREA,
+                    label: 'Tracking Numbers',
+                    container: 'PRIMARY',
+                    displayType: 'inline',
+                },
                 SUBSIDIARY: {
                     id: 'custpage_cwgp_subsidiary',
                     type: serverWidget.FieldType.SELECT,
@@ -196,6 +203,13 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                     id: 'custpage_cwgp_memomain',
                     type: serverWidget.FieldType.TEXT,
                     label: 'Memo',
+                    container: 'PRIMARY',
+                    displayType: 'inline'
+                },
+                AMOUNT: {
+                    id: 'custpage_cwgp_amount',
+                    type: serverWidget.FieldType.CURRENCY,
+                    label: 'Amount',
                     container: 'PRIMARY',
                     displayType: 'inline'
                 },
@@ -526,11 +540,16 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
                         type: serverWidget.FieldType.INTEGER,
                         label: 'Received Quantity'
                     },
-                    /*RATE: {
+                    RATE: {
                         id: 'custpage_cwgp_rate',
-                        type: serverWidget.FieldType.FLOAT,
+                        type: serverWidget.FieldType.CURRENCY,
                         label: 'Rate'
-                    },*/
+                    },
+                    AMOUNT: {
+                        id: 'custpage_cwgp_amount',
+                        type: serverWidget.FieldType.CURRENCY,
+                        label: 'Amount'
+                    },
                 },
                 inventoryadjustment_standard: {
                     ITEM: {
@@ -1014,7 +1033,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         }
         else{
             objPO.body.custpage_cwgp_forreceiving = 'No'
-        } 
+        }
         objPO.body.custpage_cwgp_pagemode = stPageMode;
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
@@ -1149,7 +1168,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objFldGrp = _CONFIG.FIELD_GROUP[stType];
 
         const arrFldGrp = Object.keys(objFldGrp);
-        log.debug('arrFldGrp', arrFldGrp);
 
         arrFldGrp.forEach((stCol) => {
             const { id, label } = objFldGrp[stCol];
@@ -1164,7 +1182,7 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        //log.debug('objPO', objPO);
+        log.debug('amount', objPO.body.custpage_cwgp_amount);
 
         let stDamageIAid = objPO.body.custpage_cwgp_damagediaid;
 
@@ -1172,7 +1190,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
         
 
         arrFlds.forEach((stCol) => {
@@ -1223,7 +1240,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
 
         const arrCols = Object.keys(objItemCols);
-        log.debug('arrCols', arrCols);
 
         arrCols.forEach((stCol) => {
             const { id, type, label, source, displayType } = objItemCols[stCol];
@@ -1247,8 +1263,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('ir id',stPoId);
         //utilLib.setSublistValues(sbl, objPO);
         let arrMapDamagedInventoryAdjustment = utilLib.mapDamagedInventoryAdjustment(stPoId);
-        log.debug('arrMapDamagedInventoryAdjustment',arrMapDamagedInventoryAdjustment.item)
-         log.debug('arrMapDamagedInventoryAdjustment length',arrMapDamagedInventoryAdjustment.item.length)
         ////render damaged sublist
         if(arrMapDamagedInventoryAdjustment.item.length>0){
             const stType = 'inventoryadjustment_damaged';
@@ -1270,7 +1284,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
             const objItemCols = _CONFIG.COLUMN.ITEMS[stType];
     
             const arrCols = Object.keys(objItemCols);
-            log.debug('arrCols', arrCols);
     
             arrCols.forEach((stCol) => {
                 const { id, type, label, source, displayType, dsiplaySize } = objItemCols[stCol];
@@ -1293,8 +1306,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         }
         
         let arrMapItemReceiptVariance = utilLib.mapItemReceiptVariance(stPoId);
-        log.debug('mapItemReceiptVariance',arrMapItemReceiptVariance)
-         log.debug('mapItemReceiptVariance length',arrMapItemReceiptVariance.length)
         ////render damaged sublist
         if(arrMapItemReceiptVariance.item.length>0){
             const stType = 'inventoryadjustment_variance';
@@ -1371,7 +1382,37 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         log.debug('stPoId',stPoId);
         let stSubType = search.lookupFields({type: search.Type.INVENTORY_ADJUSTMENT,id:stPoId, columns: ['custbody_cwgp_adjustmentsubtype']});
         stSubType = stSubType.custbody_cwgp_adjustmentsubtype;
-        stSubType = stSubType.toLowerCase();
+		log.debug('stSubType',stSubType);
+	
+        let stAdjustmentType = '';
+        switch (stSubType) {
+            case 'standard':
+                stAdjustmentType = 'Standard';
+                break;
+            case 'backbar':
+                stAdjustmentType = 'Backbar';
+                break;
+            case 'damagetestertheft':
+                stAdjustmentType = 'Damage/Tester/Theft'
+                break;
+            case 'damage':
+                stAdjustmentType = 'Damage'
+                break;
+            case 'tester':
+                stAdjustmentType = 'Tester'
+                break;
+            case 'theft':
+                stAdjustmentType = 'Theft'
+                break;
+            default:
+                stAdjustmentType = 'Standard'
+        }
+
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
+            stSubType = 'damagetestertheft';
+        }
+
+
         log.debug('before',stType+'_'+stSubType);
         if(!stSubType){
             stSubType = 'standard'
@@ -1400,8 +1441,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         objPO.body.custpage_cwgp_userid = stUserId;
         objPO.body.custpage_cwgp_accesstype = stAccessType
         objPO.body.custpage_cwgp_htmlcss = htmlCss();
-        let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
-        objPO.body.custpage_cwgp_adjustmenttype = subType;
+        //let subType = stSubType == 'standard' ? 'Standard' : stSubType == 'backbar' ? 'Backbar' : stSubType == 'damagetestertheft' ? 'Damage/Tester/Theft' : 'Inventoy Count'
+        objPO.body.custpage_cwgp_adjustmenttype = stAdjustmentType;
         
         //log.debug('objPO', objPO);
 
@@ -1409,7 +1450,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js'], (serverWidget,
         const objBodyFields = _CONFIG.FIELD[stType];
 
         const arrFlds = Object.keys(objBodyFields);
-        log.debug('arrFlds', arrFlds)
         
 
         arrFlds.forEach((stCol) => {

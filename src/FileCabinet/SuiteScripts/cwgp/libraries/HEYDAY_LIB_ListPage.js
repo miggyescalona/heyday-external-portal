@@ -53,6 +53,11 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                         type: serverWidget.FieldType.TEXT,
                         label: 'Transaction No'
                     },
+                    AMS_TRACKING_NUMBER: {
+                        id: 'custpage_cwgp_sointercoid',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'AMS PO#'
+                    },
                     DATE: {
                         id: 'custpage_cwgp_trandate',
                         type: serverWidget.FieldType.TEXT,
@@ -68,10 +73,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                         type: serverWidget.FieldType.TEXT,
                         label: 'For Receiving'
                     },
-                    AMS_TRACKING_NUMBER: {
-                        id: 'custpage_cwgp_sointercoid',
+                    TRACKING_NUMBERS: {
+                        id: 'custpage_cwgp_trackingnumbers',
                         type: serverWidget.FieldType.TEXT,
-                        label: 'AMS Tracking Number'
+                        label: 'Tracking Numbers'
                     },
                     OPERATOR: {
                         id: 'custpage_cwgp_operator',
@@ -915,8 +920,8 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             dtTo
         });
 
-        log.debug('arrValues1',arrValues);
-
+        //log.debug('arrValues1',arrValues);
+		//log.debug('objOperator',objOperator);
         let objFileURL  = csvExport(arrValues);
         objFileURL = JSON.stringify(objFileURL);
 
@@ -941,10 +946,10 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
             }
 
             var csvFile = file.create({
-				name: 'retail_'+objOperator[0].stOperator+'_'+new Date().toString(),
+				name: 'retail_'+objOperator[0].stOperator+'_'+new Date().toISOString().replace(/(\.\d{3})|[^\d]/g,''),
 				fileType: file.Type.CSV,
 				contents: csvContents,
-				folder: 929
+				folder: 1396
 			});
 
             csvFile.isOnline = true;
@@ -1235,8 +1240,6 @@ define(['N/ui/serverWidget', 'N/search', './HEYDAY_LIB_Util.js', 'N/file','N/for
                 stApprovalStatus,
                 blItermPerLocTotal
             });
-            log.debug('arrListValues[0]', arrListValues[0]);
-            log.debug('arrListValues[1]', arrListValues[1]);
 
 
             if(!blItermPerLocTotal){

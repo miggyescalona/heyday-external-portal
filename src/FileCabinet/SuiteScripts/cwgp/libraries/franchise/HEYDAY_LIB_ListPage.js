@@ -65,6 +65,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
                         label: 'For Receiving',
                         displayType: 'inline'
                     },
+                    TRACKING_NUMBERS: {
+                        id: 'custpage_cwgp_trackingnumbers',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Tracking Numbers'
+                    },
                     OPERATOR: {
                         id: 'custpage_cwgp_operator',
                         type: serverWidget.FieldType.TEXT,
@@ -824,10 +829,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             }
 
             var csvFile = file.create({
-				name: 'franchise_'+objOperator[0].stOperator+'_'+new Date().toString(),
+				name: 'franchise_'+objOperator[0].stOperator+'_'+new Date().toISOString().replace(/(\.\d{3})|[^\d]/g,''),
 				fileType: file.Type.CSV,
 				contents: csvContents,
-				folder: 929
+				folder: 1396
 			});
 
             csvFile.isOnline = true;
@@ -847,11 +852,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/format','N/file', './HEYDAY_LIB_Util
             functionName:`searchItemPerLocation(${stUserId}, ${stAccessType}, 'itemperlocation')`
         });
 
-        /*form.addButton({
+        form.addButton({
             id: 'custpage_export_button',
             label: 'Export',
             functionName: 'csvExport('+objFileURL+')'
-        });*/
+        });
 
         form.addButton({
             id: 'custpage_back_button',

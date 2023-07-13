@@ -310,8 +310,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util'], (search, record, format, 
                 }
             }
 
-            log.debug('intIndexOfItemFound', intIndexOfItemFound);
-
             if (intIndexOfItemFound == -1) {
                 arrColFieldsToRemove.push(arrPoRecordSblFields[intPOIndex]);
                 arrPoRecordSblFields.splice(intPOIndex, 1);

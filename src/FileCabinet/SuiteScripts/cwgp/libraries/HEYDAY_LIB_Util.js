@@ -185,6 +185,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     type: serverWidget.FieldType.TEXT,
                     label: 'Type'
                 },
+                TRACKING_NUMBERS: {
+                    id: 'custpage_cwgp_trackingnumbers',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Tracking Numbers'
+                },
             }
         },
         SCRIPT:{
@@ -245,7 +250,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 intPairedIntercoIds.push(stPairedIntercoId);
             }
             const stStatusRef = result.getValue({ name: 'statusref' });
-            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stDateCreated = result.getValue({ name: 'trandate' });
+            let stTrackingNumbers = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
+            if(stTrackingNumbers.length > 300){
+                stTrackingNumbers = stTrackingNumbers.slice(0, 300);
+            }
             const stStatus = result.getText({ name: 'approvalstatus' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
@@ -259,7 +268,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
                 [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus,
                 [_CONFIG.COLUMN.LIST.PO_STATUSREF.id]: stStatusRef,
-                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator
+                [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
+                [_CONFIG.COLUMN.LIST.TRACKING_NUMBERS.id]: stTrackingNumbers,
             });
         });
 
@@ -361,7 +371,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let arrMapItemReceipt= [];
 
         arrPagedData.forEach((result, index) => {
-            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stDateCreated = result.getValue({ name: 'trandate' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stCreatedFrom = result.getText({ name: 'createdfrom' });
             const stID = result.id;
@@ -394,7 +404,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let arrMapInventoryAdjustment= [];
 
         arrPagedData.forEach((result, index) => {
-            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stDateCreated = result.getValue({ name: 'trandate' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
@@ -406,7 +416,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
                 [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
-                [_CONFIG.COLUMN.LIST.ADJUSTMENT_TYPE.id]: stAdjustmentType == 'backbar' ? 'Backbar' : stAdjustmentType == 'standard' ? 'Standard' : 'Damage/Tester/Theft'
+                [_CONFIG.COLUMN.LIST.ADJUSTMENT_TYPE.id]: stAdjustmentType == 'backbar' ? 'Backbar' : stAdjustmentType == 'standard' ? 'Standard' : stAdjustmentType == 'damage' ? 'Damage': stAdjustmentType == 'tester' ? 'Tester': stAdjustmentType == 'theft' ? 'Theft': 'Damage/Tester/Theft'
             })
         });
 
@@ -427,7 +437,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         let arrMapInventoryAdjustment= [];
 
         arrPagedData.forEach((result, index) => {
-            const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stDateCreated = result.getValue({ name: 'trandate' });
             const stTranId = result.getValue({ name: 'tranid' });
             const stID = result.id;
             const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
@@ -447,11 +457,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
 
     const mapItemPerLocation = (stUserId, stAccessType, arrPagedData, blForReceiving,stApprovalStatus,arrPagedQoH,arrPagedDataExport,arrPagedDataQoHExport) => {
-        log.debug('mapItemPerLocation');
+        /*log.debug('mapItemPerLocation');
         log.debug('mapItemPerLocation arrPagedData', arrPagedData); 
         log.debug('mapItemPerLocation arrPagedQoH', arrPagedQoH);
         log.debug('mapItemPerLocation arrPagedDataExport', arrPagedDataExport);
-        log.debug('mapItemPerLocation arrPagedDataQoHExport', arrPagedDataQoHExport);
+        log.debug('mapItemPerLocation arrPagedDataQoHExport', arrPagedDataQoHExport);*/
         let arrMapItemperLocation = [];
         let arrMapItemperLocationCSV = [];
         let arrMapItemQoH = [];
@@ -678,9 +688,25 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
            
             let tempEstCostPerUnit = 0;
             itemSearchObj.run().each(function(result){
-                arrFinalItemPerLocation[index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+				
+				let indexx = arrFinalItemPerLocation.findIndex(x => x.custpage_cwgp_name == result.getValue(result.columns[0]));
+				
+				if(indexx != -1){
+					arrFinalItemPerLocation[indexx]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+					tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
+					arrFinalItemPerLocation[indexx]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[indexx]['custpage_cwgp_onhand'])).toFixed(2);
+				}
+				
+				//log.debug('result',result);
+                /*arrFinalItemPerLocation[index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
                 tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
                 arrFinalItemPerLocation[index]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[index]['custpage_cwgp_onhand'])).toFixed(2);
+				if(result.id == '1438'){
+					log.debug('result',result);
+					let indexx = arrFinalItemPerLocation.findIndex(x => x.custpage_cwgp_name ==="Alchimie Forever Purifying Gel Cleanser 6.6 oz");
+					log.debug('indexx',indexx);
+					//log.debug('arrFinalItemPerLocation[index]',arrFinalItemPerLocation[index]);
+				}*/
                 index++;
                 return true;
             });
@@ -714,10 +740,19 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
            
             let tempEstCostPerUnit = 0;
             itemSearchObj.run().each(function(result){
-                arrFinalItemPerLocationCSV [index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+				
+				let indexx = arrFinalItemPerLocation.findIndex(x => x.custpage_cwgp_name == result.getValue(result.columns[0]));
+				
+				if(indexx != -1){
+					arrFinalItemPerLocation[indexx]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
+					tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
+					arrFinalItemPerLocation[indexx]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[indexx]['custpage_cwgp_onhand'])).toFixed(2);
+				}
+				
+                /*arrFinalItemPerLocationCSV [index]['custpage_cwgp_estimatedcostperunit'] = result.getValue(result.columns[1]) || 0.00;
                 tempEstCostPerUnit= result.getValue(result.columns[1]) || 0;
                 arrFinalItemPerLocationCSV [index]['custpage_cwgp_totalestimatedvalue'] = (parseFloat(tempEstCostPerUnit)*parseFloat(arrFinalItemPerLocation[index]['custpage_cwgp_onhand'])).toFixed(2);
-                index++;
+                index++;*/
                 return true;
             });
         }
@@ -733,8 +768,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         // Save the file
         fileObj.save();*/
 
+        log.debug('arrItemList',arrItemList);
         log.debug('arrFinalItemPerLocation',arrFinalItemPerLocation);
-        log.debug('arrFinalItemPerLocationCSV',arrFinalItemPerLocationCSV);
 
         return [arrFinalItemPerLocation,arrFinalItemPerLocationCSV];
     };
@@ -1190,8 +1225,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             return true;
         });
 
-        log.debug('objDamagedIA',objIA);
-
         return objIA;
     };
 
@@ -1253,8 +1286,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             return true;
         });
 
-        log.debug('objDamagedIA',objIA);
-
         return objIA;
     };
 
@@ -1295,6 +1326,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'class' }),
                     search.createColumn({ name: 'custbody_cwgp_deliverbydate' }),
+					search.createColumn({ name: 'custbody_cwgp_franchisetrackingnumbers' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -1309,6 +1341,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 objPO.body.custpage_cwgp_sointercoid = result.getValue({ name: 'intercotransaction' });
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
                 objPO.body.custpage_cwgp_deliverbydate = result.getValue({ name: 'custbody_cwgp_deliverbydate' });
+				objPO.body.custpage_cwgp_trackingnumber = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
             } else {
                 objPO.item.push({
                     custpage_cwgp_businessline: result.getValue({ name: 'class' }),
@@ -1353,10 +1386,22 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.body.custpage_cwgp_sointercoid = intInterco.intercotransaction; 
         objPO.body.custpage_cwgp_damagediaid = objItemReceipt.getValue('custbody_cwgp_damagediaid');
         objPO.body.custpage_cwgp_operator = objItemReceipt.getValue('custbody_cwgp_externalportaloperator');
-
+        objPO.body.custpage_cwgp_amount = 0;
         const intLineCount = objItemReceipt.getLineCount('item');
 
         for(var x = 0; x < intLineCount; x++){
+            let flRate = objItemReceipt.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'rate',
+                line: x
+            });
+            let flQty = parseInt(objItemReceipt.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'quantity',
+                line: x
+            })).toFixed(0);
+            log.debug('amount', flRate*flQty);
+            objPO.body.custpage_cwgp_amount += flRate*flQty;
             objPO.item.push({
                 custpage_cwgp_itemid: objItemReceipt.getSublistValue({
                     sublistId: 'item',
@@ -1398,16 +1443,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'quantityremaining',
                     line: x
                 })).toFixed(0),
-                custpage_cwgp_quantity: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'quantity',
-                    line: x
-                })).toFixed(0),
-                custpage_cwgp_rate: objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'rate',
-                    line: x
-                }),
+                custpage_cwgp_quantity: flQty,
+                custpage_cwgp_rate: flRate,
+                custpage_cwgp_amount: flRate * flQty,
                 custpage_cwgp_internalsku: objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_hiddeninternalsku',
@@ -1420,8 +1458,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 })
             });
         }
-
-        log.debug('mapItemReceiptValues',objPO)
         return objPO;
     };
 
@@ -1437,7 +1473,20 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
             toType: 'itemreceipt',
         });
 
-        let objPOQuantity = getPOQuantity(stPoId)
+        let objPOQuantity = getPOQuantity(stPoId);
+        const objPurchaseOrder = record.load({
+    	    type: record.Type.PURCHASE_ORDER,
+    	    id: stPoId
+    	});
+
+        const stSoId =  objPurchaseOrder.getValue({fieldId: 'intercotransaction'});
+        let objSalesOrder = {};
+        if(stSoId){
+            objSalesOrder = record.load({
+                type: record.Type.SALES_ORDER,
+                id: stSoId
+            });
+        }
 
         objPO.body.custpage_cwgp_vendor = objItemReceipt.getText('entity');
         objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue('memo');
@@ -1451,6 +1500,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         const intLineCount = objItemReceipt.getLineCount('item');
 
         for(var x = 0; x < intLineCount; x++){
+            let flRate = objItemReceipt.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'rate',
+                line: x
+            });
+            let flShippedQty = parseInt(objItemReceipt.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'onhand',
+                line: x
+            })).toFixed(0);
+            let flRemainingdQty = parseInt(flShippedQty - objSalesOrder.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'quantityfulfilled',
+                line: x
+            })).toFixed(0);
             objPO.item.push({
                 custpage_cwgp_itemid: objItemReceipt.getSublistValue({
                     sublistId: 'item',
@@ -1487,16 +1551,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'class',
                     line: x
                 }),
-                custpage_cwgp_shippedquantity: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'custcol_cwgp_shippedquantity',
-                    line: x
-                })).toFixed(0),
-                custpage_cwgp_shippedquantityhidden: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'custcol_cwgp_shippedquantity',
-                    line: x
-                })).toFixed(0),
+                custpage_cwgp_shippedquantity: flShippedQty,
+                custpage_cwgp_shippedquantityhidden: flShippedQty,
                 custpage_cwgp_startingquantity: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'onhand',
@@ -1507,16 +1563,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                     fieldId: 'onhand',
                     line: x
                 })).toFixed(0),
-                custpage_cwgp_quantityremaining: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'quantityremaining',
-                    line: x
-                })).toFixed(0),
-                custpage_cwgp_quantityremaininghidden: parseInt(objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'quantityremaining',
-                    line: x
-                })).toFixed(0),
+                custpage_cwgp_quantityremaining: flRemainingdQty,
+                custpage_cwgp_quantityremaininghidden: flRemainingdQty,
                 custpage_cwgp_variance: parseInt(objItemReceipt.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_cwgp_shippedquantity',
@@ -1524,12 +1572,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 })).toFixed(0),
                 custpage_cwgp_quantity: 0,
                 custpage_cwgp_damagedquantity: 0,
-                custpage_cwgp_rate: objItemReceipt.getSublistValue({
-                    sublistId: 'item',
-                    fieldId: 'rate',
-                    line: x
-                }),
-                
+                custpage_cwgp_rate: flRate,
+                custpage_cwgp_amount: flRate * flShippedQty,
                 
             });
         }
@@ -1753,8 +1797,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
     const setSublistValues = (sbl, objPO, stType) => {
         const arrListValues = stType == 'inventorycount' ? objPO : objPO.item;
-        log.debug('arrListValues', arrListValues);
-        log.debug('sbl',sbl);
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
@@ -1771,6 +1813,17 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                         id: fieldId,
                         line: i,
                         value: parseInt(tempVal).toFixed(0)
+                    });
+                }
+                else if(fieldId == 'custpage_cwgp_rate' || fieldId == 'custpage_cwgp_rate'){
+                    if(value == ''){
+                        value = 0;
+                    }
+
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value
                     });
                 }
                 else{
@@ -1810,7 +1863,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
                 [
                     search.createColumn({ name: 'approvalstatus' }),
                     search.createColumn({ name: 'intercotransaction' }),
-                    search.createColumn({ name: 'statusRef' }),
+                    search.createColumn({ name: 'statusRef' })
                 ]
         }).run().each((result) => {
             stApprovalStatus = result.getText({ name: 'approvalstatus' });
@@ -1839,7 +1892,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         objPO.stApprovalStatus = stApprovalStatus;
         objPO.stPairedIntercoStatus = stPairedIntercoStatus;
         objPO.stDocumentStatus = stDocumentStatus;
-
         return objPO;
     };
 
@@ -1878,8 +1930,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
 
         objPO.intId = intId;
         objPO.intQuantity = intQuantity;
-
-        log.debug('getPOQuantity',objPO);
         return objPO;
     };
 
@@ -1949,108 +1999,116 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
     };
 
     const createICLineBackupFile = (stOperator, stStep,rec) => {
+		
+		try{
+			
+			let headers = 'Item,UPC,SKU,First Count';
+			let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+			//var d = new Date().toLocaleDateString();
+			var d = getTimeStamp();
+			var csvFile = file.create({
+				name: stOperator+'_step'+stStep+'_'+d+'.csv',
+				fileType: file.Type.CSV,
+				//contents: lines,
+				folder: 895
+			});
 
-        let headers = 'Item,UPC,SKU,First Count';
-        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
-        //var d = new Date().toLocaleDateString();
-        var d = getTimeStamp();
-        var csvFile = file.create({
-            name: stOperator+'_step'+stStep+'_'+d+'.csv',
-            fileType: file.Type.CSV,
-            //contents: lines,
-            folder: 821
-        });
+			if(stStep == 1){
+				csvFile.appendLine({
+					value: headers
+				});
+				
+			}
+			else if(stStep == 2){
+				csvFile.appendLine({
+					value: headers+',Second Count'
+				});
+			}
+			else if(stStep == 3){
+				csvFile.appendLine({
+					value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
+				});
+			}
 
-        if(stStep == 1){
-            csvFile.appendLine({
-                value: headers
-            });
-            
+			var numLines = rec.getLineCount({
+				group: stSublistName
+			});
+			log.debug('numLines', numLines);
+			for(var i=0; i<numLines; i++){
+				var line = '';
+				var stItem = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_item',
+					line: i
+				});
+				line += stItem+',';
+				var stUpc = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_upccode',
+					line: i
+				});
+				line += stUpc+',';
+				var stSku = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_internalsku',
+					line: i
+				});
+				line += stSku+',';
+				var inFirstCount = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_firstcount',
+					line: i
+				}) || '';
+				line += inFirstCount;
+				
+				if(stStep == 2 || stStep == 3){
+					var inSecondCount = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_secondcount',
+						line: i
+					}) || '';
+					line += ','+inSecondCount;
+				}
+				if(stStep == 3){
+					var inEnteredQty = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_enteredquantity',
+						line: i
+					}) || 0;
+					line += ','+inEnteredQty;
+					var inStartingQty = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_qtyonhand',
+						line: i
+					});
+					line += ','+inStartingQty;
+					var inDiscrepancy = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_discrepancy',
+						line: i
+					});
+					line += ','+inDiscrepancy;
+					var stAdjustmentReason = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_adjustmentreason',
+						line: i
+					}) || '';
+					line += ','+stAdjustmentReason;
+				}
+				
+				csvFile.appendLine({
+					value: line
+				});
+			}
+
+			var fileId = csvFile.save();
+			
+		}
+		catch(e){
+            log.error('createICLineBackupFile Error', e)
         }
-        else if(stStep == 2){
-            csvFile.appendLine({
-                value: headers+',Second Count'
-            });
-        }
-        else if(stStep == 3){
-            csvFile.appendLine({
-                value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
-            });
-        }
 
-        var numLines = rec.getLineCount({
-            group: stSublistName
-        });
-        log.debug('numLines', numLines);
-        for(var i=0; i<numLines; i++){
-            var line = '';
-            var stItem = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_item',
-                line: i
-            });
-            line += stItem+',';
-            var stUpc = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_upccode',
-                line: i
-            });
-            line += stUpc+',';
-            var stSku = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_internalsku',
-                line: i
-            });
-            line += stSku+',';
-            var inFirstCount = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_firstcount',
-                line: i
-            }) || '';
-            line += inFirstCount;
-            
-            if(stStep == 2 || stStep == 3){
-                var inSecondCount = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_secondcount',
-                    line: i
-                }) || '';
-                line += ','+inSecondCount;
-            }
-            if(stStep == 3){
-                var inEnteredQty = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_enteredquantity',
-                    line: i
-                }) || 0;
-                line += ','+inEnteredQty;
-                var inStartingQty = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_qtyonhand',
-                    line: i
-                });
-                line += ','+inStartingQty;
-                var inDiscrepancy = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_discrepancy',
-                    line: i
-                });
-                line += ','+inDiscrepancy;
-                var stAdjustmentReason = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_adjustmentreason',
-                    line: i
-                }) || '';
-                line += ','+stAdjustmentReason;
-            }
-            
-            csvFile.appendLine({
-                value: line
-            });
-        }
-
-        var fileId = csvFile.save();
-
+        
     };
 
     const getTimeStamp = () => {
@@ -2119,6 +2177,39 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         
         return false;
     };
+	
+	const getInventoryCountDraftCredentialList = (stAccessType,stLocation) => {
+        let arrCredentialList = [];
+        let filters = [];
+        if(stAccessType == '1'){//Franchise
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_customer',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+        else if(stAccessType == '2'){//Retail
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_location',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters: filters,
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each((result) => {
+            arrCredentialList.push(result.id);
+            return true;
+        });
+        
+        return arrCredentialList;
+    };
 
 
     
@@ -2149,6 +2240,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util','N/record', 'N/url', './HEYDAY
         setDeliverByDate,
         buildInventoryCountItemSearch,
         createICLineBackupFile,
-		getInventoryCountDraft
+		getInventoryCountDraft,
+		getInventoryCountDraftCredentialList
     }
 });

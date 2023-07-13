@@ -129,7 +129,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             });
             recIA.setValue({
                 fieldId: 'custrecord_cwgp_fia_subtype',
-                value: 'damagetestertheft'
+                value: 'damage'
             });
             
             recIA.setValue({
@@ -278,8 +278,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                     line: i
                 });
         		const newRemaining = remaining - qtyList[index];
-        		log.debug('remaining', remaining);
-        		log.debug('newRemaining', newRemaining);
         		recPO.setSublistValue({
         		    sublistId: 'item',
         		    fieldId: 'custcol_cwgp_remaining',
@@ -355,10 +353,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         var mrTask = task.create({taskType: task.TaskType.SCHEDULED_SCRIPT});
         mrTask.scriptId = 'customscript_cwgp_sc_createiclines';
         mrTask.params = {custscript_cwgp_iclines: JSON.stringify(arrPOSblFields)};
-        //mrTask.deploymentId = custdeploy1;
         var mrTaskId = mrTask.submit();
-        
-		//Clear Draft
+
+        //Clear Draft
         if(objIABodyFields.custrecord_cwgp_fia_subtype == 'Retail'){
             record.submitFields({
                 type: 'customrecord_cwgp_externalsl_creds',
@@ -379,7 +376,9 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                      },
             });
         }
-		
+        
+
+        
         return idIC;
     }
     
@@ -443,6 +442,16 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         const stOperator = request.parameters.custpage_cwgp_operator;
         const stTotalAdjustment = request.parameters.custpage_cwgp_totaladjustmenthidden;
         const stOperatorId = request.parameters.custpage_cwgp_userid;
+        let stAdjustmentSubTypeId = '';
+        if(stAdjustmentSubType == 'damage'){
+            stAdjustmentSubTypeId = 3;
+        }
+        else if(stAdjustmentSubType == 'tester'){
+            stAdjustmentSubTypeId = 4;
+        }
+        else if(stAdjustmentSubType == 'theft'){
+            stAdjustmentSubTypeId = 5;
+        }
         log.debug(' mapFranchiseIABodyFields', request.parameters);
         const objMapBodyFields = {
         	'custrecord_cwgp_fia_customer': stCustomer,
@@ -450,6 +459,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             'custrecord_cwgp_fia_memo': stMemoMain,
             'custrecord_cwgp_fia_operator': stMemoMain,
             'custrecord_cwgp_fia_subtype': stAdjustmentSubType,
+            'custrecord_cwgp_fia_adjustmenttype': stAdjustmentSubTypeId,
             'custrecord_cwgp_fia_operator': stOperator,
             'custrecord_cwgp_fia_operatorid': stOperatorId,
             'custrecord_cwgp_fia_itemsummary': stTotalAdjustment
@@ -614,7 +624,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                         name: 'custpage_cwgp_line',
                         line: i
                     }),
-                    'custrecord_cwgp_ftl_type' : 1
+                    'custrecord_cwgp_ftl_type' : 1,
+                    'custrecord_cwgp_ftl_rate': request.getSublistValue({
+                        group: 'custpage_itemreceipt_items',
+                        name: 'custpage_cwgp_rate',
+                        line: i
+                    })
                 })
         	}
             if(recieve =='T' && qtyDamaged > 0){
@@ -682,10 +697,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             'totalEstRepVal': flTotal
         });
 
-        log.debug('arrMapSblFields', arrMapSblFields);
+        /*log.debug('arrMapSblFields', arrMapSblFields);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
         log.debug('arrMapDamagedItems', arrMapDamagedItems);
-        log.debug('arrMapDamagedSummary', arrMapDamagedSummary);
+        log.debug('arrMapDamagedSummary', arrMapDamagedSummary);*/
         return [arrMapSblFields,arrMapDamagedItems,arrMapVariance,arrMapDamagedSummary];
     };
 
@@ -694,7 +709,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         let arrMapSblFields = [];
         const intLineCountStandard = request.getLineCount({ group: 'custpage_inventorayadjustment_items' });
 
-        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : 'custpage_inventoryadjustmentdamagetestertheft_items';
+        let subTypeSublist = stSubType == 'standard' ? 'custpage_inventorayadjustment_items' : stSubType == 'backbar' ? 'custpage_inventorayadjustmentbackbar_items' : stSubType == 'damage' ? 'custpage_inventoryadjustmentdamagetestertheft_items': stSubType == 'tester' ? 'custpage_inventoryadjustmentdamagetestertheft_items':stSubType == 'theft' ? 'custpage_inventoryadjustmentdamagetestertheft_items': '';
         log.debug('stSubType', stSubType);
         log.debug('subTypeSublist', subTypeSublist);
 
@@ -807,7 +822,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             }
         }
 
-        if(stSubType == 'damagetestertheft'){
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
             const intLineCountBackbar = request.getLineCount({ group: subTypeSublist });
             for (let i = 0; i < intLineCountBackbar; i++) {
                 let inAdjustQty = request.getSublistValue({
@@ -846,7 +861,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
     
             }
         }
-        log.debug('arrMapSblFields', arrMapSblFields)
         return arrMapSblFields;
     };
 
@@ -872,12 +886,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             if(!inEndingQty){
                 inEndingQty = 0;
             }
-            log.debug('i', i);
-            log.debug('inEndingQty', inEndingQty);
-            log.debug('inStartingQty', inStartingQty);
+            //log.debug('i', i);
+            //log.debug('inEndingQty', inEndingQty);
+            //log.debug('inStartingQty', inStartingQty);
             let inActualQty = 0;
             inActualQty = inEndingQty - inStartingQty;
-            log.debug('inActualQty', inActualQty);
+            //log.debug('inActualQty', inActualQty);
             arrMapSblFields.push({
                 'custrecord_cwgp_ftl_parentia': id,
                 'custrecord_cwgp_ftl_customer': stCustomer,
@@ -930,7 +944,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             
             
         }
-        log.debug('arrMapSblFields', arrMapSblFields)
         return arrMapSblFields;
     };
 
@@ -1067,16 +1080,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             fieldId: 'custbody_cwgp_modifiedbyfranchise',
             value: true
         });
-        recPO.setValue({
-            fieldId: 'custbody_cwgp_franchiseapprovalstatus',
-            value: 1
-        });
 
         const objPOEditBodyFields = objPOEditDetails.body;
         log.debug('objPOEditBodyFields', objPOEditBodyFields);
 
         const objPORecordBodyFields = objPORecordDetails.body;
-        log.debug('objPORecordBodyFields', objPORecordBodyFields);
+        log.debug('objPORecordBodyFields AA', objPORecordBodyFields);
 
         const objBodyFields = getBodyFieldsToUpdate(objPORecordBodyFields, objPOEditBodyFields);
 
@@ -1091,7 +1100,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         let arrPoRecordSblFields = objPORecordDetails.item;
 
         const objItemLines = getItemFieldsToUpdate(arrPoRecordSblFields, arrPOEditSblFields);
-        log.debug('objItemLines', objItemLines);
 
         const arrRemoveLines = objItemLines.removeLines;
         const arrUpdateLines = objItemLines.updateLines;
@@ -1113,15 +1121,11 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         });
 
         arrUpdateLines.forEach((objUpdateLines) => {
-            log.debug('updating lines...', 'updating lines...');
-            log.debug('objUpdateLines.item', objUpdateLines.item);
-
             const intUpdateIdx = recPO.findSublistLineWithValue({
                 sublistId: 'item',
                 fieldId: 'item',
                 value: objUpdateLines.item
             });
-            log.debug('intUpdateIdx', intUpdateIdx);
 
             if (intUpdateIdx != -1) {
                 recPO.selectLine({
@@ -1147,7 +1151,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         });
 
         const idPO = recPO.save();
-        log.debug('PO record is updated', idPO);
 
         return idPO;
     };
@@ -1222,7 +1225,8 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                     search.createColumn({ name: 'memo' }),
                     search.createColumn({ name: 'quantity' }),
                     search.createColumn({ name: 'rate' }),
-                    search.createColumn({ name: 'amount' })
+                    search.createColumn({ name: 'amount' }),
+                    search.createColumn({ name: 'shipdate' }),
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
@@ -1232,6 +1236,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                 objPO.body.trandate = new Date(result.getValue({ name: 'trandate' }));
                 objPO.body.memo = result.getValue({ name: 'memomain' });
                 objPO.body.location = result.getValue({ name: 'location' });
+                objPO.body.shipdate = new Date(result.getValue({ name: 'shipdate' }));
             } else {
                 objPO.item.push({
                     item: result.getValue({ name: 'item' }),
@@ -1255,6 +1260,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         const stEntity = objPORecordDetails.entity;
         const stMemoMain = objPORecordDetails.memo;
         const stLocation = objPORecordDetails.location;
+        const dtShipdate = objPORecordDetails.shipdate;
         
         log.debug('recPO details', `{
             date: ${stDate},
@@ -1264,7 +1270,7 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
         }`);
 
         //const { entity, memo, location } = objPOBodyFields;
-        const { entity, memo } = objPOBodyFields;
+        const { entity, memo, shipdate } = objPOBodyFields;
         let trandate = objPOBodyFields.trandate;
         trandate = format.format({ value: trandate, type: format.Type.DATETIMETZ });
 
@@ -1278,6 +1284,10 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
 
         if (stMemoMain != memo) {
             objBodyFldsToUpdate.memo = memo;
+        }
+
+        if (dtShipdate != shipdate) {
+            objBodyFldsToUpdate.shipdate = shipdate;
         }
 
         /*if (stLocation != location) {
@@ -1302,15 +1312,12 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
             const objPoRec = arrPoRecordSblFields[intPOIndex];
 
             const stPoRecItem = objPoRec.item;
-            log.debug('>>>>>> start <<<<<<<<<', '>>>>>> start <<<<<<<<<');
-            log.debug('stPoRecItem', stPoRecItem);
 
             let intIndexOfItemFound = -1;
 
             for (let intEditIndex = arrPOEditSblFields.length - 1; intEditIndex >= 0; intEditIndex--) {
                 const objPoEdit = arrPOEditSblFields[intEditIndex];
                 const stPoEditItem = objPoEdit.item;
-                log.debug('stPoEditItem', stPoEditItem);
 
                 if (stPoRecItem == stPoEditItem) {
                     intIndexOfItemFound = intEditIndex;
@@ -1318,8 +1325,6 @@ define(['N/search', 'N/record', 'N/format', 'N/util', 'N/task', './HEYDAY_LIB_Ut
                     break;
                 }
             }
-
-            log.debug('intIndexOfItemFound', intIndexOfItemFound);
 
             if (intIndexOfItemFound == -1) {
                 arrColFieldsToRemove.push(arrPoRecordSblFields[intPOIndex]);
