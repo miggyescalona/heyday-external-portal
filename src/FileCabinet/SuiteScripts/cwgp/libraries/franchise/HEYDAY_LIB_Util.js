@@ -11,7 +11,7 @@
  * @NModuleScope Public
  */
 
-define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/format', 'N/file', '../HEYDAY_LIB_ExternalPortal'], (serverWidget, search, util, record, url, format, file, EPLib) => {
+define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/format', 'N/file', '../HEYDAY_LIB_ExternalPortal', 'N/runtime'], (serverWidget, search, util, record, url, format, file, EPLib,runtime) => {
     const _CONFIG = {
         COLUMN: {
             LIST: {
@@ -110,6 +110,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     type: serverWidget.FieldType.CURRENCY,
                     label: 'Total Estimated Value',
                 },
+                TRACKING_NUMBERS: {
+                    id: 'custpage_cwgp_trackingnumbers',
+                    type: serverWidget.FieldType.TEXT,
+                    label: 'Tracking Numbers'
+                },
 
             }
         },
@@ -156,6 +161,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         
         arrPagedData.forEach((result, index) => {
             const stDateCreated = result.getValue({ name: 'datecreated' });
+            const stTrandate = result.getValue({ name: 'trandate' });
+            let stTrackingNumbers = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
+            if(stTrackingNumbers.length > 300){
+                stTrackingNumbers = stTrackingNumbers.slice(0, 300);
+            }
             const stStatus = result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' });
             const stReceivable = result.getValue({ name: 'custbody_cwgp_canreceive' });
             const stOperator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
@@ -173,10 +183,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             
             arrMapIntercompanyPO.push({
                 [_CONFIG.COLUMN.LIST.TRAN_NO.id]: stViewLink,
-                [_CONFIG.COLUMN.LIST.DATE.id]: stDateCreated,
+                [_CONFIG.COLUMN.LIST.DATE.id]: stTrandate,
                 [_CONFIG.COLUMN.LIST.STATUS.id]: stStatus,
                 [_CONFIG.COLUMN.LIST.FOR_RECEiVING.id]: stForReceiving,
                 [_CONFIG.COLUMN.LIST.OPERATOR.id]: stOperator,
+                [_CONFIG.COLUMN.LIST.TRACKING_NUMBERS.id]: stTrackingNumbers,
             })
         });
         return [arrMapIntercompanyPO,null];
@@ -235,13 +246,21 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             switch (stSubtype) {
                 case 'standard':
                     stType = 'Standard';
-    
                     break;
                 case 'backbar':
                     stType = 'Backbar';
                     break;
                 case 'damagetestertheft':
                     stType = 'Damage/Tester/Theft'
+                    break;
+                case 'damage':
+                    stType = 'Damage'
+                    break;
+                case 'tester':
+                    stType = 'Tester'
+                    break;
+                case 'theft':
+                    stType = 'Theft'
                     break;
                 default:
                     stType = 'Standard'
@@ -339,6 +358,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })*/
         });
         const itemPerLocColumns = getItemPerLocationColumns(arrItemIdList,stCustomer,dtAsof, dtFron, dtTo);
+		log.debug('itemPerLocColumns', itemPerLocColumns);
         for(var i =0; i<arrItemIdList.length; i++){
 
             let inOnhand = 0;
@@ -398,6 +418,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
 
         }
+		log.debug('objSearch', objSearch);
         objSearch.run().each(function(result){
             const stItemName = result.getValue({ name: 'itemid'});
             const stSKU= result.getValue({ name: 'custitem_heyday_sku' });
@@ -412,6 +433,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             return true;
         });
         const itemPerLocColumnsCSV = getItemPerLocationColumns(arrItemIdListCSV,stCustomer,dtAsof, dtFron, dtTo);
+		log.debug('itemPerLocColumnsCSV', itemPerLocColumnsCSV);
+		log.debug('arrItemIdListCSV', arrItemIdListCSV);
 
         for(var i =0; i<arrItemIdListCSV.length; i++){
 
@@ -424,7 +447,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             let inDiscrepancy = 0;
             let flRate = arrPriceListCSV[i];
             if(itemPerLocColumnsCSV.hasOwnProperty(arrItemIdListCSV[i])){
-                if(itemPerLocColumns[arrItemIdListCSV[i]].hasOwnProperty('onhand')){
+                if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('onhand')){
                     inOnhand = itemPerLocColumnsCSV[arrItemIdListCSV[i]]['onhand'];
                 }
                 if(itemPerLocColumnsCSV[arrItemIdListCSV[i]].hasOwnProperty('damage')){
@@ -472,9 +495,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             })
 
         }
-
-        log.debug('arrMapItemperLocation',arrMapItemperLocation);
-        log.debug('arrMapItemperLocationCSV',arrMapItemperLocationCSV);
 
 
         return [arrMapItemperLocation,arrMapItemperLocationCSV];
@@ -681,11 +701,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     search.createColumn({ name: 'custbody_cwgp_canreceive' }),
                     search.createColumn({ name: 'custbody_cwgp_externalportaloperator' }),
                     search.createColumn({ name: 'amount' }),
-                    
+                    search.createColumn({ name: 'custbody_cwgp_franchisetrackingnumbers' })
                 ]
         }).run().each((result) => {
             const stMainLine = result.getValue({ name: 'mainline' });
-            log.debug('result id', result.id);
             objPO.body.custpage_cwgp_forreceivingcount = 0;
             if (stMainLine == '*') {
                 objPO.body.custpage_cwgp_customer = result.getValue({ name: 'entity' });
@@ -698,14 +717,12 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 objPO.body.custpage_cwgp_operator = result.getValue({ name: 'custbody_cwgp_externalportaloperator' });
                 objPO.body.custpage_cwgp_status = result.getText({ name: 'custbody_cwgp_franchiseapprovalstatus' });
                 objPO.body.custpage_cwgp_totalamount = result.getValue({ name: 'amount' });
+				objPO.body.custpage_cwgp_trackingnumber = result.getValue({ name: 'custbody_cwgp_franchisetrackingnumbers' });
                 if(result.getValue({ name: 'custbody_cwgp_canreceive' })){
                     objPO.body.custpage_cwgp_forreceiving = 'T'
                 }
                 //objPO.body.custpage_cwgp_forreceiving = result.getValue({ name: 'custbody_cwgp_canreceive' });
             } else {
-                log.debug('result id', result.id);
-                log.debug('status', result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' }));
-                log.debug('remaining', result.getValue({ name: 'custcol_cwgp_remaining' }));
                 if(result.getValue({ name: 'custbody_cwgp_franchiseapprovalstatus' })== 3 && result.getValue({ name: 'custcol_cwgp_remaining' })>0){
                     objPO.body.custpage_cwgp_forreceivingcount++;
                 }
@@ -733,7 +750,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             body: {},
             item: []
         };
-
+		
+		var fieldLookUp = search.lookupFields({
+			type: search.Type.SALES_ORDER,
+			id: stPoId,
+			columns: 'entity'
+		});
+		log.debug('fieldLookUp', fieldLookUp);
+		let stCustomer = fieldLookUp.entity[0].value;
+		let qtyOnHandList = getQtyOnHandFranchiseByCustomer(stCustomer);
+		log.debug('qtyOnHandList', qtyOnHandList);
         search.create({
             type: search.Type.SALES_ORDER,
             filters:
@@ -766,7 +792,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     search.createColumn({ name: 'item' }),
                     search.createColumn({ name: "quantity" }),
                     search.createColumn({ name: 'memo' }),
-                    search.createColumn({ name: 'quantity' }),
+                    search.createColumn({ name: 'quantityshiprecv' }),
                     search.createColumn({ name: 'rate' }),
                     search.createColumn({ name: 'amount' }),
                     search.createColumn({ name: 'tranid' }),
@@ -778,21 +804,32 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                     
                 ]
         }).run().each((result) => {
+			log.debug('ITEM', result.getValue({ name: 'item' }));
+            log.debug('result', result);
         	objPO.body.custpage_cwgp_orderno = result.id;
             objPO.body.custpage_cwgp_customer = result.getValue({ name: 'entity' });
             objPO.body.custpage_cwgp_subsidiary = result.getValue({ name: 'subsidiary' });
-            let qtyOnhand = getQtyOnHandFranchise(result.getValue({ name: 'item' }), result.getValue({ name: 'entity' }));
-            log.debug('qtyOnhand', qtyOnhand);
+			var scriptObj = runtime.getCurrentScript();
+			log.debug('getRemainingUsage', scriptObj.getRemainingUsage());
+			
+			let qtyOnhand = 0;
+			if(qtyOnHandList.hasOwnProperty(result.getValue({ name: 'item' }))){
+				qtyOnhand = qtyOnHandList[result.getValue({ name: 'item' })];
+			}
+			try{
+				//let qtyOnhand = getQtyOnHandFranchise(result.getValue({ name: 'item' }), result.getValue({ name: 'entity' }));
+				//log.debug('qtyOnhand', qtyOnhand);
+			
+            
+			
             objPO.item.push({
-                
-                
                 custpage_cwgp_itemid: result.getValue({ name: 'item' }),
                 custpage_cwgp_item: result.getValue({ name: 'item' }),
                 custpage_cwgp_description: result.getValue({ name: 'memo' }),
                 custpage_cwgp_quantityremaining: result.getValue({ name: 'custcol_cwgp_remaining' }),
                 custpage_cwgp_quantityremaininghidden: result.getValue({ name: 'custcol_cwgp_remaining' }),
-                custpage_cwgp_shippedquantity: result.getValue({ name: 'quantity' }),
-                custpage_cwgp_shippedquantityhidden: result.getValue({ name: 'quantity' }),
+                custpage_cwgp_shippedquantity: result.getValue({ name: 'quantityshiprecv' }),
+                custpage_cwgp_shippedquantityhidden: result.getValue({ name: 'quantityshiprecv' }),
                 custpage_cwgp_startingquantity: parseInt(qtyOnhand),
                 custpage_cwgp_startingquantityhidden: parseInt(qtyOnhand),
                 custpage_cwgp_finalquantity: parseInt(qtyOnhand),
@@ -804,8 +841,15 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_line: result.getValue({ name: 'lineuniquekey' }),
                 custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'item' }),
                 custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'item' }),
-                
             });
+			
+			}
+			catch (e) {
+				log.error({
+					title: "Error: ",
+					details: e.message
+				});
+			}
 
             return true;
         });
@@ -831,7 +875,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         objPO.body.custpage_cwgp_memomain = objItemReceipt.getValue({ fieldId: 'custrecord_cwgp_fr_memo' });
         objPO.body.custpage_cwgp_damagediaid = objItemReceipt.getValue('custrecord_cwgp_fr_ia');
         objPO.body.custpage_cwgp_operator = objItemReceipt.getValue('custrecord_cwgp_fr_operator');
-        
+        objPO.body.custpage_cwgp_amount = 0;
         var franchiseIRLineSearch = search.create({
             type: "customrecord_cwgp_franchise_tranline",
             filters:
@@ -864,11 +908,14 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                search.createColumn({name: "custrecord_cwgp_ftl_damagedqty", label: "Quantity Damaged"}),
                search.createColumn({name: "custrecord_cwgp_ftl_variance", label: "Variance"}),
                search.createColumn({name: "custrecord_cwgp_ftl_description", label: "Description"}),
+               search.createColumn({name: "custrecord_cwgp_ftl_rate", label: "Rate"}),
             ]
          });
         franchiseIRLineSearch.run().each(function(result){
             log.debug('result.id', result.id);
-        	objPO.item.push({
+            let flAmount = result.getValue({ name: 'custrecord_cwgp_ftl_receivedqty' }) * result.getValue({ name: 'custrecord_cwgp_ftl_rate' });
+        	objPO.body.custpage_cwgp_amount += flAmount;
+            objPO.item.push({
         		custpage_cwgp_id: result.id,
                 custpage_cwgp_item: result.getValue({ name: 'custrecord_cwgp_ftl_item' }),
                 custpage_cwgp_quantity: result.getValue({ name: 'custrecord_cwgp_ftl_receivedqty' }),
@@ -877,6 +924,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 custpage_cwgp_description: result.getValue({ name: 'custrecord_cwgp_ftl_description' }),
                 custpage_cwgp_internalsku: result.getValue({ name: 'custitem_heyday_sku', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
                 custpage_cwgp_upccode: result.getValue({ name: 'custitemheyday_upccode', join: 'CUSTRECORD_CWGP_FTL_ITEM' }),
+                custpage_cwgp_rate: result.getValue({ name: 'custrecord_cwgp_ftl_rate' }),
+                custpage_cwgp_amount: flAmount,
             });
         	   // .run().each has a limit of 4,000 results
     	   return true;
@@ -1286,15 +1335,24 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
 
     const setPOSublist = (sbl, objPO) => {
         const arrListValues = objPO.item;
-        log.debug('arrListValues', arrListValues);
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
-                sbl.setSublistValue({
-                    id: fieldId,
-                    line: i,
-                    value: value || ' '
-                });
+                if(fieldId == 'custpage_cwgp_rate' || fieldId == 'custpage_cwgp_amount'){
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || null
+                    });
+                }
+                else{
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value || ' '
+                    });
+                }
+                
             });
         });
     };
@@ -1326,11 +1384,11 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
     
     const setSublistValues = (sbl, objPO, stType) => {
         const arrListValues = stType == 'inventorycount' ? objPO : objPO.item;
-        log.debug('arrListValues', arrListValues);
-        log.debug('sbl',sbl);
 
         arrListValues.forEach((objItem, i) => {
             util.each(objItem, function (value, fieldId) {
+                log.debug('fieldId',fieldId);
+                log.debug('value','a'+value+'a');
                 if(fieldId == 'custpage_cwgp_datetime'){
                     sbl.setSublistValue({
                         id: fieldId,
@@ -1343,6 +1401,17 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                         id: fieldId,
                         line: i,
                         value: parseInt(value).toFixed(0)
+                    });
+                }
+                else if(fieldId == 'custpage_cwgp_rate' || fieldId == 'custpage_cwgp_rate'){
+                    if(value == ''){
+                        value = 0;
+                    }
+
+                    sbl.setSublistValue({
+                        id: fieldId,
+                        line: i,
+                        value: value
                     });
                 }
                 else{
@@ -1384,7 +1453,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
                 name: 'custrecord_cwgp_ftl_actualqty',
                 summary: "SUM"
             });
+			log.debug('qtyIR',qtyIR);
             if(!isNaN(qtyIR) && qtyIR != ''){
+				log.debug('qtyIR A',qtyIR);
                 qtyOnHand += parseFloat(qtyIR);
             }
             
@@ -1392,6 +1463,58 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
          });
 
          return qtyOnHand;
+
+    };
+	
+	const getQtyOnHandFranchiseByCustomer  = (stCustomer) => {
+		
+		var objItemList = {};
+
+        var IRLineSearch = search.create({
+            type: "customrecord_cwgp_franchise_tranline",
+            filters:
+            [
+               ["custrecord_cwgp_ftl_customer","anyof",stCustomer]
+            ],
+            columns:
+            [
+               search.createColumn({
+				 name: "custrecord_cwgp_ftl_item",
+				 summary: "GROUP",
+				 label: "Item"
+			  }),
+			  search.createColumn({
+				 name: "custrecord_cwgp_ftl_actualqty",
+				 summary: "SUM",
+				 label: "Actual Quantity"
+			  })
+            ]
+         });
+         IRLineSearch.run().each(function(result){
+            // .run().each has a limit of 4,000 results
+			
+			var stItem = result.getValue({
+                name: 'custrecord_cwgp_ftl_item',
+                summary: "GROUP"
+            });
+            
+            var qtyIR = result.getValue({
+                name: 'custrecord_cwgp_ftl_actualqty',
+                summary: "SUM"
+            });
+			log.debug('qtyIR',qtyIR);
+            if(!isNaN(qtyIR)){
+				log.debug('qtyIR A',qtyIR);
+                objItemList[stItem] = parseFloat(qtyIR);
+            }
+			else{
+				objItemList[stItem] = 0;
+			}
+            
+            return true;
+         });
+
+         return objItemList;
 
     };
 
@@ -1529,8 +1652,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             // .run().each has a limit of 4,000 results
             let stItem = result.getValue(result.columns[0]);
             let inOnhand = result.getValue(result.columns[2]);
-            log.debug('stItem', stItem);
-            log.debug('inOnhand', inOnhand);
             //objItemList[stItem] = {};
             
             if(!objItemList.hasOwnProperty(stItem)){
@@ -1572,7 +1693,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             operator: 'anyof',
             values: arrItemIdList,
         }));
-
         ssItemPerLocOthers.run().each(function(result){
 
             let stItem = result.getValue(result.columns[0]);
@@ -1606,7 +1726,6 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
             return true;
          });
          
-
          return objItemList;
     };
 
@@ -1833,7 +1952,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         });
 
         let stTypes;
-        if(stSubType == 'damagetestertheft'){
+        if(stSubType == 'damage' || stSubType == 'tester' || stSubType == 'theft'){
             stTypes = [3,4,5];
         }
         else if(stSubType =='standard'){
@@ -1866,107 +1985,116 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
     };
 
     const createICLineBackupFile = (stOperator, stStep,rec) => {
+		
+		try{
+			let headers = 'Item,UPC,SKU,First Count';
+			let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
+			//var d = new Date().toLocaleDateString();
+			var d = getTimeStamp();
+			var csvFile = file.create({
+				name: stOperator+'_step'+stStep+'_'+d+'.csv',
+				fileType: file.Type.CSV,
+				//contents: lines,
+				folder: 895
+			});
 
-        let headers = 'Item,UPC,SKU,First Count';
-        let stSublistName = 'custpage_inventoryadjustmentinventorycount_items';
-        //var d = new Date().toLocaleDateString();
-        var d = getTimeStamp();
-        var csvFile = file.create({
-            name: stOperator+'_step'+stStep+'_'+d+'.csv',
-            fileType: file.Type.CSV,
-            //contents: lines,
-            folder: 821
-        });
+			if(stStep == 1){
+				csvFile.appendLine({
+					value: headers
+				});
+				
+			}
+			else if(stStep == 2){
+				csvFile.appendLine({
+					value: headers+',Second Count'
+				});
+			}
+			else if(stStep == 3){
+				csvFile.appendLine({
+					value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
+				});
+			}
 
-        if(stStep == 1){
-            csvFile.appendLine({
-                value: headers
-            });
-            
-        }
-        else if(stStep == 2){
-            csvFile.appendLine({
-                value: headers+',Second Count'
-            });
-        }
-        else if(stStep == 3){
-            csvFile.appendLine({
-                value: headers+',Second Count,Entered QTY,Starting Qty,Discrepacy,Adjustment Reason'
-            });
-        }
+			var numLines = rec.getLineCount({
+				group: stSublistName
+			});
+			log.debug('numLines', numLines);
+			for(var i=0; i<numLines; i++){
+				var line = '';
+				var stItem = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_item',
+					line: i
+				});
+				line += stItem+',';
+				var stUpc = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_upccode',
+					line: i
+				});
+				line += stUpc+',';
+				var stSku = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_internalsku',
+					line: i
+				});
+				line += stSku+',';
+				var inFirstCount = rec.getSublistValue({
+					group: stSublistName,
+					name: 'custpage_cwgp_firstcount',
+					line: i
+				}) || '';
+				line += inFirstCount;
+				
+				if(stStep == 2 || stStep == 3){
+					var inSecondCount = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_secondcount',
+						line: i
+					}) || '';
+					line += ','+inSecondCount;
+				}
+				if(stStep == 3){
+					var inEnteredQty = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_enteredquantity',
+						line: i
+					}) || 0;
+					line += ','+inEnteredQty;
+					var inStartingQty = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_qtyonhand',
+						line: i
+					});
+					line += ','+inStartingQty;
+					var inDiscrepancy = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_discrepancy',
+						line: i
+					});
+					line += ','+inDiscrepancy;
+					var stAdjustmentReason = rec.getSublistValue({
+						group: stSublistName,
+						name: 'custpage_cwgp_adjustmentreason',
+						line: i
+					}) || '';
+					line += ','+stAdjustmentReason;
+				}
+				
+				csvFile.appendLine({
+					value: line
+				});
+			}
 
-        var numLines = rec.getLineCount({
-            group: stSublistName
-        });
-        log.debug('numLines', numLines);
-        for(var i=0; i<numLines; i++){
-            var line = '';
-            var stItem = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_item',
-                line: i
-            });
-            line += stItem+',';
-            var stUpc = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_upccode',
-                line: i
-            });
-            line += stUpc+',';
-            var stSku = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_internalsku',
-                line: i
-            });
-            line += stSku+',';
-            var inFirstCount = rec.getSublistValue({
-                group: stSublistName,
-                name: 'custpage_cwgp_firstcount',
-                line: i
-            }) || '';
-            line += inFirstCount;
-            
-            if(stStep == 2 || stStep == 3){
-                var inSecondCount = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_secondcount',
-                    line: i
-                }) || '';
-                line += ','+inSecondCount;
-            }
-            if(stStep == 3){
-                var inEnteredQty = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_enteredquantity',
-                    line: i
-                }) || 0;
-                line += ','+inEnteredQty;
-                var inStartingQty = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_qtyonhand',
-                    line: i
-                });
-                line += ','+inStartingQty;
-                var inDiscrepancy = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_discrepancy',
-                    line: i
-                });
-                line += ','+inDiscrepancy;
-                var stAdjustmentReason = rec.getSublistValue({
-                    group: stSublistName,
-                    name: 'custpage_cwgp_adjustmentreason',
-                    line: i
-                }) || '';
-                line += ','+stAdjustmentReason;
-            }
-            
-            csvFile.appendLine({
-                value: line
-            });
+			var fileId = csvFile.save();
+			
+			
+		}
+		catch(e){
+            log.error('createICLineBackupFile Error', e)
         }
 
-        var fileId = csvFile.save();
+        
 
     };
 
@@ -2035,13 +2163,41 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         
         return false;
     };
+	
+	const getInventoryCountDraftCredentialList = (stAccessType,stLocation) => {
+        let arrCredentialList = [];
+        let filters = [];
+        if(stAccessType == '1'){//Franchise
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_customer',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+        else if(stAccessType == '2'){//Retail
+            filters.push(search.createFilter({
+                name: 'custrecord_cwgp_location',
+                operator: search.Operator.ANYOF,
+                values: stLocation
+            }))
+        }
+
+        const ssCredentials = search.create({
+            type: 'customrecord_cwgp_externalsl_creds',
+            filters: filters,
+            columns:
+                [
+                    search.createColumn({ name: 'name' })
+                ]
+        }).run().each((result) => {
+            arrCredentialList.push(result.id);
+            return true;
+        });
+        
+        return arrCredentialList;
+    };
 
     
-
-    
-
-    
-
     return {
         mapValues,
         buildSearch,
@@ -2072,6 +2228,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/util', 'N/record', 'N/url', 'N/forma
         getItemPerLocationColumns,
         getItemPerLocationTotalColumns,
         createICLineBackupFile,
-		getInventoryCountDraft
+		getInventoryCountDraft,
+		getInventoryCountDraftCredentialList
     }
 });
